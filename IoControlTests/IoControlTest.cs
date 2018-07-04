@@ -12,244 +12,247 @@ namespace IoControlTests
     public class IoControlTest
     {
         [TestMethod]
-        public void SampleTest()
+        public void PhysicalDriveOpenTest()
         {
-            try
+            foreach (var Number in Enumerable.Range(0, 10))
             {
-                foreach (var Number in Enumerable.Range(0, 10))
+                var PhysicalDriveName = $@"\\.\PhysicalDrive{Number}";
+                Trace.Write(PhysicalDriveName);
+                using (var file = IoControl.IoControl.CreateFile(PhysicalDriveName,
+                    FileAccess: FileAccess.ReadWrite,
+                    FileShare: FileShare.ReadWrite,
+                    CreationDisposition: FileMode.Open,
+                    FlagsAndAttributes: FileAttributes.Normal))
                 {
-                    var PhysicalDriveName = $@"\\.\PhysicalDrive{Number}";
-                    Trace.Write(PhysicalDriveName);
-                    using (var file = IoControl.IoControl.CreateFile(PhysicalDriveName,
-                        FileAccess: FileAccess.ReadWrite,
-                        FileShare: FileShare.ReadWrite,
-                        CreationDisposition: FileMode.Open,
-                        FlagsAndAttributes: FileAttributes.Normal))
+                    Trace.WriteLine("..." + (file.IsInvalid ? "NG." : "OK."));
+                    if (file.IsInvalid)
                     {
-                        Trace.WriteLine("..." + (file.IsInvalid ? "NG." : "OK."));
-                        if (file.IsInvalid)
-                            continue;
-                        try
-                        {
-                            Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.StorageGetDeviceNumber));
-                            var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.StorageGetDeviceNumber, out StorageDeviceNumber number, out var _);
-                            if (!result)
-                                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                            Trace.WriteLine(number);
-                        }
-                        catch (Exception e2)
-                        {
-                            Trace.WriteLine(e2);
-                        }
-                        try
-                        {
-                            Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.VolumeGetVolumeDiskExtents));
-                            //var BaseSize = Marshal.SizeOf(typeof(_VolumeDiskExtent));
-                            //var ExtentSize = Marshal.SizeOf(typeof(DiskExtent));
-                            //var Size = (uint)(BaseSize + ExtentSize * 10);
-                            //do
-                            //{
-                            //    var OutPtr = Marshal.AllocCoTaskMem((int)Size);
-                            //    using (IoCtrl.Disposable.Create(() => Marshal.FreeCoTaskMem(OutPtr)))
-                            //    {
-                            //        uint returnbytes;
-                            //        bool result;
-                            //        (result, returnbytes) = IoCtrl.DeviceIoControlOutOnly(file, IoCtrl.IOControlCode.VolumeGetVolumeDiskExtents, OutPtr, Size);
-                            //        var hResult = Marshal.GetHRForLastWin32Error();
-                            //        if (hResult == unchecked((int)0x8007007A))
-                            //        {
-                            //            Size *= 2;
-                            //            continue;
-                            //        }
-                            //        if (!result)
-                            //            Marshal.ThrowExceptionForHR(hResult);
-                            //        var _VolumeDisk = (_VolumeDiskExtent)Marshal.PtrToStructure(OutPtr, typeof(_VolumeDiskExtent));
-                            //        var VolumeDisk = new VolumeDiskExtent
-                            //        {
-                            //            NumberOfDiskExtents = _VolumeDisk.NumberOfDiskExtents,
-                            //            Extents = Enumerable
-                            //                .Range(0, (int)_VolumeDisk.NumberOfDiskExtents)
-                            //                .Select(index => (DiskExtent)Marshal.PtrToStructure(OutPtr + BaseSize * ExtentSize, typeof(DiskExtent)))
-                            //                .ToArray(),
-                            //        };
-                            //        Trace.WriteLine(VolumeDisk);
-                            //    }
-                            //    break;
-                            //} while (true);
-                            var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.VolumeGetVolumeDiskExtents, out VolumeDiskExtent extent, out var ReturnBytes);
-                            if (!result)
-                                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                            Trace.WriteLine(extent);
-                        }
-                        catch (Exception e2)
-                        {
-                            Trace.WriteLine(e2);
-                        }
-                        try
-                        {
-                            Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.DiskGetDriveGeometryEx));
-                            var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.DiskGetDriveGeometryEx, out DiskGeometryEx geometry, out var _);
-                            if (!result)
-                                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                            Trace.WriteLine(geometry);
-                        }
-                        catch (Exception e2)
-                        {
-                            Trace.WriteLine(e2);
-                        }
-                        try
-                        {
-                            Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.DiskGetLengthInfo));
-                            var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.DiskGetLengthInfo, out long disksize, out var _);
-                            if (!result)
-                                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                            Trace.WriteLine(disksize);
-                        }
-                        catch (Exception e2)
-                        {
-                            Trace.WriteLine(e2);
-                        }
-                        try
-                        {
-                            Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.StorageQueryProperty));
-                            var query = new StoragePropertyQuery
-                            {
-                                PropertyId = StoragePropertyId.StorageDeviceSeekPenaltyProperty,
-                                QueryType = default,
-                            };
-                            var result = IoControl.IoControl.DeviceIoControl(file, IoControl.IoControl.IOControlCode.StorageQueryProperty, ref query, out DeviceSeekPenaltyDescriptor dest, out var penalty_size, IntPtr.Zero);
-                            if (!result)
-                                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                            Trace.WriteLine(query);
-                            Trace.WriteLine(dest);
-                            Trace.WriteLine(penalty_size);
-                        }
-                        catch (Exception e2)
-                        {
-                            Trace.WriteLine(e2);
-                        }
-                        try
-                        {
-                            Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.AtaPassThrough));
-                            var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-                            var id_query = new ATAIdentifyDeviceQuery
-                            {
-                                Header = new AtaPassThroughEx
-                                {
-                                    Length = Length,
-                                    AtaFlags = AtaFlags.DataIn,
-                                    DataTransferLength = (uint)256 * 2,
-                                    TimeOutValue = 3,
-                                    DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
-                                    PreviousTaskFile = new byte[8],
-                                    CurrentTaskFile = new byte[8],
-                                },
-                                Data = new ushort[256],
-                            };
-                            id_query.Header.CurrentTaskFile[6] = 0xEC;
-                            var result = IoControl.IoControl.DeviceIoControl(file, IoControl.IoControl.IOControlCode.AtaPassThrough, ref id_query, out var retval_size);
-                            if (!result)
-                                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                            Trace.WriteLine(id_query);
-
-                        }
-                        catch (Exception e2)
-                        {
-                            Trace.WriteLine(e2);
-                        }
-                        //try
-                        //{
-                        //    Trace.WriteLine(nameof(IoCtrl.EIOControlCode.DiskControllerNumber));
-                        //    var result = IoCtrl.DeviceIoControlOutOnly(file, IoCtrl.EIOControlCode.DiskControllerNumber, out DiskControllerNumber number);
-                        //    if (!result)
-                        //        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                        //    Trace.WriteLine(number);
-                        //}
-                        //catch (Exception e2)
-                        //{
-                        //    Trace.WriteLine(e2);
-                        //}
-                        //try
-                        //{
-                        //    Trace.WriteLine(nameof(IoCtrl.EIOControlCode.DiskControllerNumber) + "2");
-                        //    var bytes = new byte[256];
-                        //    var result = IoCtrl.DeviceIoControlOutOnly(file, IoCtrl.EIOControlCode.DiskControllerNumber, bytes,out var outsize);
-                        //    if (!result)
-                        //        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                        //    Trace.WriteLine(string.Join(" ",(bytes ?? Enumerable.Empty<byte>()).Take((int)outsize).Select(v => $"{v:X2}")));
-                        //}
-                        //catch (Exception e2)
-                        //{
-                        //    Trace.WriteLine(e2);
-                        //}
-                        try
-                        {
-                            Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.DiskPerformance));
-                            var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.DiskPerformance, out DiskPerformance performance, out var _);
-                            if (!result)
-                                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                            Trace.WriteLine(performance);
-                        }
-                        catch (Exception e2)
-                        {
-                            Trace.WriteLine(e2);
-                        }
-                        try
-                        {
-                            Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.ScsiGetAddress));
-                            var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.ScsiGetAddress, out ScsiAddress address, out var _);
-                            if (!result)
-                                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                            Trace.WriteLine(address);
-                        }
-                        catch (Exception e2)
-                        {
-                            Trace.WriteLine(e2);
-                        }
-                        try
-                        {
-                            Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.ScsiGetInquiryData));
-                            var Size = (uint)(Marshal.SizeOf(typeof(_ScsiAdapterBusInfo)) + Marshal.SizeOf(typeof(ScsiBusData)) + Marshal.SizeOf(typeof(ScsiInquiryData)));
-                            var OutPtr = Marshal.AllocCoTaskMem((int)Size);
-                            using (Disposable.Create(() => Marshal.FreeCoTaskMem(OutPtr)))
-                            {
-                                (var result, var returnBytes) = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.ScsiGetInquiryData, OutPtr, Size);
-                                var lasterror = Marshal.GetHRForLastWin32Error();
-                                if (!result)
-                                    Marshal.ThrowExceptionForHR(lasterror);
-                                Trace.WriteLine(returnBytes);
-                            }
-                        }
-                        catch (Exception e2)
-                        {
-                            Trace.WriteLine(e2);
-                        }
+                        Trace.WriteLine(Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error()));
+                        continue;
                     }
-                }
-                try
-                {
-                    var PathName = @"\\.\C:";//Path.GetDirectoryName(System.Reflection.Assembly.GetCallingAssembly().Location);
-                    Trace.WriteLine($"File... {PathName}");
-                    using (var file = IoControl.IoControl.CreateFile(PathName, FileShare: FileShare.ReadWrite, CreationDisposition: FileMode.Open))
+                    try
                     {
-                        if (file.IsInvalid)
-                            Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                         Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.StorageGetDeviceNumber));
                         var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.StorageGetDeviceNumber, out StorageDeviceNumber number, out var _);
                         if (!result)
                             Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                         Trace.WriteLine(number);
+                    }
+                    catch (Exception e2)
+                    {
+                        Trace.WriteLine(e2);
+                    }
+                    try
+                    {
+                        Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.VolumeGetVolumeDiskExtents));
+                        //var BaseSize = Marshal.SizeOf(typeof(_VolumeDiskExtent));
+                        //var ExtentSize = Marshal.SizeOf(typeof(DiskExtent));
+                        //var Size = (uint)(BaseSize + ExtentSize * 10);
+                        //do
+                        //{
+                        //    var OutPtr = Marshal.AllocCoTaskMem((int)Size);
+                        //    using (IoCtrl.Disposable.Create(() => Marshal.FreeCoTaskMem(OutPtr)))
+                        //    {
+                        //        uint returnbytes;
+                        //        bool result;
+                        //        (result, returnbytes) = IoCtrl.DeviceIoControlOutOnly(file, IoCtrl.IOControlCode.VolumeGetVolumeDiskExtents, OutPtr, Size);
+                        //        var hResult = Marshal.GetHRForLastWin32Error();
+                        //        if (hResult == unchecked((int)0x8007007A))
+                        //        {
+                        //            Size *= 2;
+                        //            continue;
+                        //        }
+                        //        if (!result)
+                        //            Marshal.ThrowExceptionForHR(hResult);
+                        //        var _VolumeDisk = (_VolumeDiskExtent)Marshal.PtrToStructure(OutPtr, typeof(_VolumeDiskExtent));
+                        //        var VolumeDisk = new VolumeDiskExtent
+                        //        {
+                        //            NumberOfDiskExtents = _VolumeDisk.NumberOfDiskExtents,
+                        //            Extents = Enumerable
+                        //                .Range(0, (int)_VolumeDisk.NumberOfDiskExtents)
+                        //                .Select(index => (DiskExtent)Marshal.PtrToStructure(OutPtr + BaseSize * ExtentSize, typeof(DiskExtent)))
+                        //                .ToArray(),
+                        //        };
+                        //        Trace.WriteLine(VolumeDisk);
+                        //    }
+                        //    break;
+                        //} while (true);
+                        var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.VolumeGetVolumeDiskExtents, out VolumeDiskExtent extent, out var ReturnBytes);
+                        if (!result)
+                            Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        Trace.WriteLine(extent);
+                    }
+                    catch (Exception e2)
+                    {
+                        Trace.WriteLine(e2);
+                    }
+                    try
+                    {
+                        Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.VolumeIsClustered));
+                        var result = IoControl.IoControl.DeviceIoControlNonInOut(file, IoControl.IoControl.IOControlCode.VolumeIsClustered, out var _);
+                        Trace.WriteLine($"Clustored:{result}");
+                    }
+                    catch (Exception e2)
+                    {
+                        Trace.WriteLine(e2);
+                    }
+                    try
+                    {
+                        Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.DiskGetDriveGeometryEx));
+                        var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.DiskGetDriveGeometryEx, out DiskGeometryEx geometry, out var _);
+                        if (!result)
+                            Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        Trace.WriteLine(geometry);
+                    }
+                    catch (Exception e2)
+                    {
+                        Trace.WriteLine(e2);
+                    }
+                    try
+                    {
+                        Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.DiskGetLengthInfo));
+                        var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.DiskGetLengthInfo, out long disksize, out var _);
+                        if (!result)
+                            Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        Trace.WriteLine(disksize);
+                    }
+                    catch (Exception e2)
+                    {
+                        Trace.WriteLine(e2);
+                    }
+                    try
+                    {
+                        Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.StorageQueryProperty));
+                        var query = new StoragePropertyQuery
+                        {
+                            PropertyId = StoragePropertyId.StorageDeviceSeekPenaltyProperty,
+                            QueryType = default,
+                        };
+                        var result = IoControl.IoControl.DeviceIoControl(file, IoControl.IoControl.IOControlCode.StorageQueryProperty, ref query, out DeviceSeekPenaltyDescriptor dest, out var penalty_size, IntPtr.Zero);
+                        if (!result)
+                            Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        Trace.WriteLine(query);
+                        Trace.WriteLine(dest);
+                        Trace.WriteLine(penalty_size);
+                    }
+                    catch (Exception e2)
+                    {
+                        Trace.WriteLine(e2);
+                    }
+                    try
+                    {
+                        Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.AtaPassThrough));
+                        var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
+                        var id_query = new ATAIdentifyDeviceQuery
+                        {
+                            Header = new AtaPassThroughEx
+                            {
+                                Length = Length,
+                                AtaFlags = AtaFlags.DataIn,
+                                DataTransferLength = (uint)256 * 2,
+                                TimeOutValue = 3,
+                                DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
+                                PreviousTaskFile = new byte[8],
+                                CurrentTaskFile = new byte[8],
+                            },
+                            Data = new ushort[256],
+                        };
+                        id_query.Header.CurrentTaskFile[6] = 0xEC;
+                        var result = IoControl.IoControl.DeviceIoControl(file, IoControl.IoControl.IOControlCode.AtaPassThrough, ref id_query, out var retval_size);
+                        if (!result)
+                            Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        Trace.WriteLine(id_query);
 
                     }
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
+                    catch (Exception e2)
+                    {
+                        Trace.WriteLine(e2);
+                    }
+                    //try
+                    //{
+                    //    Trace.WriteLine(nameof(IoCtrl.EIOControlCode.DiskControllerNumber));
+                    //    var result = IoCtrl.DeviceIoControlOutOnly(file, IoCtrl.EIOControlCode.DiskControllerNumber, out DiskControllerNumber number);
+                    //    if (!result)
+                    //        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    //    Trace.WriteLine(number);
+                    //}
+                    //catch (Exception e2)
+                    //{
+                    //    Trace.WriteLine(e2);
+                    //}
+                    //try
+                    //{
+                    //    Trace.WriteLine(nameof(IoCtrl.EIOControlCode.DiskControllerNumber) + "2");
+                    //    var bytes = new byte[256];
+                    //    var result = IoCtrl.DeviceIoControlOutOnly(file, IoCtrl.EIOControlCode.DiskControllerNumber, bytes,out var outsize);
+                    //    if (!result)
+                    //        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    //    Trace.WriteLine(string.Join(" ",(bytes ?? Enumerable.Empty<byte>()).Take((int)outsize).Select(v => $"{v:X2}")));
+                    //}
+                    //catch (Exception e2)
+                    //{
+                    //    Trace.WriteLine(e2);
+                    //}
+                    try
+                    {
+                        Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.DiskPerformance));
+                        var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.DiskPerformance, out DiskPerformance performance, out var _);
+                        if (!result)
+                            Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        Trace.WriteLine(performance);
+                    }
+                    catch (Exception e2)
+                    {
+                        Trace.WriteLine(e2);
+                    }
+                    try
+                    {
+                        Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.ScsiGetAddress));
+                        var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.ScsiGetAddress, out ScsiAddress address, out var _);
+                        if (!result)
+                            Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        Trace.WriteLine(address);
+                    }
+                    catch (Exception e2)
+                    {
+                        Trace.WriteLine(e2);
+                    }
+                    try
+                    {
+                        Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.ScsiGetInquiryData));
+                        var Size = (uint)(Marshal.SizeOf(typeof(_ScsiAdapterBusInfo)) + Marshal.SizeOf(typeof(ScsiBusData)) + Marshal.SizeOf(typeof(ScsiInquiryData)));
+                        var OutPtr = Marshal.AllocCoTaskMem((int)Size);
+                        using (Disposable.Create(() => Marshal.FreeCoTaskMem(OutPtr)))
+                        {
+                            (var result, var returnBytes) = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.ScsiGetInquiryData, OutPtr, Size);
+                            var lasterror = Marshal.GetHRForLastWin32Error();
+                            if (!result)
+                                Marshal.ThrowExceptionForHR(lasterror);
+                            Trace.WriteLine(returnBytes);
+                        }
+                    }
+                    catch (Exception e2)
+                    {
+                        Trace.WriteLine(e2);
+                    }
                 }
             }
-            catch (Exception e)
+        }
+        [TestMethod]
+        public void DriveOpenTest()
+        {
+            var PathName = @"\\.\C:";//Path.GetDirectoryName(System.Reflection.Assembly.GetCallingAssembly().Location);
+            Trace.WriteLine($"File... {PathName}");
+            using (var file = IoControl.IoControl.CreateFile(PathName, FileShare: FileShare.ReadWrite, CreationDisposition: FileMode.Open))
             {
-                Debug.WriteLine(e);
+                if (file.IsInvalid)
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.StorageGetDeviceNumber));
+                var result = IoControl.IoControl.DeviceIoControlOutOnly(file, IoControl.IoControl.IOControlCode.StorageGetDeviceNumber, out StorageDeviceNumber number, out var _);
+                if (!result)
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                Trace.WriteLine(number);
+
             }
         }
         [Flags]

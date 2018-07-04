@@ -353,7 +353,7 @@ namespace IoControl
                 return result;
             }
         }
-        public static bool DeviceIoControl(SafeFileHandle Device, IOControlCode dwIoControlCode, out uint ReturnBytes, IntPtr pOverlapped)
+        public static bool DeviceIoControlNonInOut(SafeFileHandle Device, IOControlCode dwIoControlCode, out uint ReturnBytes, IntPtr pOverlapped = default)
             => NativeMethod.DeviceIoControl(Device, dwIoControlCode, IntPtr.Zero, 0, IntPtr.Zero, 0, out ReturnBytes, pOverlapped);
         public static bool DeviceIoControlInOnly<TIN>(SafeFileHandle Device, IOControlCode dwIoControlCode, ref TIN InBuffer)
             where TIN : struct
