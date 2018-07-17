@@ -133,26 +133,26 @@ namespace IoControlTests
                 }
                 try
                 {
-                    Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.AtaPassThrough));
+                    Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.AtaPassThrough) + " :IDENTIFY DEVICE");
                     var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
                     var id_query = new ATAIdentifyDeviceQuery
                     {
                         Header = new AtaPassThroughEx
                         {
                             Length = Length,
-                            AtaFlags = AtaFlags.DataIn,
-                            DataTransferLength = (uint)256 * 2,
+                            AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
+                            DataTransferLength = (uint)256 * sizeof(ushort),
                             TimeOutValue = 3,
                             DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
                             PreviousTaskFile = new byte[8],
-                            CurrentTaskFile = new byte[8],
+                            CurrentTaskFile = new byte[8] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xEc, 0x0},
                         },
                         Data = new ushort[256],
                     };
-                    id_query.Header.CurrentTaskFile[6] = 0xEC;
                     var result = IoControl.IoControl.DeviceIoControl(file, IoControl.IoControl.IOControlCode.AtaPassThrough, ref id_query, out var retval_size);
                     if (!result)
                         Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    Trace.WriteLine(retval_size);
                     Trace.WriteLine(id_query);
 
                 }
@@ -160,31 +160,93 @@ namespace IoControlTests
                 {
                     Trace.WriteLine(e2);
                 }
-                //try
-                //{
-                //    Trace.WriteLine(nameof(IoCtrl.EIOControlCode.DiskControllerNumber));
-                //    var result = IoCtrl.DeviceIoControlOutOnly(file, IoCtrl.EIOControlCode.DiskControllerNumber, out DiskControllerNumber number);
-                //    if (!result)
-                //        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                //    Trace.WriteLine(number);
-                //}
-                //catch (Exception e2)
-                //{
-                //    Trace.WriteLine(e2);
-                //}
-                //try
-                //{
-                //    Trace.WriteLine(nameof(IoCtrl.EIOControlCode.DiskControllerNumber) + "2");
-                //    var bytes = new byte[256];
-                //    var result = IoCtrl.DeviceIoControlOutOnly(file, IoCtrl.EIOControlCode.DiskControllerNumber, bytes,out var outsize);
-                //    if (!result)
-                //        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                //    Trace.WriteLine(string.Join(" ",(bytes ?? Enumerable.Empty<byte>()).Take((int)outsize).Select(v => $"{v:X2}")));
-                //}
-                //catch (Exception e2)
-                //{
-                //    Trace.WriteLine(e2);
-                //}
+                try
+                {
+                    Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.AtaPassThrough) + " :S.M.A.R.T");
+                    var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
+                    var id_query = new ATAIdentifyDeviceQuery
+                    {
+                        Header = new AtaPassThroughEx
+                        {
+                            Length = Length,
+                            AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
+                            DataTransferLength = (uint)256 * sizeof(ushort),
+                            TimeOutValue = 3,
+                            DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
+                            PreviousTaskFile = new byte[8],
+                            CurrentTaskFile = new byte[8] { 0xd0, 0x0, 0x0, 0x4f, 0xc2, 0x0, 0xb0, 0x0 },
+                        },
+                        Data = new ushort[256],
+                    };
+                    var result = IoControl.IoControl.DeviceIoControl(file, IoControl.IoControl.IOControlCode.AtaPassThrough, ref id_query, out var retval_size);
+                    if (!result)
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    Trace.WriteLine(retval_size);
+                    Trace.WriteLine(id_query);
+
+                }
+                catch (Exception e2)
+                {
+                    Trace.WriteLine(e2);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.AtaPassThrough) + " :STANDBY IMMEDIATE");
+                    var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
+                    var id_query = new ATAIdentifyDeviceQuery
+                    {
+                        Header = new AtaPassThroughEx
+                        {
+                            Length = Length,
+                            AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
+                            DataTransferLength = (uint)256 * sizeof(ushort),
+                            TimeOutValue = 3,
+                            DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
+                            PreviousTaskFile = new byte[8],
+                            CurrentTaskFile = new byte[8] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xE0, 0x0 },
+                        },
+                        Data = new ushort[256],
+                    };
+                    var result = IoControl.IoControl.DeviceIoControl(file, IoControl.IoControl.IOControlCode.AtaPassThrough, ref id_query, out var retval_size);
+                    if (!result)
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    Trace.WriteLine(retval_size);
+                    Trace.WriteLine(id_query);
+
+                }
+                catch (Exception e2)
+                {
+                    Trace.WriteLine(e2);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.AtaPassThrough) + " :CHECK POWER MODE");
+                    var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
+                    var id_query = new ATAIdentifyDeviceQuery
+                    {
+                        Header = new AtaPassThroughEx
+                        {
+                            Length = Length,
+                            AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
+                            DataTransferLength = (uint)256 * sizeof(ushort),
+                            TimeOutValue = 3,
+                            DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
+                            PreviousTaskFile = new byte[8],
+                            CurrentTaskFile = new byte[8] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xE5, 0x0 },
+                        },
+                        Data = new ushort[256],
+                    };
+                    var result = IoControl.IoControl.DeviceIoControl(file, IoControl.IoControl.IOControlCode.AtaPassThrough, ref id_query, out var retval_size);
+                    if (!result)
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    Trace.WriteLine(retval_size);
+                    Trace.WriteLine(id_query);
+
+                }
+                catch (Exception e2)
+                {
+                    Trace.WriteLine(e2);
+                }
                 try
                 {
                     Trace.WriteLine(nameof(IoControl.IoControl.IOControlCode.DiskPerformance));
