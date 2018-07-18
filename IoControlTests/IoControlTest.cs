@@ -115,10 +115,6 @@ namespace IoControlTests
                 try
                 {
                     Trace.WriteLine(nameof(IOControlCode.DiskGetDriveLayoutEx));
-                    var s1 = Marshal.SizeOf<PartitionInformationGpt>();
-                    var s2 = Marshal.SizeOf<PartitionInformationMbr>();
-                    var s3 = Marshal.SizeOf<PartitionInformationUnion>();
-                    var s4 = Marshal.SizeOf<PartitionInformationEx>();
                     var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayoutEx, out DriveLayoutInformationEx layout, out var outsize);
                     if (!result)
                         Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
