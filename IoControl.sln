@@ -7,6 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoControl", "IoControl\IoCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoControlTests", "IoControlTests\IoControlTests.csproj", "{ABF298F8-8F4F-4A00-8989-6E299E55ED9F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoControlPhysicalExample", "IoControlPhysicalExample\IoControlPhysicalExample.csproj", "{D74D5CF8-37E5-4EF7-BE51-FCEE30697E40}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{22C7532E-DCD4-4EA6-94C7-D632B3321888}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +28,10 @@ Global
 		{ABF298F8-8F4F-4A00-8989-6E299E55ED9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABF298F8-8F4F-4A00-8989-6E299E55ED9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABF298F8-8F4F-4A00-8989-6E299E55ED9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D74D5CF8-37E5-4EF7-BE51-FCEE30697E40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D74D5CF8-37E5-4EF7-BE51-FCEE30697E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D74D5CF8-37E5-4EF7-BE51-FCEE30697E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D74D5CF8-37E5-4EF7-BE51-FCEE30697E40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
