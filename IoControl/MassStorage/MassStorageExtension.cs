@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using static IoControl.IoControl;
@@ -69,72 +68,5 @@ namespace IoControl.MassStorage
             StorageQueryProperty(IoControl, ref query, out var descriptor);
             return descriptor;
         }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct StorageDeviceNumber
-    {
-        public FileDevice DeviceType;
-        public uint DeviceNumber;
-        public uint PartitionNumber;
-        public override string ToString()
-            => $"{nameof(StorageDeviceNumber)}{{{nameof(DeviceType)}:{DeviceType}, {nameof(DeviceNumber)}:{DeviceNumber}, {nameof(PartitionNumber)}:{PartitionNumber}}}";
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    public struct StoragePropertyQuery
-    {
-        public StoragePropertyId PropertyId;
-        public StorageQueryType QueryType;
-        [MarshalAs(UnmanagedType.ByValArray)]
-        public byte[] AdditionalParameters;
-        public override string ToString()
-            => $"{nameof(StoragePropertyQuery)}{{{nameof(PropertyId)}:{PropertyId},{nameof(QueryType)}:{QueryType},[{string.Join(" ", (AdditionalParameters ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}]}}";
-    }
-    public enum StoragePropertyId : uint
-    {
-        StorageDeviceProperty = 0,
-        StorageAdapterProperty = 1,
-        StorageDeviceIdProperty = 2,
-        StorageDeviceUniqueIdProperty = 3,
-        StorageDeviceWriteCacheProperty = 4,
-        StorageMiniportProperty = 5,
-        StorageAccessAlignmentProperty = 6,
-        StorageDeviceSeekPenaltyProperty = 7,
-        StorageDeviceTrimProperty = 8,
-        StorageDeviceWriteAggregationProperty = 9,
-        StorageDeviceDeviceTelemetryProperty = 10, // 0xA
-        StorageDeviceLBProvisioningProperty = 11, // 0xB
-        StorageDevicePowerProperty = 12, // 0xC
-        StorageDeviceCopyOffloadProperty = 13, // 0xD
-        StorageDeviceResiliencyProperty = 14 // 0xE
-    }
-    public enum StorageQueryType : uint
-    {
-        /// <summary>Instructs the driver to return an appropriate descriptor.</summary>
-        StandardQuery = 0,
-        /// <summary>Instructs the driver to report whether the descriptor is supported.</summary>
-        ExistsQuery = 1,
-        /// <summary>Used to retrieve a mask of writeable fields in the descriptor. Not currently supported. Do not use.</summary>
-        MaskQuery = 2,
-        /// <summary>Specifies the upper limit of the list of query types. This is used to validate the query type.</summary>
-        QueryMaxDefined = 3
-    }
-    /// <summary>
-    /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ns-ntddstor-_device_seek_penalty_descriptor
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    public readonly struct DeviceSeekPenaltyDescriptor
-    {
-        public readonly uint Version;
-        public readonly uint Size;
-        [MarshalAs(UnmanagedType.U1)]
-        public readonly bool IncursSeekPenalty;
-        public DeviceSeekPenaltyDescriptor(uint Version, uint Size, bool IncursSeekPenalty)
-            => (this.Version, this.Size, this.IncursSeekPenalty) = (Version, Size, IncursSeekPenalty);
-        public void Deconstruct(out uint Version, out uint Size, out bool IncursSeekPenalty)
-            => (Version, Size, IncursSeekPenalty) = (this.Version, this.Size, this.IncursSeekPenalty);
-        public override string ToString()
-            => $"{nameof(DeviceSeekPenaltyDescriptor)}{{{nameof(Version)}:{Version}, {nameof(Size)}:{Size}, {nameof(IncursSeekPenalty)}:{IncursSeekPenalty}}}";
     }
 }
