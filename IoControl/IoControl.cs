@@ -103,24 +103,19 @@ namespace IoControl
                 return result;
             }
         }
-        public bool DeviceIoControl<TIN, TOUT>(IOControlCode IoControlCode, ref TIN InBuffer, out TOUT OutBuffer, out uint ReturnBytes)
+        public bool DeviceIoControl<TIN, TOUT>(IOControlCode IoControlCode, in TIN InBuffer, out TOUT OutBuffer, out uint ReturnBytes)
             where TIN : struct
             where TOUT : struct
         {
             var inSize = (uint)Marshal.SizeOf(typeof(TIN));
-            var _inBuffer = new byte[inSize];
-            var igch = GCHandle.Alloc(_inBuffer, GCHandleType.Pinned);
+            var inPtr = Marshal.AllocCoTaskMem((int)inSize);
             var outSize = (uint)Marshal.SizeOf(typeof(TOUT));
-            var _outBuffer = new byte[outSize];
-            var ogch = GCHandle.Alloc(_outBuffer, GCHandleType.Pinned);
-            using (Disposable.Create(igch.Free))
-            using (Disposable.Create(ogch.Free))
+            var outPtr = Marshal.AllocCoTaskMem((int)outSize);
+            using (Disposable.Create(() => Marshal.FreeCoTaskMem(inPtr)))
+            using (Disposable.Create(() => Marshal.FreeCoTaskMem(outPtr)))
             {
-                var inPtr = igch.AddrOfPinnedObject();
-                var outPtr = ogch.AddrOfPinnedObject();
                 Marshal.StructureToPtr(InBuffer, inPtr, false);
                 var result = DeviceIoControl(IoControlCode, inPtr, inSize, outPtr, outSize, out ReturnBytes);
-                InBuffer = (TIN)Marshal.PtrToStructure(inPtr, typeof(TIN));
                 OutBuffer = (TOUT)Marshal.PtrToStructure(outPtr, typeof(TOUT));
                 return result;
             }

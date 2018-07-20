@@ -119,17 +119,8 @@ namespace IoControlTests
                 try
                 {
                     Trace.WriteLine(nameof(IOControlCode.StorageQueryProperty));
-                    var query = new StoragePropertyQuery
-                    {
-                        PropertyId = StoragePropertyId.StorageDeviceSeekPenaltyProperty,
-                        QueryType = default,
-                    };
-                    var result = IoControl.DeviceIoControl(IOControlCode.StorageQueryProperty, ref query, out DeviceSeekPenaltyDescriptor dest, out uint penalty_size);
-                    if (!result)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    Trace.WriteLine(query);
+                    var dest = IoControl.StorageQueryProperty(StoragePropertyId.StorageDeviceSeekPenaltyProperty, default);
                     Trace.WriteLine(dest);
-                    Trace.WriteLine(penalty_size);
                 }
                 catch (Exception e2)
                 {
@@ -376,55 +367,6 @@ namespace IoControlTests
             public uint DiskNumber;
             public override string ToString()
                 => $"{nameof(DiskControllerNumber)}{{{nameof(ControllerNumber)}:{ControllerNumber},{nameof(DiskNumber)}:{DiskNumber}}}";
-        }
-        [StructLayout(LayoutKind.Sequential)]
-        private struct StoragePropertyQuery
-        {
-            public StoragePropertyId PropertyId;
-            public StorageQueryType QueryType;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-            public byte[] AdditionalParameters;
-            public override string ToString()
-                => $"{nameof(StoragePropertyQuery)}{{{nameof(PropertyId)}:{PropertyId},{nameof(QueryType)}:{QueryType},[{string.Join(" ", (AdditionalParameters ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}]}}";
-        }
-        enum StoragePropertyId : uint
-        {
-            StorageDeviceProperty = 0,
-            StorageAdapterProperty = 1,
-            StorageDeviceIdProperty = 2,
-            StorageDeviceUniqueIdProperty = 3,
-            StorageDeviceWriteCacheProperty = 4,
-            StorageMiniportProperty = 5,
-            StorageAccessAlignmentProperty = 6,
-            StorageDeviceSeekPenaltyProperty = 7,
-            StorageDeviceTrimProperty = 8,
-            StorageDeviceWriteAggregationProperty = 9,
-            StorageDeviceDeviceTelemetryProperty = 10, // 0xA
-            StorageDeviceLBProvisioningProperty = 11, // 0xB
-            StorageDevicePowerProperty = 12, // 0xC
-            StorageDeviceCopyOffloadProperty = 13, // 0xD
-            StorageDeviceResiliencyProperty = 14 // 0xE
-        }
-        enum StorageQueryType : uint
-        {
-            /// <summary>Instructs the driver to return an appropriate descriptor.</summary>
-            PropertyStandardQuery = 0,
-            /// <summary>Instructs the driver to report whether the descriptor is supported.</summary>
-            PropertyExistsQuery = 1,
-            /// <summary>Used to retrieve a mask of writeable fields in the descriptor. Not currently supported. Do not use.</summary>
-            PropertyMaskQuery = 2,
-            /// <summary>Specifies the upper limit of the list of query types. This is used to validate the query type.</summary>
-            PropertyQueryMaxDefined = 3
-        }
-        [StructLayout(LayoutKind.Sequential)]
-        private struct DeviceSeekPenaltyDescriptor
-        {
-            public uint Version;
-            public uint Size;
-            [MarshalAs(UnmanagedType.U1)]
-            public bool IncursSeekPenalty;
-            public override string ToString()
-                => $"{nameof(DeviceSeekPenaltyDescriptor)}{{{nameof(Version)}:{Version}, {nameof(Size)}:{Size}, {nameof(IncursSeekPenalty)}:{IncursSeekPenalty}}}";
         }
 
         [StructLayout(LayoutKind.Sequential)]
