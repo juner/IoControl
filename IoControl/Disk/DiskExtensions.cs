@@ -6,6 +6,9 @@ using System.Text;
 
 namespace IoControl.Disk
 {
+    /// <summary>
+    /// Disk Management Control Codes ( https://docs.microsoft.com/en-us/windows/desktop/fileio/disk-management-control-codes )
+    /// </summary>
     public static class DiskExtensions
     {
         public static void DiskGetCacheInformation(this IoControl IoControl, out DiskCacheInformation information)
@@ -63,6 +66,36 @@ namespace IoControl.Disk
         {
             DiskGetDriveGeometryEx(IoControl, out var geometry);
             return geometry;
+        }
+        [Obsolete()]
+        public static void DiskControllerNumber(this IoControl IoControl, out DiskControllerNumber number)
+        {
+            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskControllerNumber, out number, out _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        [Obsolete()]
+        public static DiskControllerNumber DiskControllerNumber(this IoControl IoControl)
+        {
+            DiskControllerNumber(IoControl, out var number);
+            return number;
+        }
+        public static void DiskPerformance(this IoControl IoControl, out DiskPerformance performance)
+        {
+            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskPerformance, out performance, out _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        public static DiskPerformance DiskPerformance(this IoControl IoControl)
+        {
+            DiskPerformance(IoControl, out var performance);
+            return performance;
+        }
+        public static void DiskPerformanceOff(this IoControl IoControl)
+        {
+            var result = IoControl.DeviceIoControl(IOControlCode.DiskPerformanceOff, out var _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
     }
     #region DiskCacheInformation
@@ -311,6 +344,37 @@ namespace IoControl.Disk
         public byte[] Data;
         public override string ToString()
             => $"{nameof(DiskGeometryEx)}{{{nameof(Geometry)}:{Geometry}, {nameof(DiskSize)}:{DiskSize}, {nameof(Data)}:[{string.Join(" ", (Data ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}]}}";
+    }
+    #endregion
+    #region DiskControllNumber
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DiskControllerNumber
+    {
+        public uint ControllerNumber;
+        public uint DiskNumber;
+        public override string ToString()
+            => $"{nameof(DiskControllerNumber)}{{{nameof(ControllerNumber)}:{ControllerNumber},{nameof(DiskNumber)}:{DiskNumber}}}";
+    }
+    #endregion
+    #region DiskPerformance
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DiskPerformance
+    {
+        public long BytesRead;
+        public long BytesWritten;
+        public long ReadTime;
+        public long WriteTime;
+        public long IdleTime;
+        public uint ReadCount;
+        public uint WriteCount;
+        public uint QueueDepth;
+        public uint SplitCount;
+        public long QueryTime;
+        public uint StorageDeviceNumber;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+        public ushort[] StorageManagerName;
+        public override string ToString()
+            => $"{nameof(DiskPerformance)}{{{nameof(BytesRead)}:{BytesRead}, {nameof(BytesWritten)}:{BytesWritten}, {nameof(ReadTime)}:{ReadTime}, {nameof(WriteTime)}:{WriteTime}, {nameof(IdleTime)}:{IdleTime}, {nameof(ReadCount)}:{ReadCount}, {nameof(WriteCount)}:{WriteCount}, {nameof(QueueDepth)}:{QueueDepth}, {nameof(SplitCount)}:{SplitCount}, {nameof(QueryTime)}:{QueryTime}, {nameof(StorageDeviceNumber)}:{StorageDeviceNumber}, {nameof(StorageManagerName)}:[{string.Join(" ",(StorageManagerName ?? Enumerable.Empty<ushort>()).Select(v => $"{v:X4}"))}]}}";
     }
     #endregion
 }

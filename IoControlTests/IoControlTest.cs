@@ -245,9 +245,7 @@ namespace IoControlTests
                 try
                 {
                     Trace.WriteLine(nameof(IOControlCode.DiskPerformance));
-                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskPerformance, out DiskPerformance performance, out var _);
-                    if (!result)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    IoControl.DiskPerformance(out DiskPerformance performance);
                     Trace.WriteLine(performance);
                 }
                 catch (Exception e2)
@@ -359,15 +357,6 @@ namespace IoControlTests
             UseDma = (1 << 4),
             NoMultiple = (1 << 5),
         }
-        [StructLayout(LayoutKind.Sequential)]
-        struct DiskControllerNumber
-        {
-            public FileDevice DeviceType;
-            public uint ControllerNumber;
-            public uint DiskNumber;
-            public override string ToString()
-                => $"{nameof(DiskControllerNumber)}{{{nameof(ControllerNumber)}:{ControllerNumber},{nameof(DiskNumber)}:{DiskNumber}}}";
-        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct AtaPassThroughDirect
@@ -416,25 +405,6 @@ namespace IoControlTests
             public ushort[] Data;
             public override string ToString()
                 => $"{nameof(ATAIdentifyDeviceQuery)}{{ {nameof(Header)}:{Header}, {nameof(Data)}:[{string.Join(" ", (Data ?? Enumerable.Empty<ushort>()).Select(v => $"{v:X4}"))}] }}";
-        }
-        [StructLayout(LayoutKind.Sequential)]
-        struct DiskPerformance
-        {
-            public long BytesRead;
-            public long BytesWritten;
-            public long ReadTime;
-            public long WriteTime;
-            public long IdleTime;
-            public uint ReadCount;
-            public uint WriteCount;
-            public uint QueueDepth;
-            public uint SplitCount;
-            public long QueryTime;
-            public uint StorageDeviceNumber;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-            public ushort[] StorageManagerName;
-            public override string ToString()
-                => $"{nameof(DiskPerformance)}{{{nameof(BytesRead)}:{BytesRead}, {nameof(BytesWritten)}:{BytesWritten}, {nameof(ReadTime)}:{ReadTime}, {nameof(WriteTime)}:{WriteTime}, {nameof(IdleTime)}:{IdleTime}, {nameof(ReadCount)}:{ReadCount}, {nameof(WriteCount)}:{WriteCount}, {nameof(QueueDepth)}:{QueueDepth}, {nameof(SplitCount)}:{SplitCount}, {nameof(QueryTime)}:{QueryTime}, {nameof(StorageDeviceNumber)}:{StorageDeviceNumber}, {nameof(StorageManagerName)}:[{string.Join(" ", (StorageManagerName ?? Enumerable.Empty<ushort>()).Select(v => $"{v:X2}"))}]}}";
         }
         [StructLayout(LayoutKind.Sequential)]
         struct ScsiAdapterBusInfo

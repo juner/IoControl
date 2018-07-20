@@ -75,6 +75,7 @@ namespace IoControl
         DiskSetDriveLayoutEx = (FileDevice.Disk << 16) | (0x0015 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         DiskCreateDisk = (FileDevice.Disk << 16) | (0x0016 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         DiskGetLengthInfo = (FileDevice.Disk << 16) | (0x0017 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        DiskPerformanceOff = (FileDevice.Disk << 16) | (0x0018 << 2) | Method.Buffered | (0 << 14),
         // CHANGER
         ChangerGetParameters = (FileDevice.Changer << 16) | (0x0000 << 2) | Method.Buffered | (FileAccess.Read << 14),
         ChangerGetStatus = (FileDevice.Changer << 16) | (0x0001 << 2) | Method.Buffered | (FileAccess.Read << 14),
