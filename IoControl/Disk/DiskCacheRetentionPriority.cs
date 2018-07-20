@@ -5,9 +5,5 @@
         EqualPriority,
         KeepPrefetchedData,
         KeepReadData
-    };
-
-#endregion
-#region DriveLayoutInformation
-#endregion
+    }
 }

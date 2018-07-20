@@ -10,5 +10,4 @@ namespace IoControl.Disk
         public override string ToString()
             => $"{nameof(DriveLayoutInformationMbr)}{{{nameof(Signature)}:{Signature}, {nameof(CheckSum)}:{CheckSum}}}";
     }
-#endregion
 }

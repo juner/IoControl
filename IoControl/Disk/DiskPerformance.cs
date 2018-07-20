@@ -3,8 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace IoControl.Disk
 {
-    #endregion
-    #region DiskPerformance
     [StructLayout(LayoutKind.Sequential)]
     public struct DiskPerformance
     {
@@ -24,5 +22,4 @@ namespace IoControl.Disk
         public override string ToString()
             => $"{nameof(DiskPerformance)}{{{nameof(BytesRead)}:{BytesRead}, {nameof(BytesWritten)}:{BytesWritten}, {nameof(ReadTime)}:{ReadTime}, {nameof(WriteTime)}:{WriteTime}, {nameof(IdleTime)}:{IdleTime}, {nameof(ReadCount)}:{ReadCount}, {nameof(WriteCount)}:{WriteCount}, {nameof(QueueDepth)}:{QueueDepth}, {nameof(SplitCount)}:{SplitCount}, {nameof(QueryTime)}:{QueryTime}, {nameof(StorageDeviceNumber)}:{StorageDeviceNumber}, {nameof(StorageManagerName)}:[{string.Join(" ",(StorageManagerName ?? Enumerable.Empty<ushort>()).Select(v => $"{v:X4}"))}]}}";
     }
-    #endregion
 }

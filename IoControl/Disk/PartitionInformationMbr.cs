@@ -34,6 +34,4 @@ namespace IoControl.Disk
             $", {nameof(HiddenSectors)}:{HiddenSectors}" +
             $"}}";
     }
-
-#endregion
 }

@@ -11,8 +11,4 @@ namespace IoControl.Disk
         public override string ToString()
             => $"{nameof(DiskCacheInformationScalarPrefetch)}{{{nameof(Minimum)}:{Minimum}, {nameof(Maximum)}:{Maximum}, {nameof(MaximumBlocks)}:{MaximumBlocks}}}";
     }
-
-#endregion
-#region DriveLayoutInformation
-#endregion
 }

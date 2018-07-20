@@ -12,6 +12,4 @@ namespace IoControl.Disk
         GetBasicDataAttributeShadowCopy = 0x2000_0000_0000_0000,
         GetBasicDataAttributeReadOnly = 0x1000_0000_0000_0000,
     }
-
-#endregion
 }

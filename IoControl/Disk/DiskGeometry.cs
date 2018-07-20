@@ -2,8 +2,6 @@
 
 namespace IoControl.Disk
 {
-    #endregion
-    #region DiskGeometry
     [StructLayout(LayoutKind.Sequential)]
     public struct DiskGeometry
     {
@@ -15,6 +13,4 @@ namespace IoControl.Disk
         public override string ToString()
             => $"{nameof(DiskGeometry)}{{{nameof(Cylinders)}:{Cylinders}, {nameof(MediaType)}:{MediaType}, {nameof(TrackPerCylinder)}:{TrackPerCylinder}, {nameof(SectorsPerTrack)}:{SectorsPerTrack}, {nameof(BytesPerSector)}:{BytesPerSector}}}";
     }
-
-#endregion
 }

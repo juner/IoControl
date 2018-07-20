@@ -6,6 +6,4 @@
         RemovableMedia = 11,
         FixedMedia = 12,
     }
-
-#endregion
 }

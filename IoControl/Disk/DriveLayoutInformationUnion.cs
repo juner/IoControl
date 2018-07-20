@@ -11,5 +11,4 @@ namespace IoControl.Disk
         [FieldOffset(0)]
         public DriveLayoutInformationGpt Gpt;
     }
-#endregion
 }

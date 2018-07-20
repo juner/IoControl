@@ -13,6 +13,4 @@ namespace IoControl.Disk
         public override string ToString()
             => $"{nameof(DiskGeometryEx)}{{{nameof(Geometry)}:{Geometry}, {nameof(DiskSize)}:{DiskSize}, {nameof(Data)}:[{string.Join(" ", (Data ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}]}}";
     }
-
-#endregion
 }

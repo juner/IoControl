@@ -2,8 +2,6 @@
 
 namespace IoControl.Disk
 {
-    #endregion
-    #region DiskControllNumber
     [StructLayout(LayoutKind.Sequential)]
     public struct DiskControllerNumber
     {
@@ -12,6 +10,4 @@ namespace IoControl.Disk
         public override string ToString()
             => $"{nameof(DiskControllerNumber)}{{{nameof(ControllerNumber)}:{ControllerNumber},{nameof(DiskNumber)}:{DiskNumber}}}";
     }
-
-#endregion
 }

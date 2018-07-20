@@ -23,6 +23,4 @@
         LinuxSwap = 0x82, //An ext2/ext3/ext4 swap partition
         LinuxNative = 0x83 //An ext2/ext3/ext4 native partition
     }
-
-#endregion
 }

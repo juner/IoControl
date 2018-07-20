@@ -23,6 +23,4 @@ namespace IoControl.Disk
             $", {nameof(Name)}:{Name}" +
             $"}}";
     }
-
-#endregion
 }

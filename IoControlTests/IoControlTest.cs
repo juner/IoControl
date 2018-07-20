@@ -25,7 +25,7 @@ namespace IoControlTests
             {
                 try
                 {
-                    Trace.WriteLine(nameof(MassStorageExtension.StorageGetDeviceNumber));
+                    Trace.WriteLine(nameof(MassStorageExtensions.StorageGetDeviceNumber));
                     var number = IoControl.StorageGetDeviceNumber();
                     Trace.WriteLine(number);
                 }
@@ -327,7 +327,7 @@ namespace IoControlTests
             {
                 try
                 {
-                    Trace.WriteLine(nameof(MassStorageExtension.StorageGetDeviceNumber));
+                    Trace.WriteLine(nameof(MassStorageExtensions.StorageGetDeviceNumber));
                     var number = IoControl.StorageGetDeviceNumber();
                     Trace.WriteLine(number);
                 }catch(Exception e)

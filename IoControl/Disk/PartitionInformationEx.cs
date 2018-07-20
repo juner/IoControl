@@ -28,5 +28,4 @@ namespace IoControl.Disk
                 $"}}";
         }
     }
-#endregion
 }

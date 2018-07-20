@@ -10,6 +10,4 @@ namespace IoControl.Disk
         [FieldOffset(0)]
         public PartitionInformationMbr Mbr;
     }
-
-#endregion
 }
