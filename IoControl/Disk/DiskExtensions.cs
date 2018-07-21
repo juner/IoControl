@@ -64,6 +64,27 @@ namespace IoControl.Disk
             DiskGetDriveGeometryEx(IoControl, out var geometry);
             return geometry;
         }
+        /// <summary>
+        /// IOCTL_DISK_PERFORMANCE ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_performance )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="performance"></param>
+        public static void DiskPerformance(this IoControl IoControl, out DiskPerformance performance)
+        {
+            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskPerformance, out performance, out var ReturnBytes);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        /// <summary>
+        /// IOCTL_DISK_PERFORMANCE ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_performance )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static DiskPerformance DiskPerformance(this IoControl IoControl)
+        {
+            DiskPerformance(IoControl, out var performance);
+            return performance;
+        }
     }
     #region DiskCacheInformation
     [StructLayout(LayoutKind.Explicit, Size = 24)]
