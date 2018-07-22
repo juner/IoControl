@@ -36,8 +36,8 @@ namespace IoControlTests
                 }
                 try
                 {
-                    Trace.WriteLine(nameof(VolumeExtensions.VolumeGetGptAttributeInformation));
-                    var attribute = IoControl.VolumeGetGptAttributeInformation();
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeGetGptAttribute));
+                    var attribute = IoControl.VolumeGetGptAttribute();
                     Trace.WriteLine(attribute);
                 }catch(Exception e)
                 {
@@ -311,16 +311,6 @@ namespace IoControlTests
                 }
                 try
                 {
-                    Trace.WriteLine(nameof(VolumeExtensions.VolumeIsClustered));
-                    var result = IoControl.VolumeIsClustered();
-                    Trace.WriteLine($"Clustored:{result}");
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-                try
-                {
                     Trace.WriteLine(nameof(VolumeExtensions.VolumeGetVolumeDiskExtents));
                     var extent = IoControl.VolumeGetVolumeDiskExtents();
                     Trace.WriteLine(extent);
@@ -372,8 +362,28 @@ namespace IoControlTests
                 }
                 try
                 {
-                    Trace.WriteLine(nameof(VolumeExtensions.VolumeGetGptAttributeInformation));
-                    var attribute = IoControl.VolumeGetGptAttributeInformation();
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeIsPartition));
+                    var result = IoControl.VolumeIsPartition();
+                    Trace.WriteLine($"Partition:{result}");
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeIsClustered));
+                    var result = IoControl.VolumeIsClustered();
+                    Trace.WriteLine($"Clustored:{result}");
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeGetGptAttribute));
+                    var attribute = IoControl.VolumeGetGptAttribute();
                     Trace.WriteLine(attribute);
                 }
                 catch (Exception e)

@@ -197,6 +197,12 @@ namespace IoControl.Volume
             VolumeQueryVolumeNumber(IoControl, out var number);
             return number;
         }
+        /// <summary>
+        /// IOCTL_VOLUME_LOGICAL_TO_PHYSICAL IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="logial"></param>
+        /// <param name="physical"></param>
         public static void VolumeLogicalToPhysical(this IoControl IoControl, in VolumeLogicalOffset logial, out VolumePhysicalOffsets physical)
         {
             const int ERROR_INSUFFICIENT_BUFFER = 122;
@@ -250,17 +256,84 @@ namespace IoControl.Volume
                 }
             }
         }
-        public static VolumePhysicalOffsets VolumeLogicalToPhysical(this IoControl IoControl, ref VolumeLogicalOffset logical)
+        /// <summary>
+        /// IOCTL_VOLUME_LOGICAL_TO_PHYSICAL IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="logical"></param>
+        /// <returns></returns>
+        public static VolumePhysicalOffsets VolumeLogicalToPhysical(this IoControl IoControl, in VolumeLogicalOffset logical)
         {
             VolumeLogicalToPhysical(IoControl, in logical, out var physical);
             return physical;
+        }
+        /// <summary>
+        /// IOCTL_VOLUME_PHYSICAL_TO_LOGICAL IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="physical"></param>
+        /// <param name="logical"></param>
+        public static void VolumePhysicalToLogical(this IoControl IoControl, in VolumePhysicalOffset physical, out VolumeLogicalOffset logical)
+        {
+            var result = IoControl.DeviceIoControl(IOControlCode.VolumePhysicalToLogical, in physical, out logical, out var _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        /// <summary>
+        /// IOCTL_VOLUME_PHYSICAL_TO_LOGICAL IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="physical"></param>
+        /// <returns></returns>
+        public static VolumeLogicalOffset VolumePhysicalToLogical(this IoControl IoControl, in VolumePhysicalOffset physical)
+        {
+            VolumePhysicalToLogical(IoControl, in physical, out var logical);
+            return logical;
+        }
+        /// <summary>
+        /// IOCTL_VOLUME_IS_PARTITION IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static bool VolumeIsPartition(this IoControl IoControl) => VolumeIs(IoControl, IOControlCode.VolumeIsPartition, 0x8007001F);
+        /// <summary>
+        /// IOCTL_VOLUME_READ_PLEX IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddvol/ni-ntddvol-ioctl_volume_read_plex )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="input"></param>
+        public static void VolumeReadPlex(this IoControl IoControl, in VolumeReadPlexInput input) => throw new NotImplementedException();
+        /// <summary>
+        /// IOCTL_VOLUME_IS_CLUSTERED IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddvol/ni-ntddvol-ioctl_volume_is_clustered )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static bool VolumeIsClustered(this IoControl IoControl) => VolumeIs(IoControl, IOControlCode.VolumeIsClustered, 0x8007001F);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="GptAttributes"></param>
+        public static void VolumeSetGptAttribute(this IoControl IoControl, in VolumeSetGptAttributesInformation information)
+        {
+            var result = IoControl.DeviceIoControlInOnly(IOControlCode.VolumeSetGptAttribute, in information, out var _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        public static void VolumeSetGptAttribute(this IoControl IoControl, Disk.EFIPartitionAttributes GptAttributes, bool RevertOnClose = default, bool ApplyToAllConnectedVolumes = default)
+        {
+            VolumeSetGptAttribute(IoControl, new VolumeSetGptAttributesInformation 
+            {
+                GptAttributes = GptAttributes,
+                RevertOnClose = RevertOnClose,
+                ApplyToAllConnectedVolumes = ApplyToAllConnectedVolumes,
+            });
         }
         /// <summary>
         /// IOCTL_VOLUME_GET_GPT_ATTRIBUTES IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/winioctl/ni-winioctl-ioctl_volume_get_gpt_attributes )
         /// </summary>
         /// <param name="IoControl"></param>
         /// <param name="attribute"></param>
-        public static void VolumeGetGptAttributeInformation(this IoControl IoControl, out Disk.EFIPartitionAttributes attribute)
+        public static void VolumeGetGptAttribute(this IoControl IoControl, out Disk.EFIPartitionAttributes attribute)
         {
             var result = IoControl.DeviceIoControlOutOnly(IOControlCode.VolumeGetGptAttribute, out VolumeGetGptAttributesInformation _attribute, out var _);
             attribute = _attribute.GptAttributes;
@@ -272,12 +345,10 @@ namespace IoControl.Volume
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
-        public static Disk.EFIPartitionAttributes VolumeGetGptAttributeInformation(this IoControl IoControl)
+        public static Disk.EFIPartitionAttributes VolumeGetGptAttribute(this IoControl IoControl)
         {
-            VolumeGetGptAttributeInformation(IoControl, out var attribute);
+            VolumeGetGptAttribute(IoControl, out var attribute);
             return attribute;
         }
-        public static bool VolumeIsClustered(this IoControl IoControl) => VolumeIs(IoControl, IOControlCode.VolumeIsClustered, 0x8007001F);
-
     }
 }
