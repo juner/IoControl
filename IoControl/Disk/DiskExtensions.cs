@@ -3,17 +3,41 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace IoControl.Disk
 {
+    /// <summary>
+    /// https://docs.microsoft.com/en-us/windows/desktop/fileio/disk-management-control-codes
+    /// </summary>
     public static class DiskExtensions
     {
+        /// <summary>
+        /// IOCTL_DISK_ARE_VOLUMES_READY control code ( https://docs.microsoft.com/en-us/windows/desktop/fileio/ioctl-disk-are-volumes-ready )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static Task DiskAreVolumesReadyAsync(this IoControl IoControl)  => throw new NotSupportedException();
+        public static void CreateDisk(this IoControl IoControl, in CreateDisk CreateDisk)
+        {
+
+        }
+        /// <summary>
+        /// IOCTL_DISK_GET_CACHE_INFORMATION IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_cache_information )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="information"></param>
         public static void DiskGetCacheInformation(this IoControl IoControl, out DiskCacheInformation information)
         {
             var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetCacheInformation, out information, out var _);
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_CACHE_INFORMATION IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_cache_information )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static DiskCacheInformation DiskGetCacheInformation(this IoControl IoControl)
         {
             DiskGetCacheInformation(IoControl, out var information);
@@ -48,24 +72,40 @@ namespace IoControl.Disk
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_LENGTH_INFO ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_length_info )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static long DiskGetLengthInfo(this IoControl IoControl)
         {
             DiskGetLengthInfo(IoControl, out var Length);
             return Length;
         }
+        /// <summary>
+        /// 
+        /// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_drive_geometry_ex )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="geometry"></param>
         public static void DiskGetDriveGeometryEx(this IoControl IoControl, out DiskGeometryEx geometry)
         {
             var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveGeometryEx, out geometry, out _);
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_drive_geometry_ex )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static DiskGeometryEx DiskGetDriveGeometryEx(this IoControl IoControl)
         {
             DiskGetDriveGeometryEx(IoControl, out var geometry);
             return geometry;
         }
         /// <summary>
-        /// IOCTL_DISK_PERFORMANCE ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_performance )
+        /// IOCTL_DISK_PERFORMANCE ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_performance )
         /// </summary>
         /// <param name="IoControl"></param>
         /// <param name="performance"></param>
@@ -76,7 +116,7 @@ namespace IoControl.Disk
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
         /// <summary>
-        /// IOCTL_DISK_PERFORMANCE ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_performance )
+        /// IOCTL_DISK_PERFORMANCE ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_performance )
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
@@ -86,61 +126,25 @@ namespace IoControl.Disk
             return performance;
         }
     }
-    #region DiskCacheInformation
-    [StructLayout(LayoutKind.Explicit, Size = 24)]
-    public struct DiskCacheInformation
-    {
-        [FieldOffset(0)]
-        public bool ParametersSavable;
-        [FieldOffset(1)]
-        public bool ReadCacheEnabled;
-        [FieldOffset(2)]
-        public bool WriteCacheEnabled;
-        [FieldOffset(4)]
-        public DiskCacheRetentionPriority ReadRetentionPriority;
-        [FieldOffset(8)]
-        public DiskCacheRetentionPriority WriteRetentionPriority;
-        [FieldOffset(12)]
-        public ushort DisablePrefetchTransferLength;
-        [FieldOffset(14)]
-        public bool PrefetchScalar;
-        [FieldOffset(16)]
-        public DiskCacheInformationScalarPrefetch ScalarPrefetch;
-        [FieldOffset(16)]
-        public DiskCacheInformationBlockPrefetch BlockPrefetch;
-        public override string ToString()
-            => $"{nameof(DiskCacheInformation)}{{{nameof(ParametersSavable)}:{ParametersSavable}, {nameof(ReadCacheEnabled)}:{ReadCacheEnabled}, {nameof(WriteCacheEnabled)}:{WriteCacheEnabled}, {nameof(ReadRetentionPriority)}:{ReadRetentionPriority}, {nameof(WriteRetentionPriority)}:{WriteRetentionPriority}, {nameof(DisablePrefetchTransferLength)}:{DisablePrefetchTransferLength}, {nameof(PrefetchScalar)}:{PrefetchScalar}, {(PrefetchScalar ? $"{nameof(ScalarPrefetch)}:{ScalarPrefetch}" : $"{nameof(BlockPrefetch)}:{BlockPrefetch}")}}}";
+    /// <summary>
+    /// CREATE_DISK structure ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ns-ntdddisk-_create_disk )
+    /// </summary>
+    public struct CreateDisk {
+        public PartitionStyle PartitionStyle;
+        public CreateDiskMbr Mbr;
+        public CreateDiskGpt Gpt;
     }
     [StructLayout(LayoutKind.Sequential)]
-    public struct DiskCacheInformationScalarPrefetch
+    public struct CreateDiskMbr
     {
-        public ushort Minimum;
-        public ushort Maximum;
-        public ushort MaximumBlocks;
-        public override string ToString()
-            => $"{nameof(DiskCacheInformationScalarPrefetch)}{{{nameof(Minimum)}:{Minimum}, {nameof(Maximum)}:{Maximum}, {nameof(MaximumBlocks)}:{MaximumBlocks}}}";
+        public GUID DiskId;
+        public uint MaxPartitionCount;
     }
     [StructLayout(LayoutKind.Sequential)]
-    public struct DiskCacheInformationBlockPrefetch
+    public struct CreateDiskGpt
     {
-        public ushort Minimum;
-        public ushort Maximum;
-        public override string ToString()
-            => $"{nameof(DiskCacheInformationBlockPrefetch)}{{{nameof(Minimum)}:{Minimum}, {nameof(Maximum)}:{Maximum}}}";
-    }
-    public enum DiskCacheRetentionPriority : int
-    {
-        EqualPriority,
-        KeepPrefetchedData,
-        KeepReadData
-    };
-    #endregion
-    #region DriveLayoutInformation
-    public enum PartitionStyle : uint
-    {
-        Mbr = 0,
-        Gpt = 1,
-        Raw = 2
+        public GUID DiskId;
+        public uint MaxPartitionCount;
     }
     [StructLayout(LayoutKind.Sequential)]
     public struct DriveLayoutInformationEx
@@ -183,31 +187,28 @@ namespace IoControl.Disk
         public override string ToString()
             => $"{nameof(DriveLayoutInformationGpt)}:{{{nameof(DiskId)}:{DiskId}, {nameof(StartingUsableOffset)}:{StartingUsableOffset}, {nameof(UsableLength)}:{UsableLength}, {nameof(MaxPartitionCount)}:{MaxPartitionCount}}}";
     }
-    [StructLayout(LayoutKind.Sequential)]
-    public struct PartitionInformationEx
+    public readonly struct GUID : IEquatable<GUID>, IEquatable<Guid>
     {
-        [MarshalAs(UnmanagedType.U4)]
-        public PartitionStyle PartitionStyle;
-        public long StartingOffset;
-        public long PartitionLength;
-        public uint PartitionNumber;
-        public bool RewritePartition;
-        public PartitionInformationUnion Info;
-        public PartitionInformationMbr Mbr { get => Info.Mbr; set => Info.Mbr = value; }
-        public PartitionInformationGpt Gpt { get => Info.Gpt; set => Info.Gpt = value; }
+        public readonly int a;
+        public readonly short b;
+        public readonly short c;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+        public readonly byte[] d;
+        public GUID(byte[] a) : this(BitConverter.ToInt32(a,0), BitConverter.ToInt16(a,4), BitConverter.ToInt16(a, 6), a[8], a[9], a[10], a[11], a[12], a[13], a[14], a[15]) { }
+        public GUID(int a, short b, short c, byte d, byte e, byte f, byte g, byte h, byte i, byte j, byte k) :this(a,b,c,new byte[8] { d, e, f, g, h, i, j, k }) { }
+        public GUID(int a,short b,short c, byte[] d) 
+            => (this.a, this.b, this.c, this.d) = (a, b, c, d);
+        public GUID(Guid Guid) : this(Guid.ToByteArray()) { }
+        public static implicit operator Guid(in GUID GUID) => new Guid(GUID.a, GUID.b, GUID.c, GUID.d ?? new byte[8]);
+        public static explicit operator byte[](in GUID GUID)
+            => BitConverter.GetBytes(GUID.a)
+            .Concat(BitConverter.GetBytes(GUID.b))
+            .Concat(BitConverter.GetBytes(GUID.c))
+            .Concat(GUID.d).ToArray();
+        public bool Equals(GUID other) => ((byte[])this).SequenceEqual((byte[])other);
+        public bool Equals(Guid other) => ((byte[])this).SequenceEqual(other.ToByteArray());
         public override string ToString()
-        {
-            return $"{nameof(PartitionInformationEx)}{{" +
-                $" {nameof(PartitionStyle)}:{PartitionStyle}" +
-                $", {nameof(StartingOffset)}:{StartingOffset}" +
-                $", {nameof(PartitionLength)}:{PartitionLength}" +
-                $", {nameof(PartitionNumber)}:{PartitionNumber}" +
-                $", {nameof(RewritePartition)}:{RewritePartition}" +
-                $", " + (
-                    PartitionStyle == PartitionStyle.Gpt ? $"{nameof(Gpt)}:{Gpt}" :
-                    PartitionStyle == PartitionStyle.Mbr ? $"{nameof(Mbr)}:{Mbr}" : "null") +
-                $"}}";
-        }
+            => $"{new Guid((byte[])this)}";
     }
     [StructLayout(LayoutKind.Explicit, Pack = 4)]
     public struct PartitionInformationUnion
@@ -217,121 +218,4 @@ namespace IoControl.Disk
         [FieldOffset(0)]
         public PartitionInformationMbr Mbr;
     }
-    [StructLayout(LayoutKind.Sequential, Size = 8, Pack = 1)]
-    public struct PartitionInformationMbr
-    {
-        /// <summary>
-        /// The type of partition. For a list of values, see Disk Partition Types.
-        /// </summary>
-        [MarshalAs(UnmanagedType.U1)]
-        public PartitionType PartitionType;
-
-        /// <summary>
-        /// If this member is TRUE, the partition is bootable.
-        /// </summary>
-        [MarshalAs(UnmanagedType.I1)]
-        public bool BootIndicator;
-
-        /// <summary>
-        /// If this member is TRUE, the partition is of a recognized type.
-        /// </summary>
-        [MarshalAs(UnmanagedType.I1)]
-        public bool RecognizedPartition;
-
-        /// <summary>
-        /// The number of hidden sectors in the partition.
-        /// </summary>
-        public uint HiddenSectors;
-        public override string ToString() => $"{nameof(PartitionInformationMbr)}{{" +
-            $" {nameof(PartitionType)}:{PartitionType}" +
-            $", {nameof(BootIndicator)}:{BootIndicator}" +
-            $", {nameof(RecognizedPartition)}:{RecognizedPartition}" +
-            $", {nameof(HiddenSectors)}:{HiddenSectors}" +
-            $"}}";
-    }
-
-
-    [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Unicode, Pack = 4)]
-    public struct PartitionInformationGpt
-    {
-        [FieldOffset(0)]
-        public Guid PartitionType;
-        [FieldOffset(16)]
-        public Guid PartitionId;
-        [FieldOffset(32)]
-        [MarshalAs(UnmanagedType.U8)]
-        public EFIPartitionAttributes Attributes;
-        [FieldOffset(40)]
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 36)]
-        public string Name;
-        public override string ToString() => $"{nameof(PartitionInformationGpt)}:{{" +
-            $" {nameof(PartitionType)}:{PartitionType}" +
-            $", {nameof(PartitionId)}:{PartitionId}" +
-            $", {nameof(Attributes)}:{Attributes}" +
-            $", {nameof(Name)}:{Name}" +
-            $"}}";
-    }
-    public enum PartitionType : byte
-    {
-        EntryUnused = 0x00, // Entry unused
-        Fat12 = 0x01, // 12-bit FAT entries
-        Xenix1 = 0x02, // Xenix
-        Xenix2 = 0x03, // Xenix
-        Fat16 = 0x04, // 16-bit FAT entries
-        Extended = 0x05, // Extended partition entry
-        Huge = 0x06, // Huge partition MS-DOS V4
-        Ifs = 0x07, // IFS Partition
-        OS2BOOTMGR = 0x0A, // OS/2 Boot Manager/OPUS/Coherent swap
-        Fat32 = 0x0B, // FAT32
-        Fat32Xint13 = 0x0C, // FAT32 using extended int13 services
-        Xint13 = 0x0E, // Win95 partition using extended int13 services
-        Xint13Extend = 0x0F, // Same as type 5 but uses extended int13 services
-        Prep = 0x41, // PowerPC Reference Platform (PReP) Boot Partition
-        Ldm = 0x42, // Logical Disk Manager partition
-        Unix = 0x63, // Unix
-        ValidNtft = 0xC0, // NTFT uses high order bits
-        Ntft = 0x80,  // NTFT partition
-        LinuxSwap = 0x82, //An ext2/ext3/ext4 swap partition
-        LinuxNative = 0x83 //An ext2/ext3/ext4 native partition
-    }
-    [Flags]
-    public enum EFIPartitionAttributes : ulong
-    {
-        GetAttributePlatformRequired = 0x0000_0000_0000_0001,
-        LegacyBIOSBootale = 0x0000_0000_0000_0004,
-        GptBasicDataAttributeNoDriveLetter = 0x8000_0000_0000_0000,
-        GetBasicDataAttributeHidden = 0x4000_0000_0000_0000,
-        GetBasicDataAttributeShadowCopy = 0x2000_0000_0000_0000,
-        GetBasicDataAttributeReadOnly = 0x1000_0000_0000_0000,
-    }
-    #endregion
-    #region DiskGeometry
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DiskGeometry
-    {
-        public long Cylinders;
-        public MediaType MediaType;
-        public uint TrackPerCylinder;
-        public uint SectorsPerTrack;
-        public uint BytesPerSector;
-        public override string ToString()
-            => $"{nameof(DiskGeometry)}{{{nameof(Cylinders)}:{Cylinders}, {nameof(MediaType)}:{MediaType}, {nameof(TrackPerCylinder)}:{TrackPerCylinder}, {nameof(SectorsPerTrack)}:{SectorsPerTrack}, {nameof(BytesPerSector)}:{BytesPerSector}}}";
-    }
-    public enum MediaType : uint
-    {
-        Unkowon = 0,
-        RemovableMedia = 11,
-        FixedMedia = 12,
-    }
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DiskGeometryEx
-    {
-        public DiskGeometry Geometry;
-        public long DiskSize;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public byte[] Data;
-        public override string ToString()
-            => $"{nameof(DiskGeometryEx)}{{{nameof(Geometry)}:{Geometry}, {nameof(DiskSize)}:{DiskSize}, {nameof(Data)}:[{string.Join(" ", (Data ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}]}}";
-    }
-    #endregion
 }

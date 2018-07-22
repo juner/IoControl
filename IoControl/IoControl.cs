@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace IoControl
 {
-    public partial class IoControl : IDisposable
+    public class IoControl : IDisposable
     {
         readonly SafeFileHandle Handle;
         readonly bool Diposable;
@@ -103,7 +103,7 @@ namespace IoControl
                 return result;
             }
         }
-        public bool DeviceIoControl<TIN, TOUT>(IOControlCode IoControlCode, ref TIN InBuffer, out TOUT OutBuffer, out uint ReturnBytes)
+        public bool DeviceIoControl<TIN, TOUT>(IOControlCode IoControlCode, in TIN InBuffer, out TOUT OutBuffer, out uint ReturnBytes)
             where TIN : struct
             where TOUT : struct
         {
@@ -120,7 +120,6 @@ namespace IoControl
                 var outPtr = ogch.AddrOfPinnedObject();
                 Marshal.StructureToPtr(InBuffer, inPtr, false);
                 var result = DeviceIoControl(IoControlCode, inPtr, inSize, outPtr, outSize, out ReturnBytes);
-                InBuffer = (TIN)Marshal.PtrToStructure(inPtr, typeof(TIN));
                 OutBuffer = (TOUT)Marshal.PtrToStructure(outPtr, typeof(TOUT));
                 return result;
             }
