@@ -161,10 +161,19 @@ namespace IoControl
         VideoSetDisplayBrightness = (FileDevice.Video << 16) | (0x0127 << 2) | Method.Buffered | (0 << 14),
 
         // SCSI
+        /// <summary>
+        /// IOCTL_SCSI_PASS_THROUGH
+        /// </summary>
         ScsiPassThrough = (FileDevice.Controller << 16) | (0x0401 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// 
+        /// </summary>
         ScsiMiniport = (FileDevice.Controller << 16) | (0x0402 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         ScsiGetInquiryData = (FileDevice.Controller << 16) | (0x0403 << 2) | Method.Buffered | (0 << 14),
         ScsiGetCapabilities = (FileDevice.Controller << 16) | (0x0404 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_SCSI_PASS_THROUGH_DIRECT
+        /// </summary>
         ScsiPassThroughDirect = (FileDevice.Controller << 16) | (0x0405 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         ScsiGetAddress = (FileDevice.Controller << 16) | (0x0406 << 2) | Method.Buffered | (0 << 14),
         ScsiRescanBus = (FileDevice.Controller << 16) | (0x0407 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
@@ -173,6 +182,38 @@ namespace IoControl
         IdePassThrough = (FileDevice.Controller << 16) | (0x040a << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         AtaPassThrough = (FileDevice.Controller << 16) | (0x040b << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         AtaPassThroughDirect = (FileDevice.Controller << 16) | (0x040c << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_ATA_MINIPORT
+        /// </summary>
+        AtaMiniport = (FileDevice.Controller << 16) | (0x040d << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_MINIPORT_PROCESS_SERVICE_IRP
+        /// </summary>
+        MiniportProcessServiceIrp = (FileDevice.Controller << 16) | (0x040e << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_MPIO_PASS_THROUGH_PATH
+        /// </summary>
+        MpioPassThroughPath = (FileDevice.Controller << 16) | (0x040f << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_MPIO_PASS_THROUGH_PATH_DIRECT
+        /// </summary>
+        MpioPassThroughPathDirect = (FileDevice.Controller << 16) | (0x0410 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_SCSI_PASS_THROUGH_EX
+        /// </summary>
+        ScsiPassThroughEx = (FileDevice.Controller << 16) | (0x0411 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_SCSI_PASS_THROUGH_DIRECT_EX
+        /// </summary>
+        ScsiPassThroughDirectEx = (FileDevice.Controller << 16) | (0x0412 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_MPIO_PASS_THROUGH_PATH_EX
+        /// </summary>
+        MpioPassThroughPathEx = (FileDevice.Controller << 16) | (0x0413 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_MPIO_PASS_THROUGH_PATH_DIRECT_EX
+        /// </summary>
+        MpioPassThroughPathDirectEx = (FileDevice.Controller << 16) | (0x0414 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
 
         // These IOCTLs are handled by hard disk volumes.
         /// <summary>
