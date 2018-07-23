@@ -8,6 +8,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
+using IoControl.Volume;
 
 namespace IoControlTests
 {
@@ -28,60 +29,6 @@ namespace IoControlTests
                     Trace.WriteLine(nameof(MassStorageExtensions.StorageGetDeviceNumber));
                     var number = IoControl.StorageGetDeviceNumber();
                     Trace.WriteLine(number);
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(IOControlCode.VolumeGetVolumeDiskExtents));
-                    //var BaseSize = Marshal.SizeOf(typeof(_VolumeDiskExtent));
-                    //var ExtentSize = Marshal.SizeOf(typeof(DiskExtent));
-                    //var Size = (uint)(BaseSize + ExtentSize * 10);
-                    //do
-                    //{
-                    //    var OutPtr = Marshal.AllocCoTaskMem((int)Size);
-                    //    using (IoCtrl.Disposable.Create(() => Marshal.FreeCoTaskMem(OutPtr)))
-                    //    {
-                    //        uint returnbytes;
-                    //        bool result;
-                    //        (result, returnbytes) = IoCtrl.DeviceIoControlOutOnly(file, IoCtrl.IOControlCode.VolumeGetVolumeDiskExtents, OutPtr, Size);
-                    //        var hResult = Marshal.GetHRForLastWin32Error();
-                    //        if (hResult == unchecked((int)0x8007007A))
-                    //        {
-                    //            Size *= 2;
-                    //            continue;
-                    //        }
-                    //        if (!result)
-                    //            Marshal.ThrowExceptionForHR(hResult);
-                    //        var _VolumeDisk = (_VolumeDiskExtent)Marshal.PtrToStructure(OutPtr, typeof(_VolumeDiskExtent));
-                    //        var VolumeDisk = new VolumeDiskExtent
-                    //        {
-                    //            NumberOfDiskExtents = _VolumeDisk.NumberOfDiskExtents,
-                    //            Extents = Enumerable
-                    //                .Range(0, (int)_VolumeDisk.NumberOfDiskExtents)
-                    //                .Select(index => (DiskExtent)Marshal.PtrToStructure(OutPtr + BaseSize * ExtentSize, typeof(DiskExtent)))
-                    //                .ToArray(),
-                    //        };
-                    //        Trace.WriteLine(VolumeDisk);
-                    //    }
-                    //    break;
-                    //} while (true);
-                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.VolumeGetVolumeDiskExtents, out VolumeDiskExtent extent, out var ReturnBytes);
-                    if (!result)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    Trace.WriteLine(extent);
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(IOControlCode.VolumeIsClustered));
-                    var result = IoControl.DeviceIoControl(IOControlCode.VolumeIsClustered, out var _);
-                    Trace.WriteLine($"Clustored:{result}");
                 }
                 catch (Exception e2)
                 {
@@ -244,8 +191,8 @@ namespace IoControlTests
                 }
                 try
                 {
-                    Trace.WriteLine(nameof(IOControlCode.DiskPerformance));
-                    IoControl.DiskPerformance(out DiskPerformance performance);
+                    Trace.WriteLine(nameof(DiskExtensions.DiskPerformance));
+                    IoControl.DiskPerformance(out var performance);
                     Trace.WriteLine(performance);
                 }
                 catch (Exception e2)
@@ -336,9 +283,70 @@ namespace IoControlTests
                 }
                 try
                 {
-                    Trace.WriteLine(nameof(DiskExtensions.DiskGetCacheInformation));
-                    var information = IoControl.DiskGetCacheInformation();
-                    Trace.WriteLine(information);
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeIsClustered));
+                    var result = IoControl.VolumeIsClustered();
+                    Trace.WriteLine($"Clustored:{result}");
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeGetVolumeDiskExtents));
+                    var extent = IoControl.VolumeGetVolumeDiskExtents();
+                    Trace.WriteLine(extent);
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+
+                try
+                {
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeSupportsOnlineOffline));
+                    var result = IoControl.VolumeSupportsOnlineOffline();
+                    Trace.WriteLine(result);
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeIsOffline));
+                    var result = IoControl.VolumeIsOffline();
+                    Trace.WriteLine(result);
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeIsIoCapale));
+                    var result = IoControl.VolumeIsIoCapale();
+                    Trace.WriteLine(result);
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeQueryVolumeNumber));
+                    var result = IoControl.VolumeQueryVolumeNumber();
+                    Trace.WriteLine(result);
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(VolumeExtensions.VolumeGetGptAttribute));
+                    var attribute = IoControl.VolumeGetGptAttribute();
+                    Trace.WriteLine(attribute);
                 }
                 catch (Exception e)
                 {
@@ -357,7 +365,6 @@ namespace IoControlTests
             UseDma = (1 << 4),
             NoMultiple = (1 << 5),
         }
-
         [StructLayout(LayoutKind.Sequential)]
         public struct AtaPassThroughDirect
         {
@@ -452,29 +459,6 @@ namespace IoControlTests
             public byte Lun;
             public override string ToString()
                 => $"{nameof(ScsiAddress)}{{{nameof(Length)}:{Length}, {nameof(PortNumber)}:{PortNumber}, {nameof(PathId)},{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}}}";
-        }
-        [StructLayout(LayoutKind.Sequential, Pack = 8)]
-        struct DiskExtent
-        {
-            public uint DiskNumber;
-            public long StartingOffset;
-            public long ExtentLength;
-            public override string ToString()
-                => $"{nameof(DiskExtent)}{{{nameof(DiskNumber)}:{DiskNumber}, {nameof(StartingOffset)}:{StartingOffset}, {nameof(ExtentLength)}:{ExtentLength}}}";
-        }
-        [StructLayout(LayoutKind.Sequential, Pack = 8)]
-        struct VolumeDiskExtent
-        {
-            public uint NumberOfDiskExtents;
-            [MarshalAs(UnmanagedType.ByValArray)]
-            public DiskExtent[] Extents;
-            public override string ToString()
-                => $"{nameof(VolumeDiskExtent)}{{{nameof(NumberOfDiskExtents)}:{NumberOfDiskExtents}, [{string.Join(" , ", (Extents ?? Enumerable.Empty<DiskExtent>()).Take((int)NumberOfDiskExtents).Select(v => $"{v}"))}]}}";
-        }
-        [StructLayout(LayoutKind.Sequential, Pack = 8)]
-        struct _VolumeDiskExtent
-        {
-            public uint NumberOfDiskExtents;
         }
         internal class Disposable : IDisposable
         {

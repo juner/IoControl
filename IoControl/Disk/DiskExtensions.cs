@@ -10,12 +10,32 @@ namespace IoControl.Disk
     /// </summary>
     public static class DiskExtensions
     {
+        /// <summary>
+        /// IOCTL_DISK_ARE_VOLUMES_READY IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/fileio/ioctl-disk-are-volumes-ready )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static Task DiskAreVolumesReadyAsync(this IoControl IoControl)  => throw new NotSupportedException();
+        public static void CreateDisk(this IoControl IoControl, in CreateDisk CreateDisk)
+        {
+
+        }
+        /// <summary>
+        /// IOCTL_DISK_GET_CACHE_INFORMATION IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_cache_information )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="information"></param>
         public static void DiskGetCacheInformation(this IoControl IoControl, out DiskCacheInformation information)
         {
             var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetCacheInformation, out information, out var _);
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_CACHE_INFORMATION IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_cache_information )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static DiskCacheInformation DiskGetCacheInformation(this IoControl IoControl)
         {
             DiskGetCacheInformation(IoControl, out var information);
@@ -50,17 +70,33 @@ namespace IoControl.Disk
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_LENGTH_INFO IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_length_info )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static long DiskGetLengthInfo(this IoControl IoControl)
         {
             DiskGetLengthInfo(IoControl, out var Length);
             return Length;
         }
+        /// <summary>
+        /// 
+        /// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_drive_geometry_ex )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="geometry"></param>
         public static void DiskGetDriveGeometryEx(this IoControl IoControl, out DiskGeometryEx geometry)
         {
             var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveGeometryEx, out geometry, out _);
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_drive_geometry_ex )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static DiskGeometryEx DiskGetDriveGeometryEx(this IoControl IoControl)
         {
             DiskGetDriveGeometryEx(IoControl, out var geometry);
@@ -79,12 +115,22 @@ namespace IoControl.Disk
             DiskControllerNumber(IoControl, out var number);
             return number;
         }
+        /// <summary>
+        /// IOCTL_DISK_PERFORMANCE IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_performance )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="performance"></param>
         public static void DiskPerformance(this IoControl IoControl, out DiskPerformance performance)
         {
             var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskPerformance, out performance, out _);
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// IOCTL_DISK_PERFORMANCE IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_performance )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static DiskPerformance DiskPerformance(this IoControl IoControl)
         {
             DiskPerformance(IoControl, out var performance);
