@@ -34,10 +34,10 @@ namespace IoControl
         StorageQueryProperty = (FileDevice.MassStorage << 16) | (0x0500 << 2) | Method.Buffered | (0 << 14),
         // DISK
         DiskGetDriveGeometry = (FileDevice.Disk << 16) | (0x0000 << 2) | Method.Buffered | (0 << 14),
-        DiskGetDriveGeometryEx = (FileDevice.Disk << 16) | (0x0028 << 2) | Method.Buffered | (0 << 14),
         DiskGetPartitionInfo = (FileDevice.Disk << 16) | (0x0001 << 2) | Method.Buffered | (FileAccess.Read << 14),
-        DiskGetPartitionInfoEx = (FileDevice.Disk << 16) | (0x0012 << 2) | Method.Buffered | (0 << 14),
         DiskSetPartitionInfo = (FileDevice.Disk << 16) | (0x0002 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        DiskGetDriveGeometryEx = (FileDevice.Disk << 16) | (0x0028 << 2) | Method.Buffered | (0 << 14),
+        DiskGetPartitionInfoEx = (FileDevice.Disk << 16) | (0x0012 << 2) | Method.Buffered | (0 << 14),
         DiskGetDriveLayout = (FileDevice.Disk << 16) | (0x0003 << 2) | Method.Buffered | (FileAccess.Read << 14),
         DiskSetDriveLayout = (FileDevice.Disk << 16) | (0x0004 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         DiskVerify = (FileDevice.Disk << 16) | (0x0005 << 2) | Method.Buffered | (0 << 14),

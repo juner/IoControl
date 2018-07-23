@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controller\ControllerExtentionsTest.cs" />
+    <Compile Include="DiskExtensionsTest.cs" />
     <Compile Include="IOControlCodeExtensionsTest.cs" />
     <Compile Include="IoControlTest.cs" />
     <Compile Include="IoControlTestUtils.cs" />
