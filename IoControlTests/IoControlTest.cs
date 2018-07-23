@@ -7,10 +7,11 @@ using IoControl.MassStorage;
 using System.Linq;
 using System.Diagnostics;
 using System.IO;
-using System.Collections.Generic;
 using IoControl.Volume;
+using IoControl.Controller;
+using static IoControl.IoControlTestUtils;
 
-namespace IoControlTests
+namespace IoControl.Tests
 {
     [TestClass]
     public class IoControlTest
@@ -231,42 +232,6 @@ namespace IoControlTests
                 }
             }
         }
-        IEnumerable<IoControl.IoControl> GetPhysicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
-        {
-            bool hasDrive = false;
-            foreach (var PhysicalNumber in Enumerable.Range(0,10))
-            {
-                var Path = $@"\\.\PhysicalDrive{PhysicalNumber}";
-                using (var file = new IoControl.IoControl(Path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
-                {
-                    Trace.WriteLine($"Open {Path} ... {(file.IsInvalid ? "NG" : "OK")}.");
-                    if (file.IsInvalid)
-                        continue;
-                    hasDrive = true;
-                    yield return file;
-                }
-            }
-            if (!hasDrive)
-                throw new AssertInconclusiveException("対象となるドライブがありません。");
-        }
-        IEnumerable<IoControl.IoControl> GetLogicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
-        {
-            bool hasDrive = false;
-            foreach (var drivePath in Environment.GetLogicalDrives())
-            {
-                var Path = @"\\.\" + drivePath.TrimEnd('\\');
-                using (var file = new IoControl.IoControl(Path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
-                {
-                    Trace.WriteLine($"Open {Path} ... {(file.IsInvalid ? "NG" : "OK")}.");
-                    if (file.IsInvalid)
-                        continue;
-                    hasDrive = true;
-                    yield return file;
-                }
-            }
-            if (!hasDrive)
-                throw new AssertInconclusiveException("対象となるドライブがありません。");
-        }
         [TestMethod]
         public void DriveOpenTest()
         {
@@ -448,17 +413,6 @@ namespace IoControlTests
             public byte[] InquiryData;
             public override string ToString()
                 => $"{nameof(ScsiInquiryData)}{{{nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(DeviceClaimed)}:{DeviceClaimed}, {nameof(InquiryDataLength)}:{InquiryDataLength}, {nameof(NextInquirydataOffset)}:{NextInquirydataOffset}, {nameof(InquiryData)}:[{string.Join(" ", (InquiryData ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}]}}";
-        }
-        [StructLayout(LayoutKind.Sequential)]
-        struct ScsiAddress
-        {
-            public uint Length;
-            public byte PortNumber;
-            public byte PathId;
-            public byte TargetId;
-            public byte Lun;
-            public override string ToString()
-                => $"{nameof(ScsiAddress)}{{{nameof(Length)}:{Length}, {nameof(PortNumber)}:{PortNumber}, {nameof(PathId)},{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}}}";
         }
         internal class Disposable : IDisposable
         {

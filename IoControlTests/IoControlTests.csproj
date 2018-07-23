@@ -7,7 +7,7 @@
     <ProjectGuid>{ABF298F8-8F4F-4A00-8989-6E299E55ED9F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>IoControlTests</RootNamespace>
+    <RootNamespace>IoControl.Tests</RootNamespace>
     <AssemblyName>IoControlTests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -51,9 +51,12 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controller\ControllerExtentionsTest.cs" />
     <Compile Include="IOControlCodeExtensionsTest.cs" />
     <Compile Include="IoControlTest.cs" />
+    <Compile Include="IoControlTestUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Volume\VolumeExtensionsTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

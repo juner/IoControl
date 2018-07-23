@@ -4,7 +4,7 @@ using System.Text;
 
 namespace IoControl.Video
 {
-    class VideoExtensions
+    public class VideoExtensions
     {
     }
 }
