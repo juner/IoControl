@@ -2,25 +2,22 @@
 
 namespace IoControl
 {
-    public partial class IoControl
+    internal class Disposable : IDisposable
     {
-        internal class Disposable : IDisposable
+        Action Action;
+        internal Disposable(Action Action) => this.Action = Action;
+        public static Disposable Create(Action Action) => new Disposable(Action);
+        public void Dispose()
         {
-            Action Action;
-            internal Disposable(Action Action) => this.Action = Action;
-            public static Disposable Create(Action Action) => new Disposable(Action);
-            public void Dispose()
+            try
             {
-                try
-                {
-                    Action?.Invoke();
-                }
-                catch (Exception e)
-                {
-                    System.Diagnostics.Debug.WriteLine(e);
-                }
-                Action = null;
+                Action?.Invoke();
             }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e);
+            }
+            Action = null;
         }
     }
 }

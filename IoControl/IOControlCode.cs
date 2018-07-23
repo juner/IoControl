@@ -175,7 +175,113 @@ namespace IoControl
         AtaPassThroughDirect = (FileDevice.Controller << 16) | (0x040c << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
 
         // These IOCTLs are handled by hard disk volumes.
+        /// <summary>
+        /// IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS
+        /// </summary>
         VolumeGetVolumeDiskExtents = ('V' << 16) | (0 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_SUPPORTS_ONLINE_OFFLINE
+        /// </summary>
+        VolumeSupportsOnlineOffline = ('V' << 16) | (1 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_ONLINE 
+        /// </summary>
+        VolumeOnline = ('V' << 16) | (2 << 2) | Method.Buffered | (FileAccess.Write << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_OFFLINE
+        /// </summary>
+        VolumeOffline = ('V' << 16) | (3 << 2) | Method.Buffered | (FileAccess.Write << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_IS_OFFLINE
+        /// </summary>
+        VolumeIsOffline = ('V' << 16) | (4 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_IS_IO_CAPABLE
+        /// </summary>
+        VolumeIsIoCapable = ('V' << 16) | (5 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_QUERY_FAILOVER_SET
+        /// </summary>
+        VolumeQueryFailoverSet = ('V' << 16) | (6 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_QUERY_VOLUME_NUMBER
+        /// </summary>
+        VolumeQueryVolumeNumber = ('V' << 16) | (7 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_LOGICAL_TO_PHYSICAL
+        /// </summary>
+        VolumeLogicalToPhysical = ('V' << 16) | (8 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_PHYSICAL_TO_LOGICAL
+        /// </summary>
+        VolumePhysicalToLogical = ('V' << 16) | (9 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_IS_PARTITION
+        /// </summary>
+        VolumeIsPartition = ('V' << 16) | (10 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_READ_PLEX 
+        /// </summary>
+        VolumeReadPlex = ('V' << 16) | (11 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_IS_CLUSTERED 
+        /// </summary>
         VolumeIsClustered = ('V' << 16) | (12 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_SET_GPT_ATTRIBUTES
+        /// </summary>
+        VolumeSetGptAttribute = ('V' << 16) | (13 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_GET_GPT_ATTRIBUTES
+        /// </summary>
+        VolumeGetGptAttribute = ('V' << 16) | (14 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_GET_BC_PROPERTIES
+        /// </summary>
+        VolumeGetBcProperties = ('V' << 16) | (15 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_ALLOCATE_BC_STREAM
+        /// </summary>
+        VolumeAllocateBcStream = ('V' << 16) | (16 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_FREE_BC_STREAM
+        /// </summary>
+        VolumeFreeBcStream = ('V' << 16) | (17 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_IS_DYNAMIC 
+        /// </summary>
+        VolumeIsDynamic = ('V' << 16) | (18 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_PREPARE_FOR_CRITICAL_IO
+        /// </summary>
+        VolumePrepareForCriticalIo = ('V' << 16) | (19 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_QUERY_ALLOCATION_HINT 
+        /// </summary>
+        VolumeQueryAllocationHint = ('V' << 16) | (20 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_UPDATE_PROPERTIES
+        /// </summary>
+        VolumeUpdateProperties = ('V' << 16) | (21 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_QUERY_MINIMUM_SHRINK_SIZE
+        /// </summary>
+        VolumeQueryMinimumShrinkSize = ('V' << 16) | (22 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_PREPARE_FOR_SHRINK
+        /// </summary>
+        VolumePrepareForShrink = ('V' << 16) | (23 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_IS_CSV
+        /// </summary>
+        VolumeIsCsv = ('V' << 16) | (24 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_POST_ONLINE
+        /// </summary>
+        VolumePostOnline = ('V' << 16) | (25 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_VOLUME_GET_CSVBLOCKCACHE_CALLBACK CTL_CODE
+        /// </summary>
+        VolumeGetCsvblockcacheCallbackCtlCode = ('V' << 16) | (26 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
     }
 }

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace IoControl
 {
-    public partial class IoControl : IDisposable
+    public class IoControl : IDisposable
     {
         readonly SafeFileHandle Handle;
         readonly bool Diposable;
