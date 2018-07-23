@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace IoControl
 {
@@ -156,31 +157,302 @@ namespace IoControl
         FsctlRecallFile = (FileDevice.FileSystem << 16) | (69 << 2) | Method.Neither | (0 << 14),
         FsctlNssRcontrol = (FileDevice.FileSystem << 16) | (70 << 2) | Method.Buffered | (FileAccess.Read << 14),
         // VIDEO
+        /// <summary>
+        /// IOCTL_VIDEO_ENABLE_VDM
+        /// </summary>
+        VideoEnableVdm = (FileDevice.Video << 16) | (0x00 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_DISABLE_VDM
+        /// </summary>
+        [Obsolete]
+        VideoDisableVdm = (FileDevice.Video << 16) | (0x01 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_REGISTER_VDM
+        /// </summary>
+        [Obsolete]
+        VideoRegisterVdm = (FileDevice.Video << 16) | (0x02 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_SET_OUTPUT_DEVICE_POWER_STATE
+        /// </summary>
+        [Obsolete]
+        VideoSetOutputDevicePowerState = (FileDevice.Video << 16) | (0x03 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_GET_OUTPUT_DEVICE_POWER_STATE
+        /// </summary>
+        [Obsolete]
+        VideoGetOutputDevicePowerState = (FileDevice.Video << 16) | (0x04 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_MONITOR_DEVICE
+        /// </summary>
+        [Obsolete]
+        VideoMonitorDevice = (FileDevice.Video << 16) | (0x05 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_ENUM_MONITOR_PDO
+        /// </summary>
+        [Obsolete]
+        VideoEnumMonitorPdo = (FileDevice.Video << 16) | (0x06 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_INIT_WIN32K_CALLBACKS
+        /// </summary>
+        [Obsolete]
+        VideoInitWin32kCallbacks = (FileDevice.Video << 16) | (0x07 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_HANDLE_VIDEOPARAMETERS
+        /// </summary>
+        VideoHandleVideoparameters = (FileDevice.Video << 16) | (0x08 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_IS_VGA_DEVICE
+        /// </summary>
+        [Obsolete]
+        VideoIsVgaDevice = (FileDevice.Video << 16) | (0x09 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_USE_DEVICE_IN_SESSION
+        /// </summary>
+        [Obsolete]
+        VideoUseDeviceInSession = (FileDevice.Video << 16) | (0x0a << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_PREPARE_FOR_EARECOVERY
+        /// </summary>
+        [Obsolete]
+        VideoPrepareForEarecovery = (FileDevice.Video << 16) | (0x0b << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_SAVE_HARDWARE_STATE
+        /// </summary>
+        VideoSaveHardwareState = (FileDevice.Video << 16) | (0x80 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_RESTORE_HARDWARE_STATE
+        /// </summary>
+        VideoRestoreHardwareState = (FileDevice.Video << 16) | (0x81 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_QUERY_AVAIL_MODES
+        /// </summary>
+        VideoQueryAvailModes = (FileDevice.Video << 16) | (0x100 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_QUERY_NUM_AVAIL_MODES
+        /// </summary>
+        VideoQueryNumAvailModes = (FileDevice.Video << 16) | (0x101 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_QUERY_CURRENT_MODE
+        /// </summary>
+        VideoQueryCurrentMode = (FileDevice.Video << 16) | (0x102 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_CURRENT_MODE
+        /// </summary>
+        VideoSetCurrentMode = (FileDevice.Video << 16) | (0x103 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_RESET_DEVICE
+        /// </summary>
+        VideoResetDevice = (FileDevice.Video << 16) | (0x104 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_LOAD_AND_SET_FONT
+        /// </summary>
+        VideoLoadAndSetFont = (FileDevice.Video << 16) | (0x105 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_PALETTE_REGISTERS
+        /// </summary>
+        VideoSetPaletteRegisters = (FileDevice.Video << 16) | (0x106 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_COLOR_REGISTERS
+        /// </summary>
+        VideoSetColorRegisters = (FileDevice.Video << 16) | (0x107 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_ENABLE_CURSOR
+        /// </summary>
+        VideoEnableCursor = (FileDevice.Video << 16) | (0x108 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_DISABLE_CURSOR
+        /// </summary>
+        VideoDisableCursor = (FileDevice.Video << 16) | (0x109 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_CURSOR_ATTR
+        /// </summary>
+        VideoSetCursorAttr = (FileDevice.Video << 16) | (0x10a << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_QUERY_CURSOR_ATTR
+        /// </summary>
+        VideoQueryCurosrAttr = (FileDevice.Video << 16) | (0x10b << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_CURSOR_POSITION
+        /// </summary>
+        VideoSetCursorPosition = (FileDevice.Video << 16) | (0x10c << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_QUERY_CURSOR_POSITION
+        /// </summary>
+        VideoQueryCursorPosition = (FileDevice.Video << 16) | (0x10d << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_ENABLE_POINTER
+        /// </summary>
+        VideoEnablePointer = (FileDevice.Video << 16) | (0x10e << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_DISABLE_POINTER
+        /// </summary>
+        VideoDisablePointer = (FileDevice.Video << 16) | (0x10f << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_POINTER_ATTR
+        /// </summary>
+        VideoSetPointerAttr = (FileDevice.Video << 16) | (0x110 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_QUERY_POINTER_ATTR
+        /// </summary>
+        VideoQueryPointeerAttr = (FileDevice.Video << 16) | (0x111 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_POINTER_POSITION
+        /// </summary>
+        VideoSetPointerPosition = (FileDevice.Video << 16) | (0x112 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_QUERY_POINTER_POSITION
+        /// </summary>
+        VideoQueryPointerPosition = (FileDevice.Video << 16) | (0x113 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_QUERY_POINTER_CAPABILITIES
+        /// </summary>
+        VideoQueryPointerCapabilities = (FileDevice.Video << 16) | (0x114 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_GET_BANK_SELECT_CODE
+        /// </summary>
+        VideoGetBankSelectCode = (FileDevice.Video << 16) | (0x115 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_MAP_VIDEO_MEMORY
+        /// </summary>
+        VideoMapVideoMemory = (FileDevice.Video << 16) | (0x116 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_UNMAP_VIDEO_MEMORY
+        /// </summary>
+        VideoUnmapVideoMemory = (FileDevice.Video << 16) | (0x117 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_QUERY_PUBLIC_ACCESS_RANGES
+        /// </summary>
+        VideoQueryPublicAccessRanges = (FileDevice.Video << 16) | (0x118 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_FREE_PUBLIC_ACCESS_RANGES
+        /// </summary>
+        VideoFreePublicAccessRanges = (FileDevice.Video << 16) | (0x119 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_QUERY_COLOR_CAPABILITIES
+        /// </summary>
+        VideoQueryColorCapabilities = (FileDevice.Video << 16) | (0x11a << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_POWER_MANAGEMENT
+        /// </summary>
+        VideoSetPowerManagement = (FileDevice.Video << 16) | (0x11b << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_GET_POWER_MANAGEMENT
+        /// </summary>
+        VideoGetPowerManagement = (FileDevice.Video << 16) | (0x11c << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SHARE_VIDEO_MEMORY
+        /// </summary>
+        VideoShareVideoMemory = (FileDevice.Video << 16) | (0x11d << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_UNSHARE_VIDEO_MEMORY
+        /// </summary>
+        VideoUnshareVideoMemory = (FileDevice.Video << 16) | (0x11e << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_COLOR_LUT_DATA
+        /// </summary>
+        VideoSetColorLutData = (FileDevice.Video << 16) | (0x11f << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_GET_CHILD_STATE
+        /// </summary>
+        VideoGetChildState = (FileDevice.Video << 16) | (0x120 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_VALIDATE_CHILD_STATE_CONFIGURATION
+        /// </summary>
+        VideoValidateChildStateConfiguration = (FileDevice.Video << 16) | (0x121 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_CHILD_STATE_CONFIGURATION
+        /// </summary>
+        VideoSetChildStateConfiguration = (FileDevice.Video << 16) | (0x122 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SWITCH_DUALVIEW
+        /// </summary>
+        VideoSwitchDualview = (FileDevice.Video << 16) | (0x123 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_VIDEO_SET_BANK_POSITION
+        /// </summary>
+        VideoSetBankPosition = (FileDevice.Video << 16) | (0x124 << 2) | Method.Buffered | (0 << 14),        /// <summary>
+        /// IOCTL_VIDEO_QUERY_SUPPORTED_BRIGHTNESS
+        /// </summary>
         VideoQuerySupportedBrightness = (FileDevice.Video << 16) | (0x0125 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_QUERY_DISPLAY_BRIGHTNESS
+        /// </summary>
         VideoQueryDisplayBrightness = (FileDevice.Video << 16) | (0x0126 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_VIDEO_SET_DISPLAY_BRIGHTNESS
+        /// </summary>
         VideoSetDisplayBrightness = (FileDevice.Video << 16) | (0x0127 << 2) | Method.Buffered | (0 << 14),
-
-        // SCSI
+        /// <summary>
+        ///  IOCTL_FSVIDEO_COPY_FRAME_BUFFER
+        /// </summary>
+        FsvideoCopyFrameBuffer = (FileDevice.FullscreenVideo << 16) | (0x200 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_FSVIDEO_WRITE_TO_FRAME_BUFFER
+        /// </summary>
+        FsvideoWriteToFrameBuffer = (FileDevice.FullscreenVideo << 16) | (0x201 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_FSVIDEO_REVERSE_MOUSE_POINTER
+        /// </summary>
+        FsvideoReverseMousePointer = (FileDevice.FullscreenVideo << 16) | (0x202 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_FSVIDEO_SET_CURRENT_MODE
+        /// </summary>
+        FsvideoSetCurrentMode = (FileDevice.FullscreenVideo << 16) | (0x203 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_FSVIDEO_SET_SCREEN_INFORMATION
+        /// </summary>
+        FsvideoSetScreenInformation = (FileDevice.FullscreenVideo << 16) | (0x204 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        ///  IOCTL_FSVIDEO_SET_CURSOR_POSITION
+        /// </summary>
+        FsvideoSetCursorPosition = (FileDevice.FullscreenVideo << 16) | (0x205 << 2) | Method.Buffered | (0 << 14),        // SCSI
         /// <summary>
         /// IOCTL_SCSI_PASS_THROUGH
         /// </summary>
         ScsiPassThrough = (FileDevice.Controller << 16) | (0x0401 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         /// <summary>
-        /// 
+        /// IOCTL_SCSI_MINIPORT
         /// </summary>
         ScsiMiniport = (FileDevice.Controller << 16) | (0x0402 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_SCSI_GET_INQUIRY_DATA
+        /// </summary>
         ScsiGetInquiryData = (FileDevice.Controller << 16) | (0x0403 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_SCSI_GET_CAPABILITIES
+        /// </summary>
         ScsiGetCapabilities = (FileDevice.Controller << 16) | (0x0404 << 2) | Method.Buffered | (0 << 14),
         /// <summary>
         /// IOCTL_SCSI_PASS_THROUGH_DIRECT
         /// </summary>
         ScsiPassThroughDirect = (FileDevice.Controller << 16) | (0x0405 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_SCSI_GET_ADDRESS
+        /// </summary>
         ScsiGetAddress = (FileDevice.Controller << 16) | (0x0406 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_SCSI_RESCAN_BUS
+        /// </summary>
         ScsiRescanBus = (FileDevice.Controller << 16) | (0x0407 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_SCSI_GET_DUMP_POINTERS
+        /// </summary>
         ScsiGetDumpPointers = (FileDevice.Controller << 16) | (0x0408 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_SCSI_FREE_DUMP_POINTERS
+        /// </summary>
         ScsiFreeDumpPointers = (FileDevice.Controller << 16) | (0x0409 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_IDE_PASS_THROUGH
+        /// </summary>
         IdePassThrough = (FileDevice.Controller << 16) | (0x040a << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_ATA_PASS_THROUGH
+        /// </summary>
         AtaPassThrough = (FileDevice.Controller << 16) | (0x040b << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_ATA_PASS_THROUGH_DIRECT
+        /// </summary>
         AtaPassThroughDirect = (FileDevice.Controller << 16) | (0x040c << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         /// <summary>
         /// IOCTL_ATA_MINIPORT
