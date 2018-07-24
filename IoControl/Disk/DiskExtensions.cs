@@ -16,11 +16,8 @@ namespace IoControl.Disk
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
-        public static Task DiskAreVolumesReadyAsync(this IoControl IoControl)  => throw new NotSupportedException();
-        public static void CreateDisk(this IoControl IoControl, in CreateDisk CreateDisk)
-        {
-
-        }
+        public static Task DiskAreVolumesReadyAsync(this IoControl IoControl) =>  throw new NotImplementedException();
+        public static void CreateDisk(this IoControl IoControl, in CreateDisk CreateDisk) => throw new NotImplementedException();
         /// <summary>
         /// IOCTL_DISK_GET_CACHE_INFORMATION IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_cache_information )
         /// </summary>

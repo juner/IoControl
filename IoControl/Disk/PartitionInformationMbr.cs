@@ -8,19 +8,18 @@ namespace IoControl.Disk
         /// <summary>
         /// The type of partition. For a list of values, see Disk Partition Types.
         /// </summary>
-        [MarshalAs(UnmanagedType.U1)]
         public PartitionType PartitionType;
 
         /// <summary>
         /// If this member is TRUE, the partition is bootable.
         /// </summary>
-        [MarshalAs(UnmanagedType.I1)]
+        [MarshalAs(UnmanagedType.U1)]
         public bool BootIndicator;
 
         /// <summary>
         /// If this member is TRUE, the partition is of a recognized type.
         /// </summary>
-        [MarshalAs(UnmanagedType.I1)]
+        [MarshalAs(UnmanagedType.U1)]
         public bool RecognizedPartition;
 
         /// <summary>
