@@ -25,6 +25,10 @@ namespace IoControl
         StorageMcnControl = (FileDevice.MassStorage << 16) | (0x0251 << 2) | Method.Buffered | (0 << 14),
         StorageGetMediaTypes = (FileDevice.MassStorage << 16) | (0x0300 << 2) | Method.Buffered | (0 << 14),
         StorageGetMediaTypesEx = (FileDevice.MassStorage << 16) | (0x0301 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_GET_MEDIA_SERIAL_NUMBER 
+        /// </summary>
+        StorageGetMediaSerialNumber = (FileDevice.MassStorage << 16) | (0x0304 << 2) | Method.Buffered | (0 << 14),
         StorageResetBus = (FileDevice.MassStorage << 16) | (0x0400 << 2) | Method.Buffered | (FileAccess.Read << 14),
         StorageResetDevice = (FileDevice.MassStorage << 16) | (0x0401 << 2) | Method.Buffered | (FileAccess.Read << 14),
         StorageGetDeviceNumber = (FileDevice.MassStorage << 16) | (0x0420 << 2) | Method.Buffered | (0 << 14),

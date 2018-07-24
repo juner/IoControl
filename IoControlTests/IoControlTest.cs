@@ -76,27 +76,9 @@ namespace IoControl.Tests
                 }
                 try
                 {
-                    Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :IDENTIFY DEVICE");
-                    var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-                    var id_query = new ATAIdentifyDeviceQuery
-                    {
-                        Header = new AtaPassThroughEx
-                        {
-                            Length = Length,
-                            AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
-                            DataTransferLength = (uint)256 * sizeof(ushort),
-                            TimeOutValue = 3,
-                            DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
-                            PreviousTaskFile = new byte[8],
-                            CurrentTaskFile = new byte[8] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xEc, 0x0},
-                        },
-                        Data = new ushort[256],
-                    };
-                    var result = IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, ref id_query, out var retval_size);
-                    if (!result)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    Trace.WriteLine(retval_size);
-                    Trace.WriteLine(id_query);
+                    Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughIdentifyDevice));
+                    IoControl.AtaPassThroughIdentifyDevice(out var Identity);
+                    Trace.WriteLine(Identity);
 
                 }
                 catch (Exception e2)
@@ -105,27 +87,10 @@ namespace IoControl.Tests
                 }
                 try
                 {
-                    Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :S.M.A.R.T");
-                    var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-                    var id_query = new ATAIdentifyDeviceQuery
-                    {
-                        Header = new AtaPassThroughEx
-                        {
-                            Length = Length,
-                            AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
-                            DataTransferLength = (uint)256 * sizeof(ushort),
-                            TimeOutValue = 3,
-                            DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
-                            PreviousTaskFile = new byte[8],
-                            CurrentTaskFile = new byte[8] { 0xd0, 0x0, 0x0, 0x4f, 0xc2, 0x0, 0xb0, 0x0 },
-                        },
-                        Data = new ushort[256],
-                    };
-                    var result = IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, ref id_query, out var retval_size);
-                    if (!result)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    Trace.WriteLine(retval_size);
-                    Trace.WriteLine(id_query);
+                    Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughSmartAttributes));
+                    IoControl.AtaPassThroughSmartAttributes(out var attributes);
+                    foreach(var attribute in attributes)
+                        Trace.WriteLine(attribute);
 
                 }
                 catch (Exception e2)
@@ -320,16 +285,6 @@ namespace IoControl.Tests
 
             }
         }
-        [Flags]
-        enum AtaFlags : ushort
-        {
-            DrdyRequired = (1 << 0),
-            DataIn = (1 << 1),
-            DataOut = (1 << 2),
-            AF_48BIT_COMMAND = (1 << 3),
-            UseDma = (1 << 4),
-            NoMultiple = (1 << 5),
-        }
         [StructLayout(LayoutKind.Sequential)]
         public struct AtaPassThroughDirect
         {
@@ -347,36 +302,6 @@ namespace IoControl.Tests
             public byte[] PreviousTaskFile;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
             public byte[] CurrentTaskFile;
-        }
-        [StructLayout(LayoutKind.Sequential)]
-        private struct AtaPassThroughEx
-        {
-            public ushort Length;
-            public AtaFlags AtaFlags;
-            public byte PathId;
-            public byte TargetId;
-            public byte Lun;
-            public byte ReservedAsUchar;
-            public uint DataTransferLength;
-            public uint TimeOutValue;
-            public uint ReservedAsUlong;
-            public IntPtr DataBufferOffset;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-            public byte[] PreviousTaskFile;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-            public byte[] CurrentTaskFile;
-            public override string ToString()
-                => $"{nameof(AtaPassThroughEx)}{{{nameof(Length)}:{Length}, {nameof(AtaFlags)}:{AtaFlags}, {nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(ReservedAsUchar)}:{ReservedAsUchar}, {nameof(DataTransferLength)}:{DataTransferLength}, {nameof(TimeOutValue)}:{TimeOutValue}, {nameof(ReservedAsUlong)}:{ReservedAsUlong}, {nameof(DataBufferOffset)}:{DataBufferOffset}, {nameof(PreviousTaskFile)}:[{string.Join(" ", (PreviousTaskFile ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}], {nameof(CurrentTaskFile)}:[{string.Join(" ", (CurrentTaskFile ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}]}}";
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct ATAIdentifyDeviceQuery
-        {
-            public AtaPassThroughEx Header;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-            public ushort[] Data;
-            public override string ToString()
-                => $"{nameof(ATAIdentifyDeviceQuery)}{{ {nameof(Header)}:{Header}, {nameof(Data)}:[{string.Join(" ", (Data ?? Enumerable.Empty<ushort>()).Select(v => $"{v:X4}"))}] }}";
         }
         [StructLayout(LayoutKind.Sequential)]
         struct ScsiAdapterBusInfo
