@@ -101,7 +101,7 @@ namespace IoControl.Tests
                 {
                     Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :STANDBY IMMEDIATE");
                     var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-                    var id_query = new ATAIdentifyDeviceQuery
+                    var id_query = new AtaIdentifyDeviceQuery
                     {
                         Header = new AtaPassThroughEx
                         {
@@ -109,7 +109,7 @@ namespace IoControl.Tests
                             AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
                             DataTransferLength = (uint)256 * sizeof(ushort),
                             TimeOutValue = 3,
-                            DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
+                            DataBufferOffset = Marshal.OffsetOf(typeof(AtaIdentifyDeviceQuery), nameof(AtaIdentifyDeviceQuery.Data)),
                             PreviousTaskFile = new byte[8],
                             CurrentTaskFile = new byte[8] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xE0, 0x0 },
                         },
@@ -130,7 +130,7 @@ namespace IoControl.Tests
                 {
                     Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :CHECK POWER MODE");
                     var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-                    var id_query = new ATAIdentifyDeviceQuery
+                    var id_query = new AtaIdentifyDeviceQuery
                     {
                         Header = new AtaPassThroughEx
                         {
@@ -138,7 +138,7 @@ namespace IoControl.Tests
                             AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
                             DataTransferLength = (uint)256 * sizeof(ushort),
                             TimeOutValue = 3,
-                            DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
+                            DataBufferOffset = Marshal.OffsetOf(typeof(AtaIdentifyDeviceQuery), nameof(AtaIdentifyDeviceQuery.Data)),
                             PreviousTaskFile = new byte[8],
                             CurrentTaskFile = new byte[8] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xE5, 0x0 },
                         },

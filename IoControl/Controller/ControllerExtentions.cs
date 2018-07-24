@@ -34,7 +34,7 @@ namespace IoControl.Controller
         /// </summary>
         /// <param name="IoControl"></param>
         /// <param name="id_query"></param>
-        public static void AtaPassThrough(this IoControl IoControl, ref ATAIdentifyDeviceQuery id_query)
+        public static void AtaPassThrough(this IoControl IoControl, ref AtaIdentifyDeviceQuery id_query)
         {
             var result = IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, ref id_query, out var _);
             if (!result)
@@ -43,13 +43,13 @@ namespace IoControl.Controller
         public static void AtaPassThroughIdentifyDevice(this IoControl IoControl, out AtaIdentifyDevice identity)
         {
             var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-            var id_query = new ATAIdentifyDeviceQuery {
+            var id_query = new AtaIdentifyDeviceQuery {
                 Header = new AtaPassThroughEx {
                     Length = Length,
                     AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
                     DataTransferLength = (uint)256 * sizeof(ushort),
                     TimeOutValue = 3,
-                    DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
+                    DataBufferOffset = Marshal.OffsetOf(typeof(AtaIdentifyDeviceQuery), nameof(AtaIdentifyDeviceQuery.Data)),
                     PreviousTaskFile = new byte[8],
                     CurrentTaskFile = new byte[8] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xEc, 0x0 },
                 },
@@ -71,13 +71,13 @@ namespace IoControl.Controller
         public static void AtaPassThroughSmartAttributes(this IoControl IoControl, out SmartAttribute[] attributes)
         {
             var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-            var id_query = new ATAIdentifyDeviceQuery {
+            var id_query = new AtaIdentifyDeviceQuery {
                 Header = new AtaPassThroughEx {
                     Length = Length,
                     AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
                     DataTransferLength = (uint)256 * sizeof(ushort),
                     TimeOutValue = 3,
-                    DataBufferOffset = Marshal.OffsetOf(typeof(ATAIdentifyDeviceQuery), nameof(ATAIdentifyDeviceQuery.Data)),
+                    DataBufferOffset = Marshal.OffsetOf(typeof(AtaIdentifyDeviceQuery), nameof(AtaIdentifyDeviceQuery.Data)),
                     PreviousTaskFile = new byte[8],
                     CurrentTaskFile = new byte[8] { 0xd0, 0x0, 0x0, 0x4f, 0xc2, 0x0, 0xb0, 0x0 },
                 },
@@ -103,4 +103,5 @@ namespace IoControl.Controller
             return;
         }
     }
+
 }
