@@ -77,8 +77,7 @@ namespace IoControl.Tests
                 try
                 {
                     Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughIdentifyDevice));
-                    IoControl.AtaPassThroughIdentifyDevice(out var Identity);
-                    Trace.WriteLine(Identity);
+                    Trace.WriteLine(IoControl.AtaPassThroughIdentifyDevice());
 
                 }
                 catch (Exception e2)
@@ -88,8 +87,9 @@ namespace IoControl.Tests
                 try
                 {
                     Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughSmartAttributes));
-                    IoControl.AtaPassThroughSmartAttributes(out var attributes);
-                    foreach(var attribute in attributes)
+                    var result = IoControl.AtaPassThroughSmartAttributes();
+                    Trace.WriteLine(result.Header);
+                    foreach(var attribute in result.Data)
                         Trace.WriteLine(attribute);
 
                 }
@@ -101,24 +101,10 @@ namespace IoControl.Tests
                 {
                     Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :STANDBY IMMEDIATE");
                     var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-                    var id_query = new AtaIdentifyDeviceQuery
-                    {
-                        Header = new AtaPassThroughEx
-                        {
-                            Length = Length,
-                            AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
-                            DataTransferLength = (uint)256 * sizeof(ushort),
-                            TimeOutValue = 3,
-                            DataBufferOffset = Marshal.OffsetOf(typeof(AtaIdentifyDeviceQuery), nameof(AtaIdentifyDeviceQuery.Data)),
-                            PreviousTaskFile = new byte[8],
-                            CurrentTaskFile = new byte[8] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xE0, 0x0 },
-                        },
-                        Data = new ushort[256],
-                    };
-                    var result = IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, ref id_query, out var retval_size);
-                    if (!result)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    Trace.WriteLine(retval_size);
+                    var id_query = IoControl.AtaPassThrough(
+                            AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                            Command: 0xE0
+                        );
                     Trace.WriteLine(id_query);
 
                 }
@@ -130,25 +116,13 @@ namespace IoControl.Tests
                 {
                     Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :CHECK POWER MODE");
                     var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-                    var id_query = new AtaIdentifyDeviceQuery
-                    {
-                        Header = new AtaPassThroughEx
-                        {
-                            Length = Length,
-                            AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
-                            DataTransferLength = (uint)256 * sizeof(ushort),
-                            TimeOutValue = 3,
-                            DataBufferOffset = Marshal.OffsetOf(typeof(AtaIdentifyDeviceQuery), nameof(AtaIdentifyDeviceQuery.Data)),
-                            PreviousTaskFile = new byte[8],
-                            CurrentTaskFile = new byte[8] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xE5, 0x0 },
-                        },
-                        Data = new ushort[256],
-                    };
-                    var result = IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, ref id_query, out var retval_size);
-                    if (!result)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    Trace.WriteLine(retval_size);
-                    Trace.WriteLine(id_query);
+                    var id_query = IoControl.AtaPassThrough(
+                            AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                            TimeOutValue: 3,
+                            Command: 0xE5
+                        );
+                    Trace.WriteLine(id_query.Header);
+                    Trace.WriteLine($"[{string.Join(" ", (id_query.Data ?? Enumerable.Empty<ushort>()).SelectMany(v => BitConverter.GetBytes(v)).Select(v => $"{v:X2}"))}]");
 
                 }
                 catch (Exception e2)

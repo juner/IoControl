@@ -31,8 +31,7 @@ namespace IoControl.Controller.Tests
             foreach (var IoControl in GetPhysicalDrives(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open))
                 try
                 {
-                    IoControl.AtaPassThroughIdentifyDevice(out var identity);
-                    Trace.WriteLine($"{nameof(ControllerExtentions.AtaPassThroughIdentifyDevice)}: {identity}");
+                    Trace.WriteLine($"{nameof(ControllerExtentions.AtaPassThroughIdentifyDevice)}: {IoControl.AtaPassThroughIdentifyDevice()}");
                 }
                 catch (Exception e)
                 {
@@ -45,9 +44,10 @@ namespace IoControl.Controller.Tests
             foreach (var IoControl in GetPhysicalDrives(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open))
                 try
                 {
-                    IoControl.AtaPassThroughSmartAttributes(out var attributes);
+                    var result = IoControl.AtaPassThroughSmartAttributes();
                     Trace.WriteLine($"{nameof(ControllerExtentions.AtaPassThroughSmartAttributes)}:");
-                    foreach (var attribute in attributes)
+                    Trace.WriteLine(result.Header);
+                    foreach (var attribute in result.Data)
                         Trace.WriteLine(attribute);
                 }
                 catch (Exception e)

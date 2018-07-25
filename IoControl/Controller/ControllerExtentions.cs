@@ -34,73 +34,83 @@ namespace IoControl.Controller
         /// </summary>
         /// <param name="IoControl"></param>
         /// <param name="id_query"></param>
-        public static void AtaPassThrough(this IoControl IoControl, ref AtaIdentifyDeviceQuery id_query)
+        private static void AtaPassThrough(this IoControl IoControl, ref AtaIdentifyDeviceQuery id_query)
         {
             var result = IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, ref id_query, out var _);
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
-        public static void AtaPassThroughIdentifyDevice(this IoControl IoControl, out AtaIdentifyDevice identity)
+        public static (AtaPassThroughEx Header, ushort[] Data) AtaPassThrough(this IoControl IoControl, AtaFlags AtaFlags = default, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, ushort DeviceHead = default, ushort Command = default, ushort Reserved = default)
         {
-            var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-            var id_query = new AtaIdentifyDeviceQuery {
-                Header = new AtaPassThroughEx {
-                    Length = Length,
-                    AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
-                    DataTransferLength = (uint)256 * sizeof(ushort),
-                    TimeOutValue = 3,
-                    DataBufferOffset = Marshal.OffsetOf(typeof(AtaIdentifyDeviceQuery), nameof(AtaIdentifyDeviceQuery.Data)),
-                    PreviousTaskFile = new byte[8],
-                    CurrentTaskFile = new byte[8] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xEc, 0x0 },
-                },
-                Data = new ushort[256],
-            };
-
+            var id_query = new AtaIdentifyDeviceQuery(
+                    AtaFlags: AtaFlags,
+                    PathId: PathId,
+                    TargetId: TargetId,
+                    Lun: Lun,
+                    ReservedAsUchar: ReservedAsUchar,
+                    TimeOutValue: TimeOutValue,
+                    ReservedAsUlong: ReservedAsUlong,
+                    Feature: Feature,
+                    SectorCouont: SectorCouont,
+                    SectorNumber: SectorNumber,
+                    Cylinder: Cylinder,
+                    DeviceHead: DeviceHead,
+                    Command: Command,
+                    Reserved: Reserved,
+                    Data: new ushort[256]
+                );
             AtaPassThrough(IoControl, ref id_query);
+            return (id_query.Header, id_query.Data);
+        }
 
-            var identifyDeviceSize = Marshal.SizeOf<AtaIdentifyDevice>();
+        public static (AtaPassThroughEx Header, T Data) AtaPassThrough<T>(this IoControl IoControl, AtaFlags AtaFlags = default, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, ushort DeviceHead = default, ushort Command = default, ushort Reserved = default)
+            where T: struct
+        {
+            var id_query = AtaPassThrough(
+                    IoControl: IoControl,
+                    AtaFlags: AtaFlags,
+                    PathId: PathId,
+                    TargetId: TargetId,
+                    Lun: Lun,
+                    ReservedAsUchar: ReservedAsUchar,
+                    TimeOutValue: TimeOutValue,
+                    ReservedAsUlong: ReservedAsUlong,
+                    Feature: Feature,
+                    SectorCouont: SectorCouont,
+                    SectorNumber: SectorNumber,
+                    Cylinder: Cylinder,
+                    DeviceHead: DeviceHead,
+                    Command: Command,
+                    Reserved: Reserved
+                );
+            var identifyDeviceSize = Marshal.SizeOf<T>();
             var dataSize = id_query.Data.Length * sizeof(ushort);
             System.Diagnostics.Debug.Assert(dataSize >= identifyDeviceSize, $"サイズ不一致 {dataSize} < {identifyDeviceSize}");
             var outHandle = GCHandle.Alloc(id_query.Data, GCHandleType.Pinned);
             using (Disposable.Create(outHandle.Free))
             {
                 var outPtr = outHandle.AddrOfPinnedObject();
-                identity = (AtaIdentifyDevice)Marshal.PtrToStructure(outPtr, typeof(AtaIdentifyDevice));
+                return (id_query.Header, (T)Marshal.PtrToStructure(outPtr, typeof(T)));
             }
         }
-        public static void AtaPassThroughSmartAttributes(this IoControl IoControl, out SmartAttribute[] attributes)
+        public static (AtaPassThroughEx Header, AtaIdentifyDevice Data) AtaPassThroughIdentifyDevice(this IoControl IoControl)
+            => AtaPassThrough<AtaIdentifyDevice>(
+                IoControl: IoControl,
+                AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                TimeOutValue: 3,
+                Command: 0xEC
+            );
+        public static (AtaPassThroughEx Header, SmartAttribute[] Data) AtaPassThroughSmartAttributes(this IoControl IoControl)
         {
-            var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-            var id_query = new AtaIdentifyDeviceQuery {
-                Header = new AtaPassThroughEx {
-                    Length = Length,
-                    AtaFlags = AtaFlags.DataIn | AtaFlags.NoMultiple,
-                    DataTransferLength = (uint)256 * sizeof(ushort),
-                    TimeOutValue = 3,
-                    DataBufferOffset = Marshal.OffsetOf(typeof(AtaIdentifyDeviceQuery), nameof(AtaIdentifyDeviceQuery.Data)),
-                    PreviousTaskFile = new byte[8],
-                    CurrentTaskFile = new byte[8] { 0xd0, 0x0, 0x0, 0x4f, 0xc2, 0x0, 0xb0, 0x0 },
-                },
-                Data = new ushort[256],
-            };
-
-            AtaPassThrough(IoControl, ref id_query);
-
-            var SmartAttributeSize = Marshal.SizeOf<SmartAttribute>();
-            const int ATTRIBUTE_MAX = 30;
-            var attributesSize = SmartAttributeSize * ATTRIBUTE_MAX;
-            var dataSize = id_query.Data.Length * sizeof(ushort);
-            System.Diagnostics.Debug.Assert(dataSize >= attributesSize, $"サイズ不一致 {dataSize} < {attributesSize}");
-            var outHandle = GCHandle.Alloc(id_query.Data, GCHandleType.Pinned);
-            using (Disposable.Create(outHandle.Free))
-            {
-                var outPtr = IntPtr.Add(outHandle.AddrOfPinnedObject(), sizeof(ushort));
-                attributes = Enumerable.Range(0, ATTRIBUTE_MAX)
-                    .Select(index => (SmartAttribute)Marshal.PtrToStructure(IntPtr.Add(outPtr, SmartAttributeSize * index), typeof(SmartAttribute)))
-                    .ToArray();
-            }
-            System.Diagnostics.Debug.WriteLine($"[{string.Join(" ", (id_query.Data ?? Enumerable.Empty<ushort>()).SelectMany(BitConverter.GetBytes).Select(v => $"{v:X2}"))}]");
-            return;
+            var result = AtaPassThrough<SmartAttributes>(
+                IoControl: IoControl,
+                AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                TimeOutValue: 3,
+                Feature: 0xd0,
+                Cylinder: 0xc24f,
+                Command: 0xb0
+            );
+            return (result.Header, result.Data.Attributes);
         }
     }
 

@@ -8,42 +8,70 @@ namespace IoControl
 {
     public static class IoControlTestUtils
     {
-
+        /// <summary>
+        /// 物理ドライブのパスを生成する
+        /// </summary>
+        /// <param name="start">開始index</param>
+        /// <param name="count">カウント</param>
+        /// <returns></returns>
+        public static IEnumerable<string> PhysicalDrivePathGenerator(int start, int count) => Enumerable.Range(start, count).Select(v => $@"\\.\PhysicalDrive{v}");
+        /// <summary>
+        /// 物理ドライブのパスを生成する
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<string> PhysicalDrivePathGenerator() => PhysicalDrivePathGenerator(0, 10);
+        /// <summary>
+        /// 論理ドライブのパスを生成する
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<string> LogicalDrivePathGenerator() => Environment.GetLogicalDrives().Select(v => $@"\\.\{v}".TrimEnd('\\'));
+        /// <summary>
+        /// 物理ドライブのパスを元に解放が予約済の<see cref="IoControl"/>を生成する
+        /// </summary>
+        /// <param name="FileAccess"></param>
+        /// <param name="FileShare"></param>
+        /// <param name="CreationDisposition"></param>
+        /// <param name="FlagAndAttributes"></param>
+        /// <returns></returns>
         public static IEnumerable<IoControl> GetPhysicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
-        {
-            bool hasDrive = false;
-            foreach (var PhysicalNumber in Enumerable.Range(0, 10))
-            {
-                var Path = $@"\\.\PhysicalDrive{PhysicalNumber}";
-                using (var file = new IoControl(Path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
-                {
-                    Trace.WriteLine($"Open {Path} ... {(file.IsInvalid ? "NG" : "OK")}.");
-                    if (file.IsInvalid)
-                        continue;
-                    hasDrive = true;
-                    yield return file;
-                }
-            }
-            if (!hasDrive)
-                throw new AssertInconclusiveException("対象となるドライブがありません。");
-        }
+            => GetIoControls(PhysicalDrivePathGenerator(), FileAccess, FileShare, CreationDisposition, FlagAndAttributes);
+        /// <summary>
+        /// 論理ドライブのパスを元に解放が予約済の<see cref="IoControl"/>を生成する
+        /// </summary>
+        /// <param name="FileAccess"></param>
+        /// <param name="FileShare"></param>
+        /// <param name="CreationDisposition"></param>
+        /// <param name="FlagAndAttributes"></param>
+        /// <returns></returns>
         public static IEnumerable<IoControl> GetLogicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
+            => GetIoControls(LogicalDrivePathGenerator(), FileAccess, FileShare, CreationDisposition, FlagAndAttributes);
+        /// <summary>
+        /// パスのジェネレータを元に解放が予約済の<see cref="IoControl"/>を生成する。
+        /// </summary>
+        /// <param name="PathGenerator"></param>
+        /// <param name="FileAccess"></param>
+        /// <param name="FileShare"></param>
+        /// <param name="CreationDisposition"></param>
+        /// <param name="FlagAndAttributes"></param>
+        /// <returns></returns>
+        /// <exception cref="AssertInconclusiveException"><paramref name="PathGenerator"/>により生成されたパスが一つも開けなかった場合</exception>
+        public static IEnumerable<IoControl> GetIoControls(IEnumerable<string> PathGenerator, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
         {
-            bool hasDrive = false;
-            foreach (var drivePath in Environment.GetLogicalDrives())
+
+            bool hasOpenPath = false;
+            foreach (var path in PathGenerator)
             {
-                var Path = @"\\.\" + drivePath.TrimEnd('\\');
-                using (var file = new IoControl(Path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
+                using (var file = new IoControl(path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
                 {
-                    Trace.WriteLine($"Open {Path} ... {(file.IsInvalid ? "NG" : "OK")}.");
+                    Trace.WriteLine($"Open {path} ... {(file.IsInvalid ? "NG" : "OK")}.");
                     if (file.IsInvalid)
                         continue;
-                    hasDrive = true;
+                    hasOpenPath = true;
                     yield return file;
                 }
             }
-            if (!hasDrive)
-                throw new AssertInconclusiveException("対象となるドライブがありません。");
+            if (!hasOpenPath)
+                throw new AssertInconclusiveException("対象となるパスが開けません。");
         }
     }
 }
