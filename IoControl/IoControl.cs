@@ -76,8 +76,8 @@ namespace IoControl
 
         public bool DeviceIoControl(IOControlCode IoControlCode, IntPtr InputPtr, uint InputSize, IntPtr OutputPtr, uint OutputSize, out uint ReturnBytes)
             => NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out ReturnBytes);
-        public bool DeviceIoControl(IOControlCode IoControlCode, IntPtr InputPtr, uint InputSize, IntPtr OutputPtr, uint OutputSize)
-            => NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize);
+        public bool DeviceIoControl(IOControlCode IoControlCode, IntPtr InOutPtr, uint InOutSize, out uint ReturnBytes)
+            => NativeMethod.DeviceIoControl(Handle, IoControlCode, InOutPtr, InOutSize, InOutPtr, InOutSize, out ReturnBytes);
 
         public bool DeviceIoControl<TINOUT>(IOControlCode IoControlCode, ref TINOUT InOutBuffer, out uint ReturnBytes)
             where TINOUT : struct
@@ -87,7 +87,7 @@ namespace IoControl
             using (Disposable.Create(()=>Marshal.FreeCoTaskMem(inoutPtr)))
             {
                 Marshal.StructureToPtr(InOutBuffer, inoutPtr, false);
-                var result = DeviceIoControl(IoControlCode, inoutPtr, inoutSize, inoutPtr, inoutSize, out ReturnBytes);
+                var result = DeviceIoControl(IoControlCode, inoutPtr, inoutSize, out ReturnBytes);
                 InOutBuffer = (TINOUT)Marshal.PtrToStructure(inoutPtr, typeof(TINOUT));
                 return result;
             }
@@ -99,7 +99,7 @@ namespace IoControl
             using (Disposable.Create(iogch.Free))
             {
                 var inoutPtr = iogch.AddrOfPinnedObject();
-                var result = DeviceIoControl(IoControlCode, inoutPtr, inoutSize, inoutPtr, inoutSize, out ReturnBytes);
+                var result = DeviceIoControl(IoControlCode, inoutPtr, inoutSize, out ReturnBytes);
                 return result;
             }
         }
@@ -121,7 +121,7 @@ namespace IoControl
             }
         }
         public bool DeviceIoControl(IOControlCode dwIoControlCode, out uint ReturnBytes)
-            => DeviceIoControl(dwIoControlCode, IntPtr.Zero, 0, IntPtr.Zero, 0, out ReturnBytes);
+            => NativeMethod.DeviceIoControl(Handle, dwIoControlCode, IntPtr.Zero, 0, IntPtr.Zero, 0, out ReturnBytes);
         public bool DeviceIoControlInOnly<TIN>(IOControlCode dwIoControlCode, in TIN InBuffer, out uint ReturnBytes)
             where TIN : struct
         {

@@ -29,5 +29,6 @@ namespace IoControl.Controller
         public readonly ushort Padding;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 30)]
         public readonly SmartAttribute[] Attributes;
+        public static implicit operator SmartAttribute[](in SmartAttributes attrs) => attrs.Attributes;
     }
 }

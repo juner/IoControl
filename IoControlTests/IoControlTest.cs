@@ -103,9 +103,10 @@ namespace IoControl.Tests
                     var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
                     var id_query = IoControl.AtaPassThrough(
                             AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
-                            Command: 0xE0
+                            Command: 0xE0,
+                            DataSize: 512
                         );
-                    Trace.WriteLine(id_query);
+                    Trace.WriteLine(id_query.Header);
 
                 }
                 catch (Exception e2)
@@ -116,13 +117,16 @@ namespace IoControl.Tests
                 {
                     Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :CHECK POWER MODE");
                     var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-                    var id_query = IoControl.AtaPassThrough(
+                    IoControl.AtaPassThrough(
+                            out var Header,
+                            out var Data,
                             AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
                             TimeOutValue: 3,
-                            Command: 0xE5
+                            Command: 0xE5,
+                            DataSize: 512
                         );
-                    Trace.WriteLine(id_query.Header);
-                    Trace.WriteLine($"[{string.Join(" ", (id_query.Data ?? Enumerable.Empty<ushort>()).SelectMany(v => BitConverter.GetBytes(v)).Select(v => $"{v:X2}"))}]");
+                    Trace.WriteLine(Header);
+                    Trace.WriteLine(Data);
 
                 }
                 catch (Exception e2)
