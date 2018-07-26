@@ -8,16 +8,17 @@ namespace IoControl
     public class IoControl : IDisposable
     {
         readonly SafeFileHandle Handle;
-        readonly bool Diposable;
+        readonly string Filename;
+        readonly bool Disposable;
         public bool IsInvalid => Handle.IsInvalid;
         public bool IsClosed => Handle.IsClosed;
-        public IoControl(SafeFileHandle Handle, bool Diposable = false)
-            => (this.Handle, this.Diposable) = (Handle, Diposable);
+        public IoControl(SafeFileHandle Handle, bool Diposable = false, string Filename = null)
+            => (this.Handle, this.Disposable, this.Filename) = (Handle, Diposable, Filename);
         public IoControl(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagsAndAttributes = default)
-            : this(CreateFile(Filename, FileAccess, FileShare, CreationDisposition, FlagsAndAttributes), true) { }
+            : this(CreateFile(Filename, FileAccess, FileShare, CreationDisposition, FlagsAndAttributes), true, Filename) { }
         public void Dispose()
         {
-            if (Diposable && !(Handle?.IsClosed ?? true))
+            if (Disposable && !(Handle?.IsClosed ?? true))
                 Handle.Dispose();
         }
         class NativeMethod
@@ -84,7 +85,7 @@ namespace IoControl
         {
             var inoutSize = (uint)Marshal.SizeOf(typeof(TINOUT));
             var inoutPtr = Marshal.AllocCoTaskMem((int)inoutSize);
-            using (Disposable.Create(()=>Marshal.FreeCoTaskMem(inoutPtr)))
+            using (global::IoControl.Disposable.Create(()=> Marshal.FreeCoTaskMem(inoutPtr)))
             {
                 Marshal.StructureToPtr(InOutBuffer, inoutPtr, false);
                 var result = DeviceIoControl(IoControlCode, inoutPtr, inoutSize, out ReturnBytes);
@@ -96,7 +97,7 @@ namespace IoControl
         {
             var inoutSize = (uint)InOutBuffer.Length * sizeof(byte);
             var iogch = GCHandle.Alloc(InOutBuffer, GCHandleType.Pinned);
-            using (Disposable.Create(iogch.Free))
+            using (global::IoControl.Disposable.Create(iogch.Free))
             {
                 var inoutPtr = iogch.AddrOfPinnedObject();
                 var result = DeviceIoControl(IoControlCode, inoutPtr, inoutSize, out ReturnBytes);
@@ -111,8 +112,8 @@ namespace IoControl
             var inPtr = Marshal.AllocCoTaskMem((int)inSize);
             var outSize = (uint)Marshal.SizeOf(typeof(TOUT));
             var outPtr = Marshal.AllocCoTaskMem((int)outSize);
-            using (Disposable.Create(() => Marshal.FreeCoTaskMem(inPtr)))
-            using (Disposable.Create(() => Marshal.FreeCoTaskMem(outPtr)))
+            using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(inPtr)))
+            using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(outPtr)))
             {
                 Marshal.StructureToPtr(InBuffer, inPtr, false);
                 var result = DeviceIoControl(IoControlCode, inPtr, inSize, outPtr, outSize, out ReturnBytes);
@@ -127,7 +128,7 @@ namespace IoControl
         {
             var inSize = (uint)Marshal.SizeOf(typeof(TIN));
             var inPtr = Marshal.AllocCoTaskMem((int)inSize);
-            using (Disposable.Create(() => Marshal.FreeCoTaskMem(inPtr)))
+            using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(inPtr)))
             {
                 Marshal.StructureToPtr(InBuffer, inPtr, false);
                 var result = DeviceIoControl(dwIoControlCode, inPtr, inSize, IntPtr.Zero, 0u, out ReturnBytes);
@@ -141,7 +142,7 @@ namespace IoControl
         {
             var outSize = (uint)Marshal.SizeOf(typeof(TOUT));
             var outPtr = Marshal.AllocCoTaskMem((int)outSize);
-            using (Disposable.Create(() => Marshal.FreeCoTaskMem(outPtr)))
+            using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(outPtr)))
             {
                 bool result = DeviceIoControlOutOnly(IoControlCode, outPtr, outSize, out ReturnBytes);
                 OutBuffer = (TOUT)Marshal.PtrToStructure(outPtr, typeof(TOUT));
@@ -152,7 +153,7 @@ namespace IoControl
         {
             var outSize = (uint)OutBuffer.Length * sizeof(byte);
             var ogch = GCHandle.Alloc(OutBuffer, GCHandleType.Pinned);
-            using (Disposable.Create(ogch.Free))
+            using (global::IoControl.Disposable.Create(ogch.Free))
             {
                 var outPtr = ogch.AddrOfPinnedObject();
                 var result = DeviceIoControlOutOnly(IoControlCode, outPtr, outSize, out ReturnBytes);
@@ -163,5 +164,7 @@ namespace IoControl
             => NativeMethod.CreateFile(Filename, FileAccess, FileShare, IntPtr.Zero, CreationDisposition, FlagsAndAttributes, TemplateFile);
         internal static SafeFileHandle CreateFile(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagsAndAttributes = default)
             => NativeMethod.CreateFile(Filename, FileAccess, FileShare, IntPtr.Zero, CreationDisposition, FlagsAndAttributes, IntPtr.Zero);
+        public override string ToString()
+            => $"{nameof(IoControl)}{{{(string.IsNullOrEmpty(Filename) ? string.Empty : $"{nameof(Filename)}:{Filename},")} {nameof(Disposable)}:{Disposable} {nameof(IsInvalid)}:{IsInvalid}, {nameof(IsClosed)}:{IsClosed}}}";
     }
 }

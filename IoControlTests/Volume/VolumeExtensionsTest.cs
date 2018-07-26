@@ -12,18 +12,11 @@ namespace IoControl.Volume.Tests
     [TestClass]
     public class VolumeExtensionsTest
     {
+        private static IEnumerable<object[]> VolumeGetVolumeDiskExtentsTestData => GetLogicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
-        public void VolumeGetVolumeDiskExtentsTest()
-        {
-            foreach (var IoControl in GetLogicalDrives(CreationDisposition: System.IO.FileMode.Open))
-                try
-                {
-                    Trace.WriteLine($"{nameof(VolumeExtensions.VolumeGetVolumeDiskExtents)}: {IoControl.VolumeGetVolumeDiskExtents()}");
-                }catch(Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-        }
+        [DynamicData(nameof(VolumeGetVolumeDiskExtentsTestData))]
+        public void VolumeGetVolumeDiskExtentsTest(IoControl IoControl)
+            => Trace.WriteLine($"{nameof(VolumeExtensions.VolumeGetVolumeDiskExtents)}: {IoControl.VolumeGetVolumeDiskExtents()}");
 
     }
 }

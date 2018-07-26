@@ -13,46 +13,20 @@ namespace IoControl.MassStorage.Tests
     [TestClass]
     public class MassStorageExtensionsTest
     {
+        private static IEnumerable<object[]> StorageGetDeviceNumberTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
-        public void StorageGetDeviceNumberTest()
-        {
-            foreach (var IoControl in GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open))
-                try
-                {
-                    Trace.WriteLine($"{nameof(MassStorageExtensions.StorageGetDeviceNumber)}: {IoControl.StorageGetDeviceNumber()}");
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-        }
+        [DynamicData(nameof(StorageGetDeviceNumberTestData))]
+        public void StorageGetDeviceNumberTest(IoControl IoControl)
+            => Trace.WriteLine($"{nameof(MassStorageExtensions.StorageGetDeviceNumber)}: {IoControl.StorageGetDeviceNumber()}");
+        private static IEnumerable<object[]> StorageQueryPropertyTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v, StoragePropertyId.StorageDeviceIdProperty, StorageQueryType.StandardQuery });
         [TestMethod]
-        [DataRow(StoragePropertyId.StorageDeviceIdProperty, StorageQueryType.StandardQuery)]
-        public void StorageQueryPropertyTest(StoragePropertyId StoragePropertyId, StorageQueryType StorageQueryType)
-        {
-            foreach (var IoControl in GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open))
-                try
-                {
-                    Trace.WriteLine($"{nameof(MassStorageExtensions.StorageQueryProperty)}: {IoControl.StorageQueryProperty(StoragePropertyId, StorageQueryType)}");
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-        }
+        [DynamicData(nameof(StorageQueryPropertyTestData))]
+        public void StorageQueryPropertyTest(IoControl IoControl, StoragePropertyId StoragePropertyId, StorageQueryType StorageQueryType)
+            => Trace.WriteLine($"{nameof(MassStorageExtensions.StorageQueryProperty)}: {IoControl.StorageQueryProperty(StoragePropertyId, StorageQueryType)}");
+        private static IEnumerable<object[]> StorageGetMediaSerialNumberTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
-        public void StorageGetMediaSerialNumberTest()
-        {
-            foreach (var IoControl in GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open))
-                try
-                {
-                    IoControl.StorageGetMediaSerialNumber(out var serial);
-                    Trace.WriteLine($"{nameof(MassStorageExtensions.StorageGetMediaSerialNumber)}: {serial}");
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-        }
+        [DynamicData(nameof(StorageGetMediaSerialNumberTestData))]
+        public void StorageGetMediaSerialNumberTest(IoControl IoControl)
+            => Trace.WriteLine($"{nameof(MassStorageExtensions.StorageGetMediaSerialNumber)}: {IoControl.StorageGetMediaSerialNumber()}");
     }
 }

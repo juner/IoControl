@@ -110,6 +110,11 @@ namespace IoControl.MassStorage
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        public static MediaSerialNumberData StorageGetMediaSerialNumber(this IoControl IoControl)
+        {
+            StorageGetMediaSerialNumber(IoControl, out var serialnumber);
+            return serialnumber;
+        }
     }
     /// <summary>
     /// MEDIA_SERIAL_NUMBER_DATA structure ( https://msdn.microsoft.com/library/windows/hardware/ff562213 )

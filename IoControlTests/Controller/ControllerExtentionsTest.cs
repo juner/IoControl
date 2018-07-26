@@ -13,47 +13,26 @@ namespace IoControl.Controller.Tests
     [TestClass]
     public class ControllerExtentionsTest
     {
+        private static IEnumerable<object[]> ScsiGetAddressTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
-        public void ScsiGetAddressTest()
-        {
-            foreach(var IoControl in GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open))
-                try
-                {
-                    Trace.WriteLine($"{nameof(ControllerExtentions.ScsiGetAddress)}: {IoControl.ScsiGetAddress()}");
-                }catch(Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-        }
+        [DynamicData(nameof(ScsiGetAddressTestData))]
+        public void ScsiGetAddressTest(IoControl IoControl)
+            => Trace.WriteLine($"{nameof(ControllerExtentions.ScsiGetAddress)}: {IoControl.ScsiGetAddress()}");
+        private static IEnumerable<object[]> AtaPassThroughIdentifyDeviceTestData => GetPhysicalDrives(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
-        public void AtaPassThroughIdentifyDeviceTest()
-        {
-            foreach (var IoControl in GetPhysicalDrives(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open))
-                try
-                {
-                    Trace.WriteLine($"{nameof(ControllerExtentions.AtaPassThroughIdentifyDevice)}: {IoControl.AtaPassThroughIdentifyDevice()}");
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-        }
+        [DynamicData(nameof(AtaPassThroughIdentifyDeviceTestData))]
+        public void AtaPassThroughIdentifyDeviceTest(IoControl IoControl)
+            => Trace.WriteLine($"{nameof(ControllerExtentions.AtaPassThroughIdentifyDevice)}: {IoControl.AtaPassThroughIdentifyDevice()}");
+        private static IEnumerable<object[]> AtaPassThroughSmartAttributesTestData => GetPhysicalDrives(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
-        public void AtaPassThroughSmartAttributesTest()
+        [DynamicData(nameof(AtaPassThroughSmartAttributesTestData))]
+        public void AtaPassThroughSmartAttributesTest(IoControl IoControl)
         {
-            foreach (var IoControl in GetPhysicalDrives(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open))
-                try
-                {
-                    var result = IoControl.AtaPassThroughSmartAttributes();
-                    Trace.WriteLine($"{nameof(ControllerExtentions.AtaPassThroughSmartAttributes)}:");
-                    Trace.WriteLine(result.Header);
-                    foreach (var attribute in result.Data)
-                        Trace.WriteLine(attribute);
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
+            var result = IoControl.AtaPassThroughSmartAttributes();
+            Trace.WriteLine($"{nameof(ControllerExtentions.AtaPassThroughSmartAttributes)}:");
+            Trace.WriteLine(result.Header);
+            foreach (var attribute in result.Data)
+                Trace.WriteLine(attribute);
         }
     }
 }

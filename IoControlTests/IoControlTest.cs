@@ -10,257 +10,256 @@ using System.IO;
 using IoControl.Volume;
 using IoControl.Controller;
 using static IoControl.IoControlTestUtils;
+using System.Collections.Generic;
 
 namespace IoControl.Tests
 {
     [TestClass]
     public class IoControlTest
     {
-        [TestMethod]
-        public void PhysicalDriveOpenTest()
-        {
-            foreach (var IoControl in GetPhysicalDrives(
+        private static IEnumerable<object[]> PhysicalDriveOpenTestData => GetPhysicalDrives(
                 FileAccess: FileAccess.ReadWrite,
                     FileShare: FileShare.ReadWrite,
                     CreationDisposition: FileMode.Open,
-                    FlagAndAttributes: FileAttributes.Normal))
+                    FlagAndAttributes: FileAttributes.Normal).Select(v => new object[] { v });
+        [TestMethod]
+        [DynamicData(nameof(PhysicalDriveOpenTestData))]
+        public void PhysicalDriveOpenTest(IoControl IoControl)
+        {
+            try
             {
-                try
-                {
-                    Trace.WriteLine(nameof(MassStorageExtensions.StorageGetDeviceNumber));
-                    var number = IoControl.StorageGetDeviceNumber();
-                    Trace.WriteLine(number);
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(DiskExtensions.DiskGetDriveGeometryEx));
-                    var geometry = IoControl.DiskGetDriveGeometryEx();
-                    Trace.WriteLine(geometry);
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(DiskExtensions.DiskGetLengthInfo));
-                    var disksize = IoControl.DiskGetLengthInfo();
-                    Trace.WriteLine(disksize);
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(DiskExtensions.DiskGetDriveLayoutEx));
-                    var layout = IoControl.DiskGetDriveLayoutEx();
-                    Trace.WriteLine(layout);
-                }catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(IOControlCode.StorageQueryProperty));
-                    var dest = IoControl.StorageQueryProperty(StoragePropertyId.StorageDeviceSeekPenaltyProperty, default);
-                    Trace.WriteLine(dest);
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughIdentifyDevice));
-                    Trace.WriteLine(IoControl.AtaPassThroughIdentifyDevice());
+                Trace.WriteLine(nameof(MassStorageExtensions.StorageGetDeviceNumber));
+                var number = IoControl.StorageGetDeviceNumber();
+                Trace.WriteLine(number);
+            }
+            catch (Exception e2)
+            {
+                Trace.WriteLine(e2);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(DiskExtensions.DiskGetDriveGeometryEx));
+                var geometry = IoControl.DiskGetDriveGeometryEx();
+                Trace.WriteLine(geometry);
+            }
+            catch (Exception e2)
+            {
+                Trace.WriteLine(e2);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(DiskExtensions.DiskGetLengthInfo));
+                var disksize = IoControl.DiskGetLengthInfo();
+                Trace.WriteLine(disksize);
+            }
+            catch (Exception e2)
+            {
+                Trace.WriteLine(e2);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(DiskExtensions.DiskGetDriveLayoutEx));
+                var layout = IoControl.DiskGetDriveLayoutEx();
+                Trace.WriteLine(layout);
+            }catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(IOControlCode.StorageQueryProperty));
+                var dest = IoControl.StorageQueryProperty(StoragePropertyId.StorageDeviceSeekPenaltyProperty, default);
+                Trace.WriteLine(dest);
+            }
+            catch (Exception e2)
+            {
+                Trace.WriteLine(e2);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughIdentifyDevice));
+                Trace.WriteLine(IoControl.AtaPassThroughIdentifyDevice());
 
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughSmartAttributes));
-                    var result = IoControl.AtaPassThroughSmartAttributes();
-                    Trace.WriteLine(result.Header);
-                    foreach(var attribute in result.Data)
-                        Trace.WriteLine(attribute);
+            }
+            catch (Exception e2)
+            {
+                Trace.WriteLine(e2);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughSmartAttributes));
+                var result = IoControl.AtaPassThroughSmartAttributes();
+                Trace.WriteLine(result.Header);
+                foreach(var attribute in result.Data)
+                    Trace.WriteLine(attribute);
 
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :STANDBY IMMEDIATE");
-                    var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-                    var id_query = IoControl.AtaPassThrough(
-                            AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
-                            Command: 0xE0,
-                            DataSize: 512
-                        );
-                    Trace.WriteLine(id_query.Header);
+            }
+            catch (Exception e2)
+            {
+                Trace.WriteLine(e2);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :STANDBY IMMEDIATE");
+                var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
+                var id_query = IoControl.AtaPassThrough(
+                        AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                        Command: 0xE0,
+                        DataSize: 512
+                    );
+                Trace.WriteLine(id_query.Header);
 
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :CHECK POWER MODE");
-                    var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
-                    IoControl.AtaPassThrough(
-                            out var Header,
-                            out var Data,
-                            AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
-                            TimeOutValue: 3,
-                            Command: 0xE5,
-                            DataSize: 512
-                        );
-                    Trace.WriteLine(Header);
-                    Trace.WriteLine(Data);
+            }
+            catch (Exception e2)
+            {
+                Trace.WriteLine(e2);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(IOControlCode.AtaPassThrough) + " :CHECK POWER MODE");
+                var Length = (ushort)Marshal.SizeOf(typeof(AtaPassThroughEx));
+                IoControl.AtaPassThrough(
+                        out var Header,
+                        out var Data,
+                        AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                        TimeOutValue: 3,
+                        Command: 0xE5,
+                        DataSize: 512
+                    );
+                Trace.WriteLine(Header);
+                Trace.WriteLine(Data);
 
-                }
-                catch (Exception e2)
+            }
+            catch (Exception e2)
+            {
+                Trace.WriteLine(e2);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(DiskExtensions.DiskPerformance));
+                IoControl.DiskPerformance(out var performance);
+                Trace.WriteLine(performance);
+            }
+            catch (Exception e2)
+            {
+                Trace.WriteLine(e2);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(IOControlCode.ScsiGetAddress));
+                var result = IoControl.DeviceIoControlOutOnly(IOControlCode.ScsiGetAddress, out ScsiAddress address, out var _);
+                if (!result)
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                Trace.WriteLine(address);
+            }
+            catch (Exception e2)
+            {
+                Trace.WriteLine(e2);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(IOControlCode.ScsiGetInquiryData));
+                var Size = (uint)(Marshal.SizeOf(typeof(_ScsiAdapterBusInfo)) + Marshal.SizeOf(typeof(ScsiBusData)) + Marshal.SizeOf(typeof(ScsiInquiryData)));
+                var OutPtr = Marshal.AllocCoTaskMem((int)Size);
+                using (Disposable.Create(() => Marshal.FreeCoTaskMem(OutPtr)))
                 {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(DiskExtensions.DiskPerformance));
-                    IoControl.DiskPerformance(out var performance);
-                    Trace.WriteLine(performance);
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(IOControlCode.ScsiGetAddress));
-                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.ScsiGetAddress, out ScsiAddress address, out var _);
+                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.ScsiGetInquiryData, OutPtr, Size, out var returnBytes);
+                    var lasterror = Marshal.GetHRForLastWin32Error();
                     if (!result)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    Trace.WriteLine(address);
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(IOControlCode.ScsiGetInquiryData));
-                    var Size = (uint)(Marshal.SizeOf(typeof(_ScsiAdapterBusInfo)) + Marshal.SizeOf(typeof(ScsiBusData)) + Marshal.SizeOf(typeof(ScsiInquiryData)));
-                    var OutPtr = Marshal.AllocCoTaskMem((int)Size);
-                    using (Disposable.Create(() => Marshal.FreeCoTaskMem(OutPtr)))
-                    {
-                        var result = IoControl.DeviceIoControlOutOnly(IOControlCode.ScsiGetInquiryData, OutPtr, Size, out var returnBytes);
-                        var lasterror = Marshal.GetHRForLastWin32Error();
-                        if (!result)
-                            Marshal.ThrowExceptionForHR(lasterror);
-                        Trace.WriteLine(returnBytes);
-                    }
-                }
-                catch (Exception e2)
-                {
-                    Trace.WriteLine(e2);
+                        Marshal.ThrowExceptionForHR(lasterror);
+                    Trace.WriteLine(returnBytes);
                 }
             }
-        }
-        [TestMethod]
-        public void DriveOpenTest()
-        {
-            foreach(var IoControl in GetLogicalDrives(FileShare: FileShare.ReadWrite, CreationDisposition: FileMode.Open))
+            catch (Exception e2)
             {
-                try
-                {
-                    Trace.WriteLine(nameof(MassStorageExtensions.StorageGetDeviceNumber));
-                    var number = IoControl.StorageGetDeviceNumber();
-                    Trace.WriteLine(number);
-                }catch(Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(VolumeExtensions.VolumeIsClustered));
-                    var result = IoControl.VolumeIsClustered();
-                    Trace.WriteLine($"Clustored:{result}");
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(VolumeExtensions.VolumeGetVolumeDiskExtents));
-                    var extent = IoControl.VolumeGetVolumeDiskExtents();
-                    Trace.WriteLine(extent);
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
+                Trace.WriteLine(e2);
+            }
+        }
+        private static IEnumerable<object[]> DriveOpenTestData => GetLogicalDrives(FileShare: FileShare.ReadWrite, CreationDisposition: FileMode.Open).Select(v => new object[] { v });
 
-                try
-                {
-                    Trace.WriteLine(nameof(VolumeExtensions.VolumeSupportsOnlineOffline));
-                    var result = IoControl.VolumeSupportsOnlineOffline();
-                    Trace.WriteLine(result);
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(VolumeExtensions.VolumeIsOffline));
-                    var result = IoControl.VolumeIsOffline();
-                    Trace.WriteLine(result);
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(VolumeExtensions.VolumeIsIoCapale));
-                    var result = IoControl.VolumeIsIoCapale();
-                    Trace.WriteLine(result);
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(VolumeExtensions.VolumeQueryVolumeNumber));
-                    var result = IoControl.VolumeQueryVolumeNumber();
-                    Trace.WriteLine(result);
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-                try
-                {
-                    Trace.WriteLine(nameof(VolumeExtensions.VolumeGetGptAttribute));
-                    var attribute = IoControl.VolumeGetGptAttribute();
-                    Trace.WriteLine(attribute);
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
+        [TestMethod]
+        [DynamicData(nameof(DriveOpenTestData))]
+        public void DriveOpenTest(IoControl IoControl)
+    {
+            try
+            {
+                Trace.WriteLine(nameof(MassStorageExtensions.StorageGetDeviceNumber));
+                var number = IoControl.StorageGetDeviceNumber();
+                Trace.WriteLine(number);
+            }catch(Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(VolumeExtensions.VolumeIsClustered));
+                var result = IoControl.VolumeIsClustered();
+                Trace.WriteLine($"Clustored:{result}");
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(VolumeExtensions.VolumeGetVolumeDiskExtents));
+                var extent = IoControl.VolumeGetVolumeDiskExtents();
+                Trace.WriteLine(extent);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
 
+            try
+            {
+                Trace.WriteLine(nameof(VolumeExtensions.VolumeSupportsOnlineOffline));
+                var result = IoControl.VolumeSupportsOnlineOffline();
+                Trace.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(VolumeExtensions.VolumeIsOffline));
+                var result = IoControl.VolumeIsOffline();
+                Trace.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(VolumeExtensions.VolumeIsIoCapale));
+                var result = IoControl.VolumeIsIoCapale();
+                Trace.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(VolumeExtensions.VolumeQueryVolumeNumber));
+                var result = IoControl.VolumeQueryVolumeNumber();
+                Trace.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+            try
+            {
+                Trace.WriteLine(nameof(VolumeExtensions.VolumeGetGptAttribute));
+                var attribute = IoControl.VolumeGetGptAttribute();
+                Trace.WriteLine(attribute);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
             }
         }
         [StructLayout(LayoutKind.Sequential)]
