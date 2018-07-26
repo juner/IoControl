@@ -1,5 +1,6 @@
 ﻿using IoControl;
 using IoControl.Disk;
+using IoControl.Controller;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,9 +27,31 @@ namespace IoControlPhysicalExample
                     IoControl.DiskGetDriveGeometryEx(out var geometry);
                     Trace.WriteLine(geometry);
                 }
-                catch (Exception e2)
+                catch (Exception e)
                 {
-                    Trace.WriteLine(e2);
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(IOControlCode.AtaPassThrough));
+                    IoControl.AtaPassThroughSmartAttributes(out var Header, out var Attributes);
+                    Trace.WriteLine(Header);
+                    foreach (var Attribute in Attributes)
+                        Trace.WriteLine(Attribute);
+                }catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(IOControlCode.AtaPassThrough));
+                    IoControl.AtaPassThroughIdentifyDevice(out var Header, out var Identify);
+                    Trace.WriteLine(Header);
+                    Trace.WriteLine(Identify);
+
+                }catch(Exception e)
+                {
+                    Trace.WriteLine(e);
                 }
                 try
                 {
@@ -36,9 +59,9 @@ namespace IoControlPhysicalExample
                     IoControl.DiskGetLengthInfo(out var disksize);
                     Trace.WriteLine(disksize);
                 }
-                catch (Exception e2)
+                catch (Exception e)
                 {
-                    Trace.WriteLine(e2);
+                    Trace.WriteLine(e);
                 }
                 try
                 {
