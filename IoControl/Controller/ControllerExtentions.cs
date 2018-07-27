@@ -103,6 +103,27 @@ namespace IoControl.Controller
                 DataSize: DataSize);
             return (Header, Data);
         }
+        /// <summary>
+        /// IOCTL_ATA_PASS_THROUGH IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_ata_pass_through )
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="IoControl"></param>
+        /// <param name="Header"></param>
+        /// <param name="Data"></param>
+        /// <param name="AtaFlags"></param>
+        /// <param name="PathId"></param>
+        /// <param name="TargetId"></param>
+        /// <param name="Lun"></param>
+        /// <param name="ReservedAsUchar"></param>
+        /// <param name="TimeOutValue"></param>
+        /// <param name="ReservedAsUlong"></param>
+        /// <param name="Feature"></param>
+        /// <param name="SectorCouont"></param>
+        /// <param name="SectorNumber"></param>
+        /// <param name="Cylinder"></param>
+        /// <param name="DeviceHead"></param>
+        /// <param name="Command"></param>
+        /// <param name="Reserved"></param>
         public static void AtaPassThrough<T>(this IoControl IoControl, out AtaPassThroughEx Header, out T Data, AtaFlags AtaFlags, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default)
             where T : struct
         {
@@ -200,6 +221,51 @@ namespace IoControl.Controller
                 Cylinder: 0xc24f,
                 Command: 0xb0
             );
+        /// <summary>
+        /// IOCTL_ATA_PASS_THROUGH_DIRECT IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_ata_pass_through_direct )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="Header"></param>
+        /// <param name="AtaFlags"></param>
+        /// <param name="PathId"></param>
+        /// <param name="TargetId"></param>
+        /// <param name="Lun"></param>
+        /// <param name="ReservedAsUchar"></param>
+        /// <param name="TimeOutValue"></param>
+        /// <param name="ReservedAsUlong"></param>
+        /// <param name="DataTransferLength"></param>
+        /// <param name="DataBuffer"></param>
+        /// <param name="Feature"></param>
+        /// <param name="SectorCouont"></param>
+        /// <param name="SectorNumber"></param>
+        /// <param name="Cylinder"></param>
+        /// <param name="DeviceHead"></param>
+        /// <param name="Command"></param>
+        /// <param name="Reserved"></param>
+        public static void AtaPassThroughDirect(this IoControl IoControl, out AtaPassThroughDirect Header,AtaFlags AtaFlags = default, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, uint DataTransferLength = default, IntPtr DataBuffer = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default)
+        {
+            Header = new AtaPassThroughDirect(
+                    AtaFlags: AtaFlags,
+                    PathId: PathId,
+                    TargetId: TargetId,
+                    Lun: Lun,
+                    ReservedAsUchar: ReservedAsUchar,
+                    TimeOutValue: TimeOutValue,
+                    ReservedAsUlong: ReservedAsUlong,
+                    Feature: Feature,
+                    SectorCouont: SectorCouont,
+                    SectorNumber: SectorNumber,
+                    Cylinder: Cylinder,
+                    DeviceHead: DeviceHead,
+                    Command: Command,
+                    Reserved: Reserved,
+                    DataTransferLength: DataTransferLength,
+                    DataBuffer: DataBuffer
+                );
+            var result = IoControl.DeviceIoControl(IOControlCode.AtaPassThroughDirect, ref Header, out var _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
     }
 
 }
