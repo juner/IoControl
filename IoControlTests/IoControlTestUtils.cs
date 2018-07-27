@@ -57,21 +57,18 @@ namespace IoControl
         /// <exception cref="AssertInconclusiveException"><paramref name="PathGenerator"/>により生成されたパスが一つも開けなかった場合</exception>
         public static IEnumerable<IoControl> GetIoControls(IEnumerable<string> PathGenerator, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
         {
-
-            bool hasOpenPath = false;
-            foreach (var path in PathGenerator)
-            {
-                using (var file = new IoControl(path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
+            IEnumerable<IoControl> Genarator() {
+                foreach (var path in PathGenerator)
                 {
-                    Trace.WriteLine($"Open {path} ... {(file.IsInvalid ? "NG" : "OK")}.");
-                    if (file.IsInvalid)
-                        continue;
-                    hasOpenPath = true;
-                    yield return file;
+                    using (var file = new IoControl(path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
+                    {
+                        if (file.IsInvalid)
+                            continue;
+                        yield return file;
+                    }
                 }
             }
-            if (!hasOpenPath)
-                throw new AssertInconclusiveException("対象となるパスが開けません。");
+            return Genarator();
         }
     }
 }

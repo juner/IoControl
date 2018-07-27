@@ -262,24 +262,7 @@ namespace IoControl.Tests
                 Trace.WriteLine(e);
             }
         }
-        [StructLayout(LayoutKind.Sequential)]
-        public struct AtaPassThroughDirect
-        {
-            public ushort Length;
-            public ushort AtaFlags;
-            public byte PathId;
-            public byte TargetId;
-            public byte Lun;
-            public byte ReservedAsUchar;
-            public uint DataTransferLength;
-            public uint TimeOutValue;
-            public uint ReservedAsUlong;
-            public IntPtr DataBuffer;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-            public byte[] PreviousTaskFile;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-            public byte[] CurrentTaskFile;
-        }
+        
         [StructLayout(LayoutKind.Sequential)]
         struct ScsiAdapterBusInfo
         {
@@ -315,24 +298,6 @@ namespace IoControl.Tests
             public byte[] InquiryData;
             public override string ToString()
                 => $"{nameof(ScsiInquiryData)}{{{nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(DeviceClaimed)}:{DeviceClaimed}, {nameof(InquiryDataLength)}:{InquiryDataLength}, {nameof(NextInquirydataOffset)}:{NextInquirydataOffset}, {nameof(InquiryData)}:[{string.Join(" ", (InquiryData ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}]}}";
-        }
-        internal class Disposable : IDisposable
-        {
-            Action Action;
-            internal Disposable(Action Action) => this.Action = Action;
-            public static Disposable Create(Action Action) => new Disposable(Action);
-            public void Dispose()
-            {
-                try
-                {
-                    Action?.Invoke();
-                }
-                catch (Exception e)
-                {
-                    System.Diagnostics.Debug.WriteLine(e);
-                }
-                Action = null;
-            }
         }
     }
 }
