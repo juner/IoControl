@@ -60,7 +60,6 @@
     <Compile Include="Disk\PartitionInformationExTest.cs" />
     <Compile Include="Disk\PartitionInformationGptTest.cs" />
     <Compile Include="Disk\PartitionInformationMbrTest.cs" />
-    <Compile Include="Disk\PartitionInformationUnionTest.cs" />
     <Compile Include="Disposable.cs" />
     <Compile Include="IOControlCodeExtensionsTest.cs" />
     <Compile Include="IoControlTest.cs" />
