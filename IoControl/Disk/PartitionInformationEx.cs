@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using static IoControl.Utils.ByteAndStructure;
 
 namespace IoControl.Disk
 {
@@ -12,26 +13,21 @@ namespace IoControl.Disk
         public uint PartitionNumber;
         public bool RewritePartition;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 112)]
-        public byte[] Info;
-        public PartitionInformationMbr Mbr { get => ToStructure<PartitionInformationMbr>(Info); set => FromStructure(Info, value); }
-        public PartitionInformationGpt Gpt { get => ToStructure<PartitionInformationGpt>(Info); set => FromStructure(Info, value); }
-        private static T ToStructure<T>(byte[] Bytes, int StartIndex = default){
-            var Size = Marshal.SizeOf<T>();
-            var Ptr = Marshal.AllocCoTaskMem(Size);
-            using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
-            {
-                Marshal.Copy(Bytes, StartIndex, Ptr, Size);
-                return (T)Marshal.PtrToStructure(Ptr, typeof(T));
+        private byte[] Info;
+        public PartitionInformationMbr Mbr {
+            get => Info?.ToStructure<PartitionInformationMbr>() ?? default;
+            set {
+                if (Info == null)
+                    Info = new byte[112];
+                Info.FromStructure(value);
             }
         }
-        private static void FromStructure<T>(byte[] Bytes, T Structure, int StartIndex = default)
-        {
-            var Size = Marshal.SizeOf<T>();
-            var Ptr = Marshal.AllocCoTaskMem(Size);
-            using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
-            {
-                Marshal.StructureToPtr(Structure, Ptr, false);
-                Marshal.Copy(Ptr, Bytes, StartIndex, Size);
+        public PartitionInformationGpt Gpt {
+            get => Info?.ToStructure<PartitionInformationGpt>() ?? default;
+            set {
+                if (Info == null)
+                    Info = new byte[112];
+                Info.FromStructure(value);
             }
         }
         public override string ToString()
