@@ -16,28 +16,26 @@ namespace IoControl.Disk.Tests
         private static IEnumerable<object[]> DiskGetCacheInformationTestData => GetPhysicalDrives(FileAccess: System.IO.FileAccess.Read, CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(DiskGetCacheInformationTestData))]
-        public void DiskGetCacheInformationTest(IoControl IoControl)
-            => Trace.WriteLine($"{nameof(DiskExtensions.DiskGetCacheInformation)}: {IoControl.DiskGetCacheInformation()}");
+        public void DiskGetCacheInformationTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetCacheInformation());
         private static IEnumerable<object[]> DiskGetDriveLayoutExTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(DiskGetDriveLayoutExTestData))]
-        public void DiskGetDriveLayoutExTest(IoControl IoControl)
-            => Trace.WriteLine($"{nameof(DiskExtensions.DiskGetDriveLayoutEx)}: {IoControl.DiskGetDriveLayoutEx()}");
+        public void DiskGetDriveLayoutExTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetDriveLayoutEx());
         private static IEnumerable<object[]> DiskGetLengthInfoTestData => GetPhysicalDrives(FileAccess: System.IO.FileAccess.Read, CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(DiskGetLengthInfoTestData))]
-        public void DiskGetLengthInfoTest(IoControl IoControl)
-            => Trace.WriteLine($"{nameof(DiskExtensions.DiskGetLengthInfo)}: {IoControl.DiskGetLengthInfo()}");
+        public void DiskGetLengthInfoTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetLengthInfo());
         private static IEnumerable<object[]> DiskGetDriveGeometryExTestData => GetPhysicalDrives(FileAccess: System.IO.FileAccess.Read, CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(DiskGetDriveGeometryExTestData))]
-        public void DiskGetDriveGeometryExTest(IoControl IoControl)
-            => Trace.WriteLine($"{nameof(DiskExtensions.DiskGetDriveGeometryEx)}: {IoControl.DiskGetDriveGeometryEx()}");
+        public void DiskGetDriveGeometryExTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetDriveGeometryEx());
+        [TestMethod]
+        [DynamicData(nameof(DiskGetDriveGeometryExTestData))]
+        public void DiskGetDriveGeometryEx2Test(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetDriveGeometryEx2());
         private static IEnumerable<object[]> DiskPerformanceTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(DiskPerformanceTestData))]
-        public void DiskPerformanceTest(IoControl IoControl)
-            => Trace.WriteLine($"{nameof(DiskExtensions.DiskPerformance)}: {IoControl.DiskPerformance()}");
+        public void DiskPerformanceTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskPerformance());
     }
 
 }

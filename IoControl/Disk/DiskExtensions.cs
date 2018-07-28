@@ -100,6 +100,32 @@ namespace IoControl.Disk
             DiskGetDriveGeometryEx(IoControl, out var geometry);
             return geometry;
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_drive_geometry_ex )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="geometry"></param>
+        public static void DiskGetDriveGeometryEx2(this IoControl IoControl, out DiskGeometryEx2 geometry)
+        {
+            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveGeometryEx, out geometry, out _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        /// <summary>
+        /// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_drive_geometry_ex )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static DiskGeometryEx2 DiskGetDriveGeometryEx2(this IoControl IoControl)
+        {
+            DiskGetDriveGeometryEx2(IoControl, out var geometry);
+            return geometry;
+        }
+        /// <summary>
+        /// IOCTL_DISK_CONTROLLER_NUMBER IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_controller_number )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="number"></param>
         [Obsolete()]
         public static void DiskControllerNumber(this IoControl IoControl, out DiskControllerNumber number)
         {
@@ -107,6 +133,11 @@ namespace IoControl.Disk
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// IOCTL_DISK_CONTROLLER_NUMBER IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_controller_number )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         [Obsolete()]
         public static DiskControllerNumber DiskControllerNumber(this IoControl IoControl)
         {
@@ -134,6 +165,10 @@ namespace IoControl.Disk
             DiskPerformance(IoControl, out var performance);
             return performance;
         }
+        /// <summary>
+        /// IOCTL_DISK_PERFORMANCE_OFF IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_performance_off )
+        /// </summary>
+        /// <param name="IoControl"></param>
         public static void DiskPerformanceOff(this IoControl IoControl)
         {
             var result = IoControl.DeviceIoControl(IOControlCode.DiskPerformanceOff, out var _);

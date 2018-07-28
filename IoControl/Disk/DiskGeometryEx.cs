@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace IoControl.Disk
 {
+    /// <summary>
+    /// DISK_GEOMETRY_EX structure (https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ns-ntdddisk-_disk_geometry_ex)
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct DiskGeometryEx
     {
