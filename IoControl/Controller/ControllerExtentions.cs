@@ -42,7 +42,7 @@ namespace IoControl.Controller
         {
             var _Size = Marshal.SizeOf<AtaPassThroughEx>();
             var DataTransferLength = DataSize;
-            var DataBufferOffset =DataSize == 0 ? IntPtr.Zero : new IntPtr(_Size);
+            var DataBufferOffset =DataSize == 0 ? 0 : _Size;
             Header = new AtaPassThroughEx(
                     AtaFlags: AtaFlags,
                     PathId: PathId,
@@ -128,7 +128,7 @@ namespace IoControl.Controller
             where T : struct
         {
             var DataTransferLength = (uint)Marshal.SizeOf<T>();
-            var DataBufferOffset = new IntPtr(Marshal.SizeOf<AtaPassThroughEx>());
+            var DataBufferOffset = Marshal.SizeOf<AtaPassThroughEx>();
 
             Header = new AtaPassThroughEx(
                     AtaFlags: AtaFlags,
