@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 namespace IoControl.Disk.Tests
 {
     [TestClass]
-    public class DriveLayoutInformationExTest
+    public class DriveLayoutInformationUnionTest
     {
         [TestMethod]
-        public void SizeOfTest() => Trace.WriteLine(Marshal.SizeOf<DriveLayoutInformationEx>());
+        public void SizeOfTest() => Trace.WriteLine(Marshal.SizeOf<DriveLayoutInformationUnion>());
     }
 }
