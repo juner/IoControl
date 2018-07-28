@@ -53,6 +53,13 @@
   <ItemGroup>
     <Compile Include="Controller\ControllerExtentionsTest.cs" />
     <Compile Include="Disk\DiskExtensionsTest.cs" />
+    <Compile Include="Disk\DriveLayoutInformationExTest.cs" />
+    <Compile Include="Disk\DriveLayoutInformationGptTest.cs" />
+    <Compile Include="Disk\DriveLayoutInformationMbrTest.cs" />
+    <Compile Include="Disk\PartitionInformationExTest.cs" />
+    <Compile Include="Disk\PartitionInformationGptTest.cs" />
+    <Compile Include="Disk\PartitionInformationMbrTest.cs" />
+    <Compile Include="Disk\PartitionInformationUnionTest.cs" />
     <Compile Include="Disposable.cs" />
     <Compile Include="IOControlCodeExtensionsTest.cs" />
     <Compile Include="IoControlTest.cs" />

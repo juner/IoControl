@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static IoControl.IoControlTestUtils;
 using System.Diagnostics;
+using IoControl.Disk;
 
 namespace IoControl.Disk.Tests
 {
@@ -37,6 +38,6 @@ namespace IoControl.Disk.Tests
         [DynamicData(nameof(DiskPerformanceTestData))]
         public void DiskPerformanceTest(IoControl IoControl)
             => Trace.WriteLine($"{nameof(DiskExtensions.DiskPerformance)}: {IoControl.DiskPerformance()}");
-
     }
+
 }
