@@ -55,7 +55,7 @@ namespace IoControl
         /// <param name="FlagAndAttributes"></param>
         /// <returns></returns>
         /// <exception cref="AssertInconclusiveException"><paramref name="PathGenerator"/>により生成されたパスが一つも開けなかった場合</exception>
-        public static IEnumerable<IoControl> GetIoControls(IEnumerable<string> PathGenerator, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
+        public static IEnumerable<IoControl> GetIoControls(this IEnumerable<string> PathGenerator, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
         {
             IEnumerable<IoControl> Genarator() {
                 foreach (var path in PathGenerator)
