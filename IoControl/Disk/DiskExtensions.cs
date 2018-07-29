@@ -52,6 +52,41 @@ namespace IoControl.Disk
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        public static void DiskGetPartitionInfo(this IoControl IoControl, out PartitionInformation partition)
+        {
+            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetPartitionInfo, out partition, out var _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        public static PartitionInformation DiskGetPartitionInfo(this IoControl IoControl)
+        {
+            DiskGetPartitionInfo(IoControl, out var partition);
+            return partition;
+        }
+        public static void DiskSetPartitionInfo(this IoControl IoControl, in PartitionInformation partition)
+        {
+            var result = IoControl.DeviceIoControlInOnly(IOControlCode.DiskSetPartitionInfo, partition, out var _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        public static void DiskGetPartitionInfoEx(this IoControl IoControl, out PartitionInformationEx partition)
+        {
+            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetPartitionInfoEx, out partition, out var _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        public static PartitionInformationEx DiskGetPartitionInfoEx(this IoControl IoControl)
+        {
+            DiskGetPartitionInfoEx(IoControl, out var partition);
+            return partition;
+        }
+        public static void DiskSetPartitionEx(this IoControl IoControl, in PartitionInformationEx partition)
+        {
+            var result = IoControl.DeviceIoControlInOnly(IOControlCode.DiskSetPartitionInfoEx, partition, out var _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+
+        }
         /// <summary>
         /// IOCTL_DISK_GET_DRIVE_LAYOUT IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_get_drive_layout )
         /// </summary>
@@ -60,13 +95,13 @@ namespace IoControl.Disk
         public static void DiskGetDriveLayout(this IoControl IoControl, out DriveLayoutInformation layout)
         {
             var Size = (uint)Marshal.SizeOf<DriveLayoutInformation>();
-            var ReturnSize = 0;
-            while(ReturnSize == 0)
+            var ReturnSize = 0u;
+            while(ReturnSize == 0u)
             {
                 var Ptr = Marshal.AllocCoTaskMem((int)Size);
                 using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
                 {
-                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayout, Ptr, Size, out var _);
+                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayout, Ptr, Size, out ReturnSize);
                     if (result)
                     {
                         layout = (DriveLayoutInformation)Marshal.PtrToStructure(Ptr, typeof(DriveLayoutInformation));
@@ -110,13 +145,13 @@ namespace IoControl.Disk
         public static void DiskGetDriveLayoutEx(this IoControl IoControl, out DriveLayoutInformationEx layout)
         {
             var Size = (uint)Marshal.SizeOf<DriveLayoutInformationEx>();
-            var ReturnSize = 0;
-            while (ReturnSize == 0)
+            var ReturnSize = 0u;
+            while (ReturnSize == 0u)
             {
                 var Ptr = Marshal.AllocCoTaskMem((int)Size);
                 using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
                 {
-                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayoutEx, Ptr, Size, out var _);
+                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayoutEx, Ptr, Size, out ReturnSize);
                     if (result)
                     {
                         layout = (DriveLayoutInformationEx)Marshal.PtrToStructure(Ptr, typeof(DriveLayoutInformationEx));
