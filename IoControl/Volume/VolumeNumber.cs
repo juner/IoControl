@@ -33,6 +33,6 @@ namespace IoControl.Volume
         public void Deconstruct(out uint VolumeNumber, out ushort[] VolumeManagerName)
             => (VolumeNumber, VolumeManagerName) = (this.VolumeNum, this.VolumeManagerName);
         public override string ToString()
-            => $"{nameof(VolumeNumber)}{{{nameof(VolumeNum)}:{VolumeNum}, {nameof(VolumeManagerName)}:[{string.Join(" ", (VolumeManagerName ?? Enumerable.Empty<ushort>()).Select(v => $"{v:X4}"))}]}}";
+            => $"{nameof(VolumeNumber)}{{{nameof(VolumeNum)}:{VolumeNum}, {nameof(VolumeManagerName)}:[{string.Join("", (VolumeManagerName ?? Enumerable.Empty<ushort>()).Select(v => char.ConvertFromUtf32(v)))}]}}";
     }
 }
