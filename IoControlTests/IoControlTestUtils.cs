@@ -1,9 +1,9 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
+using static IoControl.Utils.DeviceUtils;
+
 namespace IoControl
 {
     public static class IoControlTestUtils
@@ -25,7 +25,8 @@ namespace IoControl
         /// 物理ドライブのパスを生成する
         /// </summary>
         /// <returns></returns>
-        public static IEnumerable<string> PhysicalDrivePathGenerator() => PhysicalDrivePathGenerator(0, 10);
+        //public static IEnumerable<string> PhysicalDrivePathGenerator() => PhysicalDrivePathGenerator(0, 10);
+        public static IEnumerable<string> PhysicalDrivePathGenerator() => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("PhysicalDrive") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
         /// <summary>
         /// 論理ドライブのパスを生成する
         /// </summary>
@@ -92,7 +93,7 @@ namespace IoControl
         /// <returns></returns>
         public static IEnumerable<T> Using<T>(this IEnumerable<T> Disposables)
             where T: IDisposable
-            {
+        {
             IEnumerable<T> Generator() {
                 foreach (var Disposable in Disposables)
                     using (Disposable)
