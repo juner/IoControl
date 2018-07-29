@@ -21,14 +21,14 @@ namespace IoControl.Disk
         /// <summary>
         /// Contains a variable-length array of <see cref="PartitionInformation"/> structures, one for each partition on the drive.
         /// </summary>
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst =0x16)]
-        public readonly PartitionInformation[] _PartitionEntry;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst =1)]
+        internal readonly PartitionInformation[] _PartitionEntry;
         public PartitionInformation[] PartitionEntry => (_PartitionEntry?? Enumerable.Empty<PartitionInformation>()).Take((int)PartitionCount).ToArray();
         public DriveLayoutInformation(uint Signature, params PartitionInformation[] PartitionEntry)
             => (PartitionCount, this.Signature, this._PartitionEntry) = ((uint)(PartitionEntry?.Length ?? 0), Signature, (PartitionEntry?.Length ?? 0) == 0 ?new PartitionInformation[1] : PartitionEntry);
         public void Deconstruct(out uint Signature, out PartitionInformation[] PartitionEntry)
             => (Signature, PartitionEntry) = (this.Signature, this._PartitionEntry.Take((int)PartitionCount).ToArray());
-        public DriveLayoutInformation Set(uint? PartitionCount = null, uint? Signature = null, PartitionInformation[] PartitionEntry = null)
+        public DriveLayoutInformation Set(uint? Signature = null, PartitionInformation[] PartitionEntry = null)
             => new DriveLayoutInformation(Signature ?? this.Signature, PartitionEntry ?? this.PartitionEntry);
         public override string ToString()
             => $"{nameof(DriveLayoutInformation)}{{{nameof(PartitionCount)}:{PartitionCount}, {nameof(Signature)}:{Signature}, {nameof(PartitionEntry)}:[{ string.Join(", ", PartitionEntry.Select(v => $"{v}"))}]}}";
