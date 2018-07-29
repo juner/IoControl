@@ -221,7 +221,7 @@ namespace IoControl.Volume
                     System.Diagnostics.Trace.WriteLine($"{nameof(physical.NumberOfPhysicalOffsets)}:{physical.NumberOfPhysicalOffsets}");
                     if (result && physical.NumberOfPhysicalOffsets == 0)
                     {
-                        physical.PhysicalOffset = new VolumePhysicalOffset[0];
+                        physical = new VolumePhysicalOffset[0];
                         return;
                     }
                     if (result && physical.NumberOfPhysicalOffsets == 1)
@@ -244,7 +244,7 @@ namespace IoControl.Volume
                     physical = (VolumePhysicalOffsets)Marshal.PtrToStructure(OutPtr, typeof(VolumePhysicalOffsets));
                     var ExtentsPtr = IntPtr.Add(OutPtr, Marshal.OffsetOf<VolumeFailoverSet>(nameof(VolumeFailoverSet.DiskNumbers)).ToInt32());
                     var ExtentSize = Marshal.SizeOf(typeof(VolumePhysicalOffset));
-                    physical.PhysicalOffset = Enumerable
+                    physical = Enumerable
                             .Range(0, (int)physical.NumberOfPhysicalOffsets)
                             .Select(index => (VolumePhysicalOffset)Marshal.PtrToStructure(IntPtr.Add(ExtentsPtr, ExtentSize * index), typeof(VolumePhysicalOffset)))
                             .ToArray();
@@ -315,6 +315,13 @@ namespace IoControl.Volume
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="GptAttributes"></param>
+        /// <param name="RevertOnClose"></param>
+        /// <param name="ApplyToAllConnectedVolumes"></param>
         public static void VolumeSetGptAttribute(this IoControl IoControl, Disk.EFIPartitionAttributes GptAttributes, bool RevertOnClose = default, bool ApplyToAllConnectedVolumes = default)
         {
             VolumeSetGptAttribute(IoControl, new VolumeSetGptAttributesInformation 

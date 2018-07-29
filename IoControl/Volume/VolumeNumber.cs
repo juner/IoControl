@@ -18,6 +18,20 @@ namespace IoControl.Volume
         /// </summary>
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
         public ushort[] VolumeManagerName;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="VolumeNumber"></param>
+        /// <param name="VolumeManagerName"></param>
+        public VolumeNumber(uint VolumeNumber, ushort[] VolumeManagerName)
+            => (VolumeNum, this.VolumeManagerName) = (VolumeNumber, VolumeManagerName);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="VolumeNumber"></param>
+        /// <param name="VolumeManagerName"></param>
+        public void Deconstruct(out uint VolumeNumber, out ushort[] VolumeManagerName)
+            => (VolumeNumber, VolumeManagerName) = (this.VolumeNum, this.VolumeManagerName);
         public override string ToString()
             => $"{nameof(VolumeNumber)}{{{nameof(VolumeNum)}:{VolumeNum}, {nameof(VolumeManagerName)}:[{string.Join(" ", (VolumeManagerName ?? Enumerable.Empty<ushort>()).Select(v => $"{v:X4}"))}]}}";
     }

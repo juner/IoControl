@@ -6,12 +6,12 @@ namespace IoControl.Volume
     /// VOLUME_LOGICAL_OFFSET structure (https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddvol/ns-ntddvol-_volume_logical_offset)
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct VolumeLogicalOffset
+    public readonly struct VolumeLogicalOffset
     {
         /// <summary>
         /// Specifies the logical location that needs to be translated to a physical location.
         /// </summary>
-        public long LogicalOffset;
+        public readonly long LogicalOffset;
         /// <summary>
         /// 
         /// </summary>
