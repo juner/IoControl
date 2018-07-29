@@ -103,7 +103,7 @@ namespace IoControl.Disk
             return layout;
         }
         /// <summary>
-        /// 
+        /// IOCTL_DISK_GET_DRIVE_LAYOUT_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/winioctl/ni-winioctl-ioctl_disk_get_drive_layout_ex )
         /// </summary>
         /// <param name="IoControl"></param>
         /// <param name="layout"></param>
@@ -143,17 +143,32 @@ namespace IoControl.Disk
             }
             layout = default;
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_DRIVE_LAYOUT_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/winioctl/ni-winioctl-ioctl_disk_get_drive_layout_ex )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static DriveLayoutInformationEx DiskGetDriveLayoutEx(this IoControl IoControl)
         {
             DiskGetDriveLayoutEx(IoControl, out var layout);
             return layout;
         }
+        /// <summary>
+        /// IOCTL_DISK_SET_DRIVE_LAYOUT_EX IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_set_drive_layout_ex )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="layout"></param>
         public static void DiskSetDriveLayoutEx(this IoControl IoControl, ref DriveLayoutInformationEx layout)
         {
             var result = IoControl.DeviceIoControl(IOControlCode.DiskSetDriveLayoutEx, ref layout, out var _);
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_LENGTH_INFO IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_length_info )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="Length"></param>
         public static void DiskGetLengthInfo(this IoControl IoControl, out long Length)
         {
             var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetLengthInfo, out Length, out _);
