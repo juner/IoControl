@@ -59,7 +59,6 @@
     <Compile Include="Disk\DriveLayoutInformationExTest.cs" />
     <Compile Include="Disk\DriveLayoutInformationGptTest.cs" />
     <Compile Include="Disk\DriveLayoutInformationMbrTest.cs" />
-    <Compile Include="Disk\DriveLayoutInformationUnionTest.cs" />
     <Compile Include="Disk\PartitionInformationExTest.cs" />
     <Compile Include="Disk\PartitionInformationGptTest.cs" />
     <Compile Include="Disk\PartitionInformationMbrTest.cs" />
