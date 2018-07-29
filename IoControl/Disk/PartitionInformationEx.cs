@@ -12,24 +12,10 @@ namespace IoControl.Disk
         public long PartitionLength;
         public uint PartitionNumber;
         public bool RewritePartition;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 112)]
-        private byte[] Info;
-        public PartitionInformationMbr Mbr {
-            get => Info?.ToStructure<PartitionInformationMbr>() ?? default;
-            set {
-                if (Info == null)
-                    Info = new byte[112];
-                Info.FromStructure(value);
-            }
-        }
-        public PartitionInformationGpt Gpt {
-            get => Info?.ToStructure<PartitionInformationGpt>() ?? default;
-            set {
-                if (Info == null)
-                    Info = new byte[112];
-                Info.FromStructure(value);
-            }
-        }
+        private PartitionInformationUnion Info;
+        public PartitionInformationMbr Mbr { get => Info; set => Info = value; }
+        public PartitionInformationGpt Gpt { get => Info; set => Info = value; }
+
         public override string ToString()
         {
             return $"{nameof(PartitionInformationEx)}{{" +
@@ -42,6 +28,19 @@ namespace IoControl.Disk
                     PartitionStyle == PartitionStyle.Gpt ? $"{nameof(Gpt)}:{Gpt}" :
                     PartitionStyle == PartitionStyle.Mbr ? $"{nameof(Mbr)}:{Mbr}" : "null") +
                 $"}}";
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        private readonly struct PartitionInformationUnion
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 112)]
+            private readonly byte[] Info;
+            private PartitionInformationUnion(PartitionInformationMbr Mbr) => Info = StructureToBytes(Mbr, Bytes: new byte[112]);
+            private PartitionInformationUnion(PartitionInformationGpt Gpt) => Info = StructureToBytes(Gpt, Bytes: new byte[112]);
+            public static implicit operator PartitionInformationUnion(in PartitionInformationMbr Mbr) => new PartitionInformationUnion(Mbr);
+            public static implicit operator PartitionInformationMbr(in PartitionInformationUnion Union) => Union.Info?.ToStructure<PartitionInformationMbr>() ?? default;
+            public static implicit operator PartitionInformationUnion(in PartitionInformationGpt Gpt) => new PartitionInformationUnion(Gpt);
+            public static implicit operator PartitionInformationGpt(in PartitionInformationUnion Union) => Union.Info?.ToStructure<PartitionInformationGpt>() ?? default;
+
         }
     }
 }

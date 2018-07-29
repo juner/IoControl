@@ -30,7 +30,7 @@ namespace IoControl.Utils
         /// <param name="Bytes"></param>
         /// <param name="Structure"></param>
         /// <param name="StartIndex"></param>
-        public static void FromStructure<T>(this byte[] Bytes, T Structure, int StartIndex = default)
+        public static void FromStructure<T>(this byte[] Bytes, in T Structure, int StartIndex = default)
             where T : struct
         {
             var Size = Marshal.SizeOf<T>();
@@ -48,7 +48,7 @@ namespace IoControl.Utils
         /// <param name="Structure"></param>
         /// <param name="StartIndex"></param>
         /// <returns></returns>
-        public static byte[] StructureToBytes<T>(T Structure, int StartIndex = default)
+        public static byte[] StructureToBytes<T>(in T Structure, int StartIndex = default, byte[] Bytes = default)
             where T : struct
         {
             var Size = Marshal.SizeOf<T>();
@@ -56,7 +56,8 @@ namespace IoControl.Utils
             using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
             {
                 Marshal.StructureToPtr(Structure, Ptr, false);
-                var Bytes = new byte[Size + StartIndex];
+                if (Bytes == null)
+                    Bytes = new byte[Size + StartIndex];
                 Marshal.Copy(Ptr, Bytes, StartIndex, Size);
                 return Bytes;
             }
