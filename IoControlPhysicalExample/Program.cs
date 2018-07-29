@@ -16,6 +16,7 @@ namespace IoControlPhysicalExample
         static void Main(string[] args)
         {
             Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
+            Trace.WriteLine($"[{string.Join(", ", IoControl.Utils.DeviceUtils.QueryDocDevice())}]");
             foreach (var IoControl in GetPhysicalDrives(
                 FileAccess: FileAccess.ReadWrite,
                     FileShare: FileShare.ReadWrite,
