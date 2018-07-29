@@ -39,6 +39,11 @@ namespace IoControl.Disk
             DiskGetCacheInformation(IoControl, out var information);
             return information;
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_CACHE_INFORMATION IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_cache_information )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static void DiskSetCacheInformation(this IoControl IoControl, ref DiskCacheInformation information)
         {
             var result = IoControl.DeviceIoControl(IOControlCode.DiskSetCacheInformation, ref information, out var _);
