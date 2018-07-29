@@ -7,14 +7,20 @@ using System.Collections.Generic;
 namespace IoControl
 {
     public static class IoControlTestUtils
-    {
+    {   
+        /// <summary>
+        /// 物理ドライブのパスを生成する
+        /// </summary>
+        /// <param name="PhysicalDriveNumber"></param>
+        /// <returns></returns>
+        public static string GetPhysicalDrivePath(int PhysicalDriveNumber) => $@"\\.\PhysicalDrive{PhysicalDriveNumber}";
         /// <summary>
         /// 物理ドライブのパスを生成する
         /// </summary>
         /// <param name="start">開始index</param>
         /// <param name="count">カウント</param>
         /// <returns></returns>
-        public static IEnumerable<string> PhysicalDrivePathGenerator(int start, int count) => Enumerable.Range(start, count).Select(v => $@"\\.\PhysicalDrive{v}");
+        public static IEnumerable<string> PhysicalDrivePathGenerator(int Start, int Count) => Enumerable.Range(Start, Count).Select(GetPhysicalDrivePath);
         /// <summary>
         /// 物理ドライブのパスを生成する
         /// </summary>
@@ -23,8 +29,14 @@ namespace IoControl
         /// <summary>
         /// 論理ドライブのパスを生成する
         /// </summary>
+        /// <param name="LogicalDrivePath"></param>
         /// <returns></returns>
-        public static IEnumerable<string> LogicalDrivePathGenerator() => Environment.GetLogicalDrives().Select(v => $@"\\.\{v}".TrimEnd('\\'));
+        private static string GetLogicalDrivePath(string LogicalDrivePath) => $@"\\.\{LogicalDrivePath}".TrimEnd('\\');
+        /// <summary>
+        /// 論理ドライブのパスを生成する
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<string> LogicalDrivePathGenerator() => Environment.GetLogicalDrives().Select(GetLogicalDrivePath);
         /// <summary>
         /// 物理ドライブのパスを元に解放が予約済の<see cref="IoControl"/>を生成する
         /// </summary>
@@ -34,7 +46,7 @@ namespace IoControl
         /// <param name="FlagAndAttributes"></param>
         /// <returns></returns>
         public static IEnumerable<IoControl> GetPhysicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
-            => GetIoControls(PhysicalDrivePathGenerator(), FileAccess, FileShare, CreationDisposition, FlagAndAttributes);
+            => Using(GetIoControls(PhysicalDrivePathGenerator(), FileAccess, FileShare, CreationDisposition, FlagAndAttributes));
         /// <summary>
         /// 論理ドライブのパスを元に解放が予約済の<see cref="IoControl"/>を生成する
         /// </summary>
@@ -44,7 +56,7 @@ namespace IoControl
         /// <param name="FlagAndAttributes"></param>
         /// <returns></returns>
         public static IEnumerable<IoControl> GetLogicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
-            => GetIoControls(LogicalDrivePathGenerator(), FileAccess, FileShare, CreationDisposition, FlagAndAttributes);
+            => Using(GetIoControls(LogicalDrivePathGenerator(), FileAccess, FileShare, CreationDisposition, FlagAndAttributes));
         /// <summary>
         /// パスのジェネレータを元に解放が予約済の<see cref="IoControl"/>を生成する。
         /// </summary>
@@ -60,15 +72,35 @@ namespace IoControl
             IEnumerable<IoControl> Genarator() {
                 foreach (var path in PathGenerator)
                 {
-                    using (var file = new IoControl(path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
-                    {
-                        if (file.IsInvalid)
-                            continue;
-                        yield return file;
+                    var file = new IoControl(path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes);
+                    if (file.IsInvalid) {
+                        file.Dispose();
+                        continue;
                     }
+                    yield return file;
                 }
             }
+            if (PathGenerator == null)
+                throw new ArgumentNullException(nameof(PathGenerator));
             return Genarator();
+        }
+        /// <summary>
+        /// 解放予約を行う
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="Disposables"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Using<T>(this IEnumerable<T> Disposables)
+            where T: IDisposable
+            {
+            IEnumerable<T> Generator() {
+                foreach (var Disposable in Disposables)
+                    using (Disposable)
+                        yield return Disposable;
+            }
+            if (Disposables == null)
+                throw new ArgumentNullException(nameof(Disposables));
+            return Generator();
         }
     }
 }
