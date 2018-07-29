@@ -38,5 +38,9 @@ namespace IoControl.Volume.Tests
         [TestMethod]
         [DynamicData(nameof(VolumeIsClusteredTestData))]
         public void VolumeIsClusteredTest(IoControl IoControl) => Trace.WriteLine(IoControl.VolumeIsClustered());
+        private static IEnumerable<object[]> VolumeLogicalToPhysicalTestData => VolumeGetVolumeDiskExtentsTestData;
+        [TestMethod]
+        [DynamicData(nameof(VolumeLogicalToPhysicalTestData))]
+        public void VolumeLogicalToPhysicalTest(IoControl IoControl) => Trace.WriteLine(IoControl.VolumeLogicalToPhysical(new VolumeLogicalOffset()));
     }
 }

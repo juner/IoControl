@@ -214,9 +214,6 @@ namespace IoControl.Volume
                 {
                     var result = IoControl.DeviceIoControl(IOControlCode.VolumeLogicalToPhysical, InPtr, InSize, OutPtr, OutSize, out var ReturnBytes);
                     var query_size_error = Marshal.GetHRForLastWin32Error();
-                    System.Diagnostics.Trace.WriteLine($"{nameof(result)}:{result}");
-                    System.Diagnostics.Trace.WriteLine($"{nameof(ReturnBytes)}:{ReturnBytes}");
-                    System.Diagnostics.Trace.WriteLine($"{nameof(query_size_error)}:0x{unchecked((uint)query_size_error):X8}");
                     physical = (VolumePhysicalOffsets)Marshal.PtrToStructure(OutPtr, typeof(VolumePhysicalOffsets));
                     System.Diagnostics.Trace.WriteLine($"{nameof(physical.NumberOfPhysicalOffsets)}:{physical.NumberOfPhysicalOffsets}");
                     if (result && physical.NumberOfPhysicalOffsets == 0)
@@ -258,7 +255,7 @@ namespace IoControl.Volume
         /// <param name="IoControl"></param>
         /// <param name="logical"></param>
         /// <returns></returns>
-        public static VolumePhysicalOffsets VolumeLogicalToPhysical(this IoControl IoControl, in VolumeLogicalOffset logical)
+        public static VolumePhysicalOffsets VolumeLogicalToPhysical(this IoControl IoControl, in VolumeLogicalOffset logical = default)
         {
             VolumeLogicalToPhysical(IoControl, in logical, out var physical);
             return physical;

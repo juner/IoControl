@@ -39,5 +39,7 @@ namespace IoControl.Volume
         /// </summary>
         /// <param name="offsets"></param>
         public static implicit operator VolumePhysicalOffsets(VolumePhysicalOffset[] offsets) => new VolumePhysicalOffsets(offsets);
+        public override string ToString()
+            => $"{nameof(VolumePhysicalOffsets)}{{{nameof(NumberOfPhysicalOffsets)}:{NumberOfPhysicalOffsets}, {nameof(PhysicalOffset)}[{string.Join(", ", _PhysicalOffset.Take((int)NumberOfPhysicalOffsets).Select(v => $"{v}")) }]}}";
     }
 }
