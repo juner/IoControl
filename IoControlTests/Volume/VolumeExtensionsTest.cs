@@ -41,6 +41,10 @@ namespace IoControl.Volume.Tests
         private static IEnumerable<object[]> VolumeLogicalToPhysicalTestData => VolumeGetVolumeDiskExtentsTestData;
         [TestMethod]
         [DynamicData(nameof(VolumeLogicalToPhysicalTestData))]
-        public void VolumeLogicalToPhysicalTest(IoControl IoControl) => Trace.WriteLine(IoControl.VolumeLogicalToPhysical(new VolumeLogicalOffset()));
+        public void VolumeLogicalToPhysicalTest(IoControl IoControl) => Trace.WriteLine(IoControl.VolumeLogicalToPhysical());
+        private static IEnumerable<object[]> VolumePhysicalToLogicalTestData => VolumeGetVolumeDiskExtentsTestData;
+        [TestMethod]
+        [DynamicData(nameof(VolumePhysicalToLogicalTestData))]
+        public void VolumePhysicalToLogicalTest(IoControl IoControl) => Trace.WriteLine(IoControl.VolumePhysicalToLogical(IoControl.VolumeLogicalToPhysical().First()));
     }
 }

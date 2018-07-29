@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace IoControl.Volume
@@ -8,7 +10,7 @@ namespace IoControl.Volume
     /// The <see cref="VolumePhysicalOffsets"/> structure contains an array of physical offsets and accompanying physical disk numbers and is used with <see cref="IOControlCode.VolumeLogicalToPhysical"/> to request a series of pairs of physical offsets and disk numbers that correspond to a single logical offset.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct VolumePhysicalOffsets
+    public readonly struct VolumePhysicalOffsets : IEnumerable<VolumePhysicalOffset>
     {
         /// <summary>
         /// Contains the number of physical offsets returned by the call to <see cref="IOControlCode.VolumeLogicalToPhysical"/>.
@@ -41,5 +43,9 @@ namespace IoControl.Volume
         public static implicit operator VolumePhysicalOffsets(VolumePhysicalOffset[] offsets) => new VolumePhysicalOffsets(offsets);
         public override string ToString()
             => $"{nameof(VolumePhysicalOffsets)}{{{nameof(NumberOfPhysicalOffsets)}:{NumberOfPhysicalOffsets}, {nameof(PhysicalOffset)}[{string.Join(", ", _PhysicalOffset.Take((int)NumberOfPhysicalOffsets).Select(v => $"{v}")) }]}}";
+
+        public IEnumerator<VolumePhysicalOffset> GetEnumerator() => _PhysicalOffset.Take((int)NumberOfPhysicalOffsets).GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
