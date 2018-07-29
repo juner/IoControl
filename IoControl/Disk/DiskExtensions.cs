@@ -221,6 +221,27 @@ namespace IoControl.Disk
             return Length;
         }
         /// <summary>
+        /// IOCTL_DISK_GET_DRIVE_GEOMETRY IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="geometry"></param>
+        public static void DiskGetDriveGeometry(this IoControl IoControl, out DiskGeometry geometry)
+        {
+            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveGeometry, out geometry, out _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        /// <summary>
+        /// IOCTL_DISK_GET_DRIVE_GEOMETRY IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static DiskGeometry DiskGetDriveGeometry(this IoControl IoControl)
+        {
+            DiskGetDriveGeometry(IoControl, out var geometry);
+            return geometry;
+        }
+        /// <summary>
         /// 
         /// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_drive_geometry_ex )
         /// </summary>

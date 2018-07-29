@@ -47,12 +47,15 @@ namespace IoControl.Disk.Tests
         [TestMethod]
         [DynamicData(nameof(DiskGetLengthInfoTestData))]
         public void DiskGetLengthInfoTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetLengthInfo());
-        private static IEnumerable<object[]> DiskGetDriveGeometryExTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
+        private static IEnumerable<object[]> DiskGetDriveGeometryTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
-        [DynamicData(nameof(DiskGetDriveGeometryExTestData))]
+        [DynamicData(nameof(DiskGetDriveGeometryTestData))]
+        public void DiskGetDriveGeometryTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetDriveGeometry());
+        [TestMethod]
+        [DynamicData(nameof(DiskGetDriveGeometryTestData))]
         public void DiskGetDriveGeometryExTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetDriveGeometryEx());
         [TestMethod]
-        [DynamicData(nameof(DiskGetDriveGeometryExTestData))]
+        [DynamicData(nameof(DiskGetDriveGeometryTestData))]
         public void DiskGetDriveGeometryEx2Test(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetDriveGeometryEx2());
         private static IEnumerable<object[]> DiskPerformanceTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
