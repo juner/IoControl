@@ -50,6 +50,22 @@ namespace IoControl.Disk
             if (!result)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// IOCTL_DISK_GET_DRIVE_LAYOUT IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_get_drive_layout )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="layout"></param>
+        public static void DiskGetDriveLayout(this IoControl IoControl, out DriveLayoutInformation layout)
+        {
+            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayout, out layout, out var _);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        public static DriveLayoutInformation DiskGetDriveLayout(this IoControl IoControl)
+        {
+            DiskGetDriveLayout(IoControl, out var layout);
+            return layout;
+        }
         public static void DiskGetDriveLayoutEx(this IoControl IoControl, out DriveLayoutInformationEx layout)
         {
             var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayoutEx, out layout, out var _);
