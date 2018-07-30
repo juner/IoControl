@@ -35,26 +35,25 @@ namespace IoControl.Disk
         [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.Struct, SizeConst = 1)]
         internal readonly PartitionInformationEx[] _PartitionEntry;
         public PartitionInformationEx[] PartitionEntry => _PartitionEntry.Take((int)PartitionCount).ToArray();
+        private DriveLayoutInformationEx(PartitionStyle PartitionStyle, DriveLayoutInformationUnion Info, PartitionInformationEx[] PartitionEntry)
+            => (this.PartitionStyle, PartitionCount, this.Info, _PartitionEntry) = (PartitionStyle, (uint)(PartitionEntry?.Length ?? 0), Info, (PartitionEntry?.Length ?? 0) == 0 ? new PartitionInformationEx[1] : PartitionEntry);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="Mbr"></param>
         /// <param name="PartitionEntry"></param>
-        public DriveLayoutInformationEx(DriveLayoutInformationMbr Mbr, params PartitionInformationEx[] PartitionEntry)
-            => (PartitionStyle, PartitionCount, Info, this._PartitionEntry) = (PartitionStyle.Mbr, (uint)(PartitionEntry?.Length ?? 0), Mbr, (PartitionEntry?.Length ?? 0) == 0 ? new PartitionInformationEx[1] : PartitionEntry);
+        public DriveLayoutInformationEx(DriveLayoutInformationMbr Mbr, params PartitionInformationEx[] PartitionEntry) : this(PartitionStyle.Mbr, Mbr, PartitionEntry) { }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="Gpt"></param>
         /// <param name="PartitionEntry"></param>
-        public DriveLayoutInformationEx(DriveLayoutInformationGpt Gpt, params PartitionInformationEx[] PartitionEntry)
-            => (PartitionStyle, PartitionCount, Info, this._PartitionEntry) = (PartitionStyle.Gpt, (uint)(PartitionEntry?.Length ?? 0), Gpt, (PartitionEntry?.Length ?? 0) == 0 ? new PartitionInformationEx[1] : PartitionEntry);
+        public DriveLayoutInformationEx(DriveLayoutInformationGpt Gpt, params PartitionInformationEx[] PartitionEntry) : this(PartitionStyle.Gpt, Gpt, PartitionEntry) { }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="PartitionEntry"></param>
-        public DriveLayoutInformationEx(params PartitionInformationEx[] PartitionEntry)
-            => (PartitionStyle, PartitionCount, Info, this._PartitionEntry) = (PartitionStyle.Raw, (uint)(PartitionEntry?.Length ?? 0), default, (PartitionEntry?.Length ?? 0) == 0 ? new PartitionInformationEx[1] : PartitionEntry);
+        public DriveLayoutInformationEx(params PartitionInformationEx[] PartitionEntry) : this(PartitionStyle.Raw, default, PartitionEntry) { }
         /// <summary>
         /// 
         /// </summary>
@@ -70,7 +69,7 @@ namespace IoControl.Disk
                 : this;
 
         public override string ToString()
-            => $"{nameof(DriveLayoutInformationEx)}{{ {nameof(PartitionStyle)}:{PartitionStyle}, {nameof(PartitionCount)}:{PartitionCount}, {(PartitionStyle == PartitionStyle.Gpt ? $"{nameof(Gpt)}:{Gpt}" : PartitionStyle == PartitionStyle.Mbr ? $"{nameof(Mbr)}:{Mbr}" : null)}, {nameof(_PartitionEntry)}:[{string.Join(", ", (_PartitionEntry ?? Enumerable.Empty<PartitionInformationEx>()).Take((int)PartitionCount).Select(v => $"{v}"))}] }}";
+            => $"{nameof(DriveLayoutInformationEx)}{{ {nameof(PartitionStyle)}:{PartitionStyle}, {nameof(PartitionCount)}:{PartitionCount}, {(PartitionStyle == PartitionStyle.Gpt ? $"{nameof(Gpt)}:{Gpt}" : PartitionStyle == PartitionStyle.Mbr ? $"{nameof(Mbr)}:{Mbr}" : null)}, {nameof(PartitionEntry)}:[{string.Join(", ", (_PartitionEntry ?? Enumerable.Empty<PartitionInformationEx>()).Take((int)PartitionCount).Select(v => $"{v}"))}] }}";
         /// <summary>
         /// inner structure <see cref="DriveLayoutInformationMbr"/> or <see cref="DriveLayoutInformationGpt"/>
         /// </summary>
