@@ -123,6 +123,9 @@ namespace IoControl
         }
         public bool DeviceIoControl(IOControlCode dwIoControlCode, out uint ReturnBytes)
             => NativeMethod.DeviceIoControl(Handle, dwIoControlCode, IntPtr.Zero, 0, IntPtr.Zero, 0, out ReturnBytes);
+
+        public bool DeviceIoControlInOnly(IOControlCode dwIoControlCode, IntPtr InPtr, uint InSize, out uint ReturnBytes)
+            => NativeMethod.DeviceIoControl(Handle, dwIoControlCode, InPtr, InSize, IntPtr.Zero, 0u, out ReturnBytes);
         public bool DeviceIoControlInOnly<TIN>(IOControlCode dwIoControlCode, in TIN InBuffer, out uint ReturnBytes)
             where TIN : struct
         {
@@ -131,7 +134,7 @@ namespace IoControl
             using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(inPtr)))
             {
                 Marshal.StructureToPtr(InBuffer, inPtr, false);
-                var result = DeviceIoControl(dwIoControlCode, inPtr, inSize, IntPtr.Zero, 0u, out ReturnBytes);
+                var result = DeviceIoControlInOnly(dwIoControlCode, inPtr, inSize, out ReturnBytes);
                 return result;
             }
         }
