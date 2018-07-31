@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace IoControl
@@ -162,6 +163,17 @@ namespace IoControl
                 var result = DeviceIoControlOutOnly(IoControlCode, outPtr, outSize, out ReturnBytes);
                 return result;
             }
+        }
+        internal bool DeviceIoControlIs(IOControlCode IOControlCode, params uint[] NotErrorCodes)
+        {
+            var result = DeviceIoControl(IOControlCode, out var _);
+            if (!result)
+            {
+                var win32error = Marshal.GetHRForLastWin32Error();
+                if (!NotErrorCodes.Any(ErrorCode => unchecked((uint)win32error) == ErrorCode))
+                    Marshal.ThrowExceptionForHR(win32error);
+            }
+            return result;
         }
         internal static SafeFileHandle CreateFile(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagsAndAttributes = default, SafeFileHandle TemplateFile = default)
             => NativeMethod.CreateFile(Filename, FileAccess, FileShare, IntPtr.Zero, CreationDisposition, FlagsAndAttributes, TemplateFile);
