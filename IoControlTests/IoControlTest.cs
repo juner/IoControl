@@ -10,6 +10,7 @@ using System.IO;
 using IoControl.Volume;
 using IoControl.Controller;
 using static IoControl.IoControlTestUtils;
+using static IoControl.Utils.DeviceUtils;
 using System.Collections.Generic;
 
 namespace IoControl.Tests
@@ -17,6 +18,37 @@ namespace IoControl.Tests
     [TestClass]
     public class IoControlTest
     {
+        private static IEnumerable<object[]> NewIoControlTestData {
+            get {
+                foreach (var LogicalDrivePath in GetLogicalDriveStrings().Select(path => $@"\\.\{path.TrimEnd('\\')}"))
+                    yield return new object[] { LogicalDrivePath, default(FileAccess), default(FileShare), FileMode.Open, default(FileAttributes) };
+                foreach (var PhysicalDrivePath in QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("PhysicalDrive") == 0).Select(DeviceName => $@"\\.\{DeviceName}"))
+                    yield return new object[] { PhysicalDrivePath, default(FileAccess), default(FileShare), FileMode.Open, default(FileAttributes) };
+                foreach (var VolumeName in GetVolumePathNames()
+                    .Select(v => v.Replace(@"\\?\",@"\\.\").TrimEnd('\\')))
+                    yield return new object[] { VolumeName, default(FileAccess), default(FileShare), FileMode.Open, default(FileAttributes) };
+                foreach (var VolumeName in GetVolumePathNames()
+                    // \\?\Volume{GUDI}\ -> Volume{GUID}
+                    .Select(v => v.Substring(@"\\?\".Length).TrimEnd('\\'))
+                    // Volume{GUID} -> \Device\HarddiskVolumeN
+                    .SelectMany(v => QueryDocDevice(v))
+                    // \Device\HarddiskVolumeN -> \\.\HarddiskVolumeN
+                    .Select(v => $@"\\.\{v.Substring(@"\Device\".Length)}")
+               )
+                    yield return new object[] { VolumeName, default(FileAccess), default(FileShare), FileMode.Open, default(FileAttributes) };
+            }
+        }
+        [TestMethod]
+        [DynamicData(nameof(NewIoControlTestData))]
+        public void NewIoControlTest(string Path, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
+        {
+            using (var IoControl = new IoControl(Path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
+            {
+                if (IoControl.IsInvalid)
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                Trace.WriteLine(IoControl);
+            }
+        }
         private static IEnumerable<object[]> PhysicalDriveOpenTestData => GetPhysicalDrives(
                 FileAccess: FileAccess.ReadWrite,
                     FileShare: FileShare.ReadWrite,

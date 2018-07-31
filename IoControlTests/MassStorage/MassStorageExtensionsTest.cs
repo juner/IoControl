@@ -13,7 +13,7 @@ namespace IoControl.MassStorage.Tests
     [TestClass]
     public class MassStorageExtensionsTest
     {
-        private static IEnumerable<object[]> StorageGetDeviceNumberTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
+        private static IEnumerable<object[]> StorageGetDeviceNumberTestData => VolumePathGenerator().Concat(PhysicalDrivePathGenerator()).GetIoControls(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(StorageGetDeviceNumberTestData))]
         public void StorageGetDeviceNumberTest(IoControl IoControl)

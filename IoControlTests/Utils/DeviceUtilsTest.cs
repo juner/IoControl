@@ -16,7 +16,11 @@ namespace IoControl.Utils.Tests
         private static IEnumerable<object[]> QueryDocDeviceTestData {
             get {
                 yield return new object[] { null };
-                yield return new object[] { Path.GetPathRoot(Environment.SystemDirectory).TrimEnd('\\') };
+                foreach (var DriveName in GetLogicalDriveStrings().Select(v => v.TrimEnd('\\')))
+                    yield return new object[] { DriveName };
+                foreach (var VolumeGUIDString in GetVolumePathNames().Select(v => v.Substring(@"\\.\".Length).TrimEnd('\\')))
+                    yield return new object[] { VolumeGUIDString };
+
             }
         }
         [TestMethod]
@@ -39,6 +43,23 @@ namespace IoControl.Utils.Tests
         {
             foreach (var VolumeName in GetVolumePathNamesForVolumeName(VolumePathName))
                 Trace.WriteLine(VolumeName);
-;        }
+;       }
+        [TestMethod]
+        public void GetLogicalDrivesTest()
+        {
+            var drives = GetLogicalDrives();
+            foreach (var (index, bit) in Enumerable.Range(0, 32).Select(index => (index, bit: (drives >> index) == 0x1)))
+                Trace.WriteLine($"{nameof(index)}: {index}{('A'+index <= 'Z' ? $" ({(char)('A' + index)})" : "")} :{bit}");
+        }
+        [TestMethod]
+        public void GetLogicalDriveStringsTest()
+        {
+            foreach (var DriveString in GetLogicalDriveStrings())
+                Trace.WriteLine(DriveString);
+        }
+        private static IEnumerable<object[]> GetVolumeNameForVolumeMountPointTestData => GetLogicalDriveStrings().Select(v => new object[] { v });
+        [TestMethod]
+        [DynamicData(nameof(GetVolumeNameForVolumeMountPointTestData))]
+        public void GetVolumeNameForVolumeMountPointTest(string VolumeMountPoint) => Trace.WriteLine(GetVolumeNameForVolumeMountPoint(VolumeMountPoint));
     }
 }

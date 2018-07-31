@@ -37,9 +37,9 @@ namespace IoControl
 
             [DllImport("kernel32.dll", SetLastError = true,
                 CallingConvention = CallingConvention.StdCall,
-                CharSet = CharSet.Auto)]
-            public static extern SafeFileHandle CreateFile(
-                 [MarshalAs(UnmanagedType.LPTStr)] string filename,
+                CharSet = CharSet.Unicode)]
+            public static extern SafeFileHandle CreateFileW(
+                 [MarshalAs(UnmanagedType.LPWStr)] string filename,
                  [MarshalAs(UnmanagedType.U4)] FileAccess access,
                  [MarshalAs(UnmanagedType.U4)] FileShare share,
                  IntPtr securityAttributes,
@@ -166,7 +166,7 @@ namespace IoControl
         internal static SafeFileHandle CreateFile(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagsAndAttributes = default, SafeFileHandle TemplateFile = default)
             => NativeMethod.CreateFile(Filename, FileAccess, FileShare, IntPtr.Zero, CreationDisposition, FlagsAndAttributes, TemplateFile);
         internal static SafeFileHandle CreateFile(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagsAndAttributes = default)
-            => NativeMethod.CreateFile(Filename, FileAccess, FileShare, IntPtr.Zero, CreationDisposition, FlagsAndAttributes, IntPtr.Zero);
+            => NativeMethod.CreateFileW(Filename, FileAccess, FileShare, IntPtr.Zero, CreationDisposition, FlagsAndAttributes, IntPtr.Zero);
         public override string ToString()
             => $"{nameof(IoControl)}{{{(string.IsNullOrEmpty(Filename) ? string.Empty : $"{nameof(Filename)}:{Filename},")} {nameof(Disposable)}:{Disposable} {nameof(IsInvalid)}:{IsInvalid}, {nameof(IsClosed)}:{IsClosed}}}";
     }

@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using static IoControl.IoControlTestUtils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using IoControl.Utils;
+using static IoControl.Utils.DeviceUtils;
 
 namespace IoControl.Volume.Tests
 {
     [TestClass]
     public class VolumeExtensionsTest
     {
-        private static IEnumerable<object[]> VolumeGetVolumeDiskExtentsTestData => DeviceUtils.GetVolumePathNames(). GetIoControls(CreationDisposition: System.IO.FileMode.Open)
+        private static IEnumerable<object[]> VolumeGetVolumeDiskExtentsTestData => VolumePathGenerator().GetIoControls(CreationDisposition: System.IO.FileMode.Open)
             .Where(v => MassStorage.MassStorageExtensions.StorageGetDeviceNumber(v).DeviceType == FileDevice.Disk)
             .Select(v => new object[] { v });
         [TestMethod]

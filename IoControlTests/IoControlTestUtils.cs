@@ -27,6 +27,7 @@ namespace IoControl
         /// <returns></returns>
         //public static IEnumerable<string> PhysicalDrivePathGenerator() => PhysicalDrivePathGenerator(0, 10);
         public static IEnumerable<string> PhysicalDrivePathGenerator() => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("PhysicalDrive") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
+        public static IEnumerable<string> VolumePathGenerator() => GetVolumePathNames().Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\'));
         /// <summary>
         /// 論理ドライブのパスを生成する
         /// </summary>
@@ -73,7 +74,7 @@ namespace IoControl
             IEnumerable<IoControl> Genarator() {
                 foreach (var path in PathGenerator)
                 {
-                    var file = new IoControl(path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes);
+                    var file = GetIoControl(path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes);
                     if (file.IsInvalid) {
                         file.Dispose();
                         continue;
@@ -85,6 +86,7 @@ namespace IoControl
                 throw new ArgumentNullException(nameof(PathGenerator));
             return Genarator();
         }
+        public static IoControl GetIoControl(string path, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default) => new IoControl(path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes);
         /// <summary>
         /// 解放予約を行う
         /// </summary>
