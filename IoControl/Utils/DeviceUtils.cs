@@ -23,9 +23,9 @@ namespace IoControl.Utils
             [DllImport("kernel32.dll", SetLastError = true)]
             public static extern uint QueryDosDevice(string DeviceName, IntPtr TargetPath, uint CharMax);
             [DllImport("kernel32.dll", SetLastError = true)]
-            public static extern FindVolumeSafeHandle FindFirstVolume([Out] StringBuilder lpszVolumeName, uint cchBufferLength);
+            public static extern FindVolumeSafeHandle FindFirstVolume([Out] char[] lpszVolumeName, uint cchBufferLength);
             [DllImport("kernel32.dll", SetLastError = true)]
-            public static extern bool FindNextVolume(FindVolumeSafeHandle hFindVolume, [Out] StringBuilder lpszVolumeName, uint cchBufferLength);
+            public static extern bool FindNextVolume(FindVolumeSafeHandle hFindVolume, [Out] char[] lpszVolumeName, uint cchBufferLength);
             [DllImport("kernel32.dll", SetLastError = true)]
             public static extern bool FindVolumeClose(IntPtr hFindVolume);
             /// <summary>
@@ -87,7 +87,7 @@ namespace IoControl.Utils
                     ReturnSize = NativeMethods.QueryDosDevice(DeviceName, mem, MaxSize);
                     var ErrorCode = Marshal.GetHRForLastWin32Error();
                     if (ReturnSize != 0)
-                        return Split(Marshal.PtrToStringAnsi(mem, (int)ReturnSize),'\0');
+                        return Split(Marshal.PtrToStringAnsi(mem, (int)ReturnSize).ToCharArray(), '\0');
                     else if (ErrorCode == ERROR_INSUFFICIENT_BUFFER)
                         MaxSize *= 2;
                     else
@@ -102,18 +102,20 @@ namespace IoControl.Utils
         /// <returns></returns>
         public static IEnumerable<string> GetVolumePathNames()
         {
-            IEnumerable<string> GetEnumerable(FindVolumeSafeHandle h,StringBuilder v)
+            IEnumerable<string> GetEnumerable(FindVolumeSafeHandle h, char[] v)
             {
                 using (h)
                     do
                     {
-                        yield return v.ToString();
-                    } while (NativeMethods.FindNextVolume(h, v, (uint)v.MaxCapacity));
+                        var str = FirstFindSplit(v, '\0');
+                        if (!string.IsNullOrWhiteSpace(str))
+                            yield return str;
+                    } while (NativeMethods.FindNextVolume(h, v, (uint)v.Length));
                 yield break;
             }
             const uint bufferLength = 1024;
-            var Volume = new StringBuilder((int)bufferLength, (int)bufferLength);
-            var handle = NativeMethods.FindFirstVolume(Volume, (uint)Volume.MaxCapacity);
+            var Volume = new char[bufferLength];
+            var handle = NativeMethods.FindFirstVolume(Volume, (uint)Volume.Length);
             if (handle.IsInvalid)
                 using (handle)
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
@@ -135,17 +137,33 @@ namespace IoControl.Utils
         /// <param name="chars"></param>
         /// <param name="splitter"></param>
         /// <returns></returns>
-        private static IEnumerable<string> Split(string chars, char splitter)
+        private static IEnumerable<string> Split(char[] chars, char splitter)
         {
             int prevIndex = 0;
             int nextIndex = 0;
-            while ((nextIndex = chars.IndexOf(splitter, prevIndex)) > 0)
+            while ((nextIndex = IndexOf(chars, splitter, prevIndex)) > 0)
             {
-                var str = chars.Substring(prevIndex, nextIndex - prevIndex);
+                var str = new string(chars, prevIndex, nextIndex - prevIndex);
                 if (!string.IsNullOrWhiteSpace(str))
                     yield return str;
                 prevIndex = nextIndex + 1;
             }
+        }
+        private static string FirstFindSplit(char[] chars, char splitter, int startIndex = 0)
+        {
+            var index = IndexOf(chars, splitter, startIndex);
+            if (index >= 0)
+                return new string(chars, startIndex, index);
+            return new string(chars, startIndex, chars.Length - startIndex);
+        }
+        private static int IndexOf(char[] chars, char splitter, int startIndex = 0, int count = System.Threading.Timeout.Infinite)
+        {
+            for (int i = startIndex, imax = count > 0 ? count + startIndex : chars.Length ; i < imax; i++)
+            {
+                if (chars[i] == splitter)
+                    return i;
+            }
+            return -1;
         }
         /// <summary>
         /// GetVolumePathNamesForVolumeNameW function ( https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-getvolumepathnamesforvolumenamew )
@@ -160,7 +178,7 @@ namespace IoControl.Utils
             //var Ptr = Marshal.AllocCoTaskMem((int)Length * sizeof(char));
             if (!NativeMethods.GetVolumePathNamesForVolumeNameW(VolumePathName, Chars, Length * sizeof(char), out Length))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            return Split(new string(Chars, 0, (int)Length),'\0');
+            return Split(Chars, '\0');
         }
         /// <summary>
         /// 
@@ -173,7 +191,7 @@ namespace IoControl.Utils
             var Chars = new char[Length];
             if (!NativeMethods.GetVolumeNameForVolumeMountPointW(VolumeMountPoint, Chars, Length))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            return Split(new string(Chars), '\0').FirstOrDefault();
+            return FirstFindSplit(Chars, '\0');
 
         }
         /// <summary>
@@ -193,7 +211,7 @@ namespace IoControl.Utils
             uint ReturnSize = NativeMethods.GetLogicalDriveStrings(size, buffer);
             if (ReturnSize == 0)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            return Split(new string(buffer, 0, (int)ReturnSize), '\0');
+            return Split(buffer, '\0');
         }
     }
 }
