@@ -2,6 +2,8 @@
 using IoControl.Disk;
 using IoControl.Controller;
 using IoControl.MassStorage;
+using IoControl.FileSystem;
+using static IoControl.Utils.DeviceUtils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,12 +18,53 @@ namespace IoControlPhysicalExample
         static void Main(string[] args)
         {
             Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
-            Trace.WriteLine($"[{string.Join(", ", IoControl.Utils.DeviceUtils.QueryDocDevice())}]");
+            Trace.WriteLine($"[{string.Join(", ", QueryDocDevice())}]");
+            foreach (var IoControl in GetVolumePathNames()
+                        .Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\'))
+                    .Concat(
+                        QueryDocDevice()
+                        .Where(v => v.StartsWith("HarddiskVolume"))
+                        .Select(v => $@"\\.\{v}")
+                    )
+                    .Select(v => new IoControl.IoControl(v, 
+                        FileAccess: FileAccess.ReadWrite,
+                        FileShare: FileShare.ReadWrite,
+                        CreationDisposition: FileMode.Open,
+                        FlagsAndAttributes: FileAttributes.Normal))
+                    .Using())
+            {
+                try
+                {
+                    Trace.WriteLine(IoControl);
+                    Trace.WriteLine(nameof(FileSystemExtensions.FsctlIsVolumeMounted));
+                    Trace.WriteLine(IoControl.FsctlIsVolumeMounted());
+
+                } catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine($"{nameof(MassStorageExtensions.StorageGetDeviceNumber)}");
+                    Trace.WriteLine($"{IoControl.StorageGetDeviceNumber()}");
+                }catch(Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(DiskExtensions.DiskGetPartitionInfoEx));
+                    Trace.WriteLine(IoControl.DiskGetPartitionInfoEx());
+                }catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+            }
             foreach (var IoControl in GetPhysicalDrives(
                 FileAccess: FileAccess.ReadWrite,
                     FileShare: FileShare.ReadWrite,
                     CreationDisposition: FileMode.Open,
-                    FlagAndAttributes: FileAttributes.Normal))
+                    FlagsAndAttributes: FileAttributes.Normal))
             {
                 try
                 {
@@ -116,13 +159,13 @@ namespace IoControlPhysicalExample
             }
             Console.ReadLine();
         }
-        public static IEnumerable<IoControl.IoControl> GetPhysicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
+        public static IEnumerable<IoControl.IoControl> GetPhysicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagsAndAttributes = default)
         {
             bool hasDrive = false;
-            foreach (var DeviceName in IoControl.Utils.DeviceUtils.QueryDocDevice().Where(v => v.IndexOf("PhysicalDrive") == 0))
+            foreach (var DeviceName in QueryDocDevice().Where(v => v.IndexOf("PhysicalDrive") == 0))
             {
                 var Path = $@"\\.\{DeviceName}";
-                using (var file = new IoControl.IoControl(Path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
+                using (var file = new IoControl.IoControl(Path, FileAccess, FileShare, CreationDisposition, FlagsAndAttributes))
                 {
                     Trace.WriteLine($"Open {file} ... {(file.IsInvalid ? "NG" : "OK")}.");
                     if (file.IsInvalid)

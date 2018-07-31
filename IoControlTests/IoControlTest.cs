@@ -36,6 +36,10 @@ namespace IoControl.Tests
                     .Select(v => $@"\\.\{v.Substring(@"\Device\".Length)}")
                )
                     yield return new object[] { VolumeName, default(FileAccess), default(FileShare), FileMode.Open, default(FileAttributes) };
+                foreach (var VolumeName in QueryDocDevice()
+                        .Where(v => v.StartsWith("HarddiskVolume"))
+                        .Select(v => $@"\\.\{v}"))
+                    yield return new object[] { VolumeName, default(FileAccess), default(FileShare), FileMode.Open, default(FileAttributes) };
             }
         }
         [TestMethod]
