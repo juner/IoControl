@@ -69,6 +69,12 @@ namespace IoControl.Utils
             /// <returns></returns>
             [DllImport("kernel32.dll", SetLastError = true)]
             public static extern uint GetLogicalDriveStrings(uint nBufferLength, [Out] char[] lpBuffer);
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern FindVolumeMountPointSafeHandle FindFirstVolumeMountPoint(string RootPathName, char[] VolumeMountPoint, uint BufferLength);
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool FindNextVolumeMountPoint(FindVolumeMountPointSafeHandle handle, char[] VolumeMountPoint, uint BufferLength);
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool FindVolumeMountPointClose(IntPtr FindVolumeMountPoint);
         }
         public static IEnumerable<string> QueryDocDevice(string DeviceName = default)
         {
@@ -130,6 +136,36 @@ namespace IoControl.Utils
             public FindVolumeSafeHandle(IntPtr preexistingHandle, bool ownsHandle)
             : base(ownsHandle) => SetHandle(preexistingHandle);
             protected override bool ReleaseHandle() => NativeMethods.FindVolumeClose(handle);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="RootPathName"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> GetVolumeMountPoint(string RootPathName) { 
+            IEnumerable<string> Generator(FindVolumeMountPointSafeHandle h, char[] VolumeMountPoint) {
+                using (h)
+                    do
+                    {
+                        var str = FirstFindSplit(VolumeMountPoint, '\0');
+                        if (!string.IsNullOrWhiteSpace(str))
+                            yield return str;
+                    } while (NativeMethods.FindNextVolumeMountPoint(h, VolumeMountPoint, (uint)VolumeMountPoint.Length));
+            }
+            const uint bufferLength = 1024;
+            var mountPoint = new char[bufferLength];
+            var handle = NativeMethods.FindFirstVolumeMountPoint(RootPathName, mountPoint, (uint)mountPoint.Length);
+            if (handle.IsInvalid)
+                using (handle)
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return Generator(handle, mountPoint);
+        }
+        private class FindVolumeMountPointSafeHandle : SafeHandleZeroOrMinusOneIsInvalid
+        {
+            private FindVolumeMountPointSafeHandle() : base(true) { }
+            public FindVolumeMountPointSafeHandle(IntPtr preexistingHandle, bool ownsHandle)
+                : base(ownsHandle) => SetHandle(preexistingHandle);
+            protected override bool ReleaseHandle() => NativeMethods.FindVolumeMountPointClose(handle);
         }
         /// <summary>
         /// IEnumerable 版の Split
