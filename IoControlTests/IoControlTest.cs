@@ -24,10 +24,10 @@ namespace IoControl.Tests
                     yield return new object[] { LogicalDrivePath, default(FileAccess), default(FileShare), FileMode.Open, default(FileAttributes) };
                 foreach (var PhysicalDrivePath in QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("PhysicalDrive") == 0).Select(DeviceName => $@"\\.\{DeviceName}"))
                     yield return new object[] { PhysicalDrivePath, default(FileAccess), default(FileShare), FileMode.Open, default(FileAttributes) };
-                foreach (var VolumeName in GetVolumePathNames()
+                foreach (var VolumeName in FindVolumes()
                     .Select(v => v.Replace(@"\\?\",@"\\.\").TrimEnd('\\')))
                     yield return new object[] { VolumeName, default(FileAccess), default(FileShare), FileMode.Open, default(FileAttributes) };
-                foreach (var VolumeName in GetVolumePathNames()
+                foreach (var VolumeName in FindVolumes()
                     // \\?\Volume{GUDI}\ -> Volume{GUID}
                     .Select(v => v.Substring(@"\\?\".Length).TrimEnd('\\'))
                     // Volume{GUID} -> \Device\HarddiskVolumeN

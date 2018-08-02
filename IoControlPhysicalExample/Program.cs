@@ -19,7 +19,7 @@ namespace IoControlPhysicalExample
         {
             Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
             Trace.WriteLine($"[{string.Join(", ", QueryDocDevice())}]");
-            foreach (var IoControl in GetVolumePathNames()
+            foreach (var IoControl in FindVolumes()
                         .Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\'))
                     .Concat(
                         QueryDocDevice()

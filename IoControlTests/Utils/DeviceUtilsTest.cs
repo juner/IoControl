@@ -18,7 +18,7 @@ namespace IoControl.Utils.Tests
                 yield return new object[] { null };
                 foreach (var DriveName in GetLogicalDriveStrings().Select(v => v.TrimEnd('\\')))
                     yield return new object[] { DriveName };
-                foreach (var VolumeGUIDString in GetVolumePathNames().Select(v => v.Substring(@"\\.\".Length).TrimEnd('\\')))
+                foreach (var VolumeGUIDString in FindVolumes().Select(v => v.Substring(@"\\.\".Length).TrimEnd('\\')))
                     yield return new object[] { VolumeGUIDString };
 
             }
@@ -31,22 +31,22 @@ namespace IoControl.Utils.Tests
                 Trace.WriteLine(Device);
         }
         [TestMethod]
-        public void GetVolumePathNamesTest()
+        public void FindVolumesTest()
         {
-            foreach (var volumeName in GetVolumePathNames())
+            foreach (var volumeName in FindVolumes())
                 Trace.WriteLine(volumeName);
         }
-        private static IEnumerable<object[]> GetVolumeMountPointTestData
+        private static IEnumerable<object[]> FindVolumeMountPointsTestData
             => GetLogicalDriveStrings().Select(v => $@"\\.\{v}")
-            .Concat(GetVolumePathNames().Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\')))
+            .Concat(FindVolumes().Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\')))
             .Select(v => new object[] { v });
         [TestMethod]
-        [DynamicData(nameof(GetVolumeMountPointTestData))]
-        public void GetVolumeMountPointTest(string RootPathName) {
-            foreach (var volumeMountPoint in GetVolumeMountPoint(RootPathName))
+        [DynamicData(nameof(FindVolumeMountPointsTestData))]
+        public void FindVolumeMountPointsTest(string RootPathName) {
+            foreach (var volumeMountPoint in FindVolumeMountPoints(RootPathName))
                 Trace.WriteLine(volumeMountPoint);
         }
-        private static IEnumerable<object[]> GetVolumePathNamesForVolumeNameTestData => GetVolumePathNames().Select(v => new object[] { v });
+        private static IEnumerable<object[]> GetVolumePathNamesForVolumeNameTestData => FindVolumes().Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(GetVolumePathNamesForVolumeNameTestData))]
         public void GetVolumePathNamesForVolumeNameTest(string VolumePathName)

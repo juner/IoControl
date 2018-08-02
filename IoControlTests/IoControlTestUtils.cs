@@ -27,7 +27,7 @@ namespace IoControl
         /// <returns></returns>
         //public static IEnumerable<string> PhysicalDrivePathGenerator() => PhysicalDrivePathGenerator(0, 10);
         public static IEnumerable<string> PhysicalDrivePathGenerator() => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("PhysicalDrive") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
-        public static IEnumerable<string> VolumePathGenerator() => GetVolumePathNames().Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\'));
+        public static IEnumerable<string> VolumePathGenerator() => FindVolumes().Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\'));
         /// <summary>
         /// 論理ドライブのパスを生成する
         /// </summary>
