@@ -36,7 +36,10 @@ namespace IoControl.Utils.Tests
             foreach (var volumeName in GetVolumePathNames())
                 Trace.WriteLine(volumeName);
         }
-        private static IEnumerable<object[]> GetVolumeMountPointTestData => GetLogicalDriveStrings().Select(v => new object[] { $@"\\.\{v}".Trim('\\Codeqqqqqqqqqqqqqqqqcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc        １１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１１') });//GetVolumePathNames().Select(v => new object[] { v.Replace(@"\\?\",@"\\.\").TrimEnd('\\') });
+        private static IEnumerable<object[]> GetVolumeMountPointTestData
+            => GetLogicalDriveStrings().Select(v => $@"\\.\{v}")
+            .Concat(GetVolumePathNames().Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\')))
+            .Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(GetVolumeMountPointTestData))]
         public void GetVolumeMountPointTest(string RootPathName) {
