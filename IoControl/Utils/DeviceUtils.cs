@@ -86,6 +86,8 @@ namespace IoControl.Utils
                 out FileSystemFeature fileSystemFlags,
                 StringBuilder fileSystemNameBuffer,
                 int nFileSystemNameSize);
+            [DllImport("Shlwapi.dll", SetLastError = true)]
+            public extern static bool PathFileExists(string Path);
         }
         /// <summary>
         /// 
@@ -182,6 +184,8 @@ namespace IoControl.Utils
         private static IEnumerable<string> FindUtil<T>(char[] Buffer, Func<char[],T> FirstMethod, Func<T,char[],bool> NextMethod)
             where T : SafeHandle
         {
+            const int NOT_MORE_ERROR = unchecked((int)0x80070012);
+            const int DIRECTORY_NOT_FOUND = unchecked((int)0x80070003);
             var handle = FirstMethod(Buffer);
             IEnumerable<string> Generator()
             {
@@ -197,7 +201,12 @@ namespace IoControl.Utils
             }
             if (handle.IsInvalid)
                 using (handle)
-                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                {
+                    var errorCode = Marshal.GetHRForLastWin32Error();
+                    if (NOT_MORE_ERROR == errorCode || DIRECTORY_NOT_FOUND == errorCode)
+                        return Enumerable.Empty<string>();
+                    Marshal.ThrowExceptionForHR(errorCode);
+                }
             return Generator();
         }
         /// <summary>
@@ -297,6 +306,16 @@ namespace IoControl.Utils
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return Split(buffer, '\0');
         }
+        /// <summary>
+        /// ボリュームの情報を取得する
+        /// </summary>
+        /// <param name="RootPathName"></param>
+        /// <param name="VolumeName"></param>
+        /// <param name="VolumeSerialNumber"></param>
+        /// <param name="MaximumComponentLength"></param>
+        /// <param name="FileSystemFlags"></param>
+        /// <param name="FileSystemName"></param>
+        /// <returns></returns>
         public static bool GetVolumeInformation(
                 string RootPathName,
                 out string VolumeName,
@@ -305,13 +324,22 @@ namespace IoControl.Utils
                 out FileSystemFeature FileSystemFlags,
                 out string FileSystemName)
         {
-            var volumeNameBuffer = new StringBuilder(2048, 2048);
-            var fileSystemNameBuffer = new StringBuilder(2048, 2048);
+            var volumeNameBuffer = new StringBuilder(1024, 1024);
+            var fileSystemNameBuffer = new StringBuilder(1024, 1024);
             var result = NativeMethods.GetVolumeInformation(RootPathName, volumeNameBuffer, volumeNameBuffer.MaxCapacity, out VolumeSerialNumber, out MaximumComponentLength, out FileSystemFlags, fileSystemNameBuffer, fileSystemNameBuffer.Length);
-            if (!result)
+            VolumeName = result ? volumeNameBuffer.ToString() : string.Empty;
+            FileSystemName =  result ? fileSystemNameBuffer.ToString() : string.Empty;
+            return result;
+        }
+        public static (string VolumeName, uint VolumeSerialNumber, uint MaximumComponentLength, FileSystemFeature FileSystemFlags, string FileSystemName) GetVolumeInformation(string RootPath) {
+            if(!GetVolumeInformation(RootPath, out var VolumeName, out var VolumeSerialNumber, out var MaximumComponentLength, out var FileSystemFeature, out var FileSystemName))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            VolumeName = volumeNameBuffer.ToString();
-            FileSystemName = fileSystemNameBuffer.ToString();
+            return (VolumeName, VolumeSerialNumber, MaximumComponentLength, FileSystemFeature, FileSystemName);
+        }
+        public static bool PathFileExists(string Path) {
+            var result = NativeMethods.PathFileExists(Path);
+            var errCode = Marshal.GetHRForLastWin32Error();
+            var exception = Marshal.GetExceptionForHR(errCode);
             return result;
         }
     }

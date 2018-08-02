@@ -40,6 +40,7 @@ namespace IoControl.Utils.Tests
         private static IEnumerable<object[]> FindVolumeMountPointsTestData
             => GetLogicalDriveStrings().Select(v => $@"\\.\{v}")
             .Concat(FindVolumes().Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\')))
+            .Where(PathFileExists)
             .Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(FindVolumeMountPointsTestData))]
@@ -58,7 +59,8 @@ namespace IoControl.Utils.Tests
             if (GetVolumeInformation(RootPathName, out var VolumeName, out var VolumeSerialNumber, out var MaximumComponentLength, out var FileSystemFlags, out var FileSystemName))
                 Trace.WriteLine($"Return={true}: {nameof(VolumeName)}:{VolumeName}, {nameof(VolumeSerialNumber)}:{VolumeSerialNumber}, {nameof(MaximumComponentLength)}:{MaximumComponentLength}, {nameof(FileSystemFlags)}:{FileSystemFlags}, {nameof(FileSystemName)}:{FileSystemName}");
             else
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                Trace.WriteLine($"Return={false}");
+                //Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
         private static IEnumerable<object[]> GetVolumePathNamesForVolumeNameTestData => FindVolumes().Select(v => new object[] { v });
         [TestMethod]
