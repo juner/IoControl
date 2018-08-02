@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -45,6 +46,19 @@ namespace IoControl.Utils.Tests
         public void FindVolumeMountPointsTest(string RootPathName) {
             foreach (var volumeMountPoint in FindVolumeMountPoints(RootPathName))
                 Trace.WriteLine(volumeMountPoint);
+        }
+        private static IEnumerable<object[]> GetVolumeInformationTestData
+            => GetLogicalDriveStrings().Select(v => $@"{v}\")
+            .Concat(FindVolumes())
+            .Select(v => new object[] { v });
+        [TestMethod]
+        [DynamicData(nameof(GetVolumeInformationTestData))]
+        public void GetVolumeInformationTest(string RootPathName)
+        {
+            if (GetVolumeInformation(RootPathName, out var VolumeName, out var VolumeSerialNumber, out var MaximumComponentLength, out var FileSystemFlags, out var FileSystemName))
+                Trace.WriteLine($"Return={true}: {nameof(VolumeName)}:{VolumeName}, {nameof(VolumeSerialNumber)}:{VolumeSerialNumber}, {nameof(MaximumComponentLength)}:{MaximumComponentLength}, {nameof(FileSystemFlags)}:{FileSystemFlags}, {nameof(FileSystemName)}:{FileSystemName}");
+            else
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
         private static IEnumerable<object[]> GetVolumePathNamesForVolumeNameTestData => FindVolumes().Select(v => new object[] { v });
         [TestMethod]

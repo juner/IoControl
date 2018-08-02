@@ -75,6 +75,17 @@ namespace IoControl.Utils
             public static extern bool FindNextVolumeMountPoint(VolumeMountPointSafeHandle handle, char[] VolumeMountPoint, uint BufferLength);
             [DllImport("kernel32.dll", SetLastError = true)]
             public static extern bool FindVolumeMountPointClose(IntPtr FindVolumeMountPoint);
+            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public extern static bool GetVolumeInformation(
+                string rootPathName,
+                StringBuilder volumeNameBuffer,
+                int volumeNameSize,
+                out uint volumeSerialNumber,
+                out uint maximumComponentLength,
+                out FileSystemFeature fileSystemFlags,
+                StringBuilder fileSystemNameBuffer,
+                int nFileSystemNameSize);
         }
         /// <summary>
         /// 
@@ -285,6 +296,23 @@ namespace IoControl.Utils
             if (ReturnSize == 0)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return Split(buffer, '\0');
+        }
+        public static bool GetVolumeInformation(
+                string RootPathName,
+                out string VolumeName,
+                out uint VolumeSerialNumber,
+                out uint MaximumComponentLength,
+                out FileSystemFeature FileSystemFlags,
+                out string FileSystemName)
+        {
+            var volumeNameBuffer = new StringBuilder(2048, 2048);
+            var fileSystemNameBuffer = new StringBuilder(2048, 2048);
+            var result = NativeMethods.GetVolumeInformation(RootPathName, volumeNameBuffer, volumeNameBuffer.MaxCapacity, out VolumeSerialNumber, out MaximumComponentLength, out FileSystemFlags, fileSystemNameBuffer, fileSystemNameBuffer.Length);
+            if (!result)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            VolumeName = volumeNameBuffer.ToString();
+            FileSystemName = fileSystemNameBuffer.ToString();
+            return result;
         }
     }
 }
