@@ -76,6 +76,11 @@ namespace IoControl.Utils
             [DllImport("kernel32.dll", SetLastError = true)]
             public static extern bool FindVolumeMountPointClose(IntPtr FindVolumeMountPoint);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="DeviceName"></param>
+        /// <returns></returns>
         public static IEnumerable<string> QueryDocDevice(string DeviceName = default)
         {
             const int ERROR_INSUFFICIENT_BUFFER = unchecked((int)0x8007007A);
@@ -108,7 +113,7 @@ namespace IoControl.Utils
         /// <returns></returns>
         public static IEnumerable<string> FindVolumes() => VolumeSafeHandle.Find();
         /// <summary>
-        /// <see cref="Find"/> のハンドル用
+        /// <see cref="FindVolumes"/> のハンドル用
         /// </summary>
         private class VolumeSafeHandle : SafeHandleZeroOrMinusOneIsInvalid
         {
@@ -116,31 +121,23 @@ namespace IoControl.Utils
             public VolumeSafeHandle(IntPtr preexistingHandle, bool ownsHandle)
             : base(ownsHandle) => SetHandle(preexistingHandle);
             protected override bool ReleaseHandle() => NativeMethods.FindVolumeClose(handle);
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="Volume"></param>
+            /// <returns></returns>
             public static VolumeSafeHandle FindFirst(char[] Volume) => NativeMethods.FindFirstVolume(Volume, (uint)(Volume?.Length ?? 0));
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="Volume"></param>
+            /// <returns></returns>
             public bool FindNext(char[] Volume) => NativeMethods.FindNextVolume(this, Volume, (uint)(Volume?.Length ?? 0));
-            public static IEnumerable<string> Find()
-            {
-                const uint bufferLength = 1024;
-                var Volume = new char[bufferLength];
-                var handle = FindFirst(Volume);
-                IEnumerable<string> GetEnumerable()
-                {
-                    if (handle.IsClosed)
-                        throw new ObjectDisposedException(nameof(handle));
-                    using (handle)
-                        do
-                        {
-                            var str = FirstFindSplit(Volume, '\0');
-                            if (!string.IsNullOrWhiteSpace(str))
-                                yield return str;
-                        } while (handle.FindNext(Volume));
-                    yield break;
-                }
-                if (handle.IsInvalid)
-                    using (handle)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                return GetEnumerable();
-            }
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public static IEnumerable<string> Find() => FindUtil(new char[1024], FindFirst, (handle, buffer) => handle.FindNext(buffer));
 
         }
         /// <summary>
@@ -150,7 +147,7 @@ namespace IoControl.Utils
         /// <returns></returns>
         public static IEnumerable<string> FindVolumeMountPoints(string RootPathName) => VolumeMountPointSafeHandle.Find(RootPathName);
         /// <summary>
-        /// <see cref="FindVolumes"/>
+        /// <see cref="FindVolumeMountPoints"/> のハンドル用
         /// </summary>
         private class VolumeMountPointSafeHandle : SafeHandleZeroOrMinusOneIsInvalid
         {
@@ -160,28 +157,37 @@ namespace IoControl.Utils
             protected override bool ReleaseHandle() => NativeMethods.FindVolumeMountPointClose(handle);
             public static VolumeMountPointSafeHandle FindFirst(string RootPathName, char[] VolumeMountPoint) => NativeMethods.FindFirstVolumeMountPoint(RootPathName, VolumeMountPoint, (uint)(VolumeMountPoint?.Length ?? 0));
             public bool FindNext(char[] VolumeMountPoint) => NativeMethods.FindNextVolumeMountPoint(this, VolumeMountPoint, (uint)(VolumeMountPoint?.Length ?? 0));
-            public static IEnumerable<string> Find(string RootPathName)
+            public static IEnumerable<string> Find(string RootPathName) => FindUtil(new char[1024], buffer => FindFirst(RootPathName, buffer), (handle, buffer) => handle.FindNext(buffer));
+
+        }
+        /// <summary>
+        /// Find系のEnumeratingメソッドの簡略用
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="Buffer"></param>
+        /// <param name="FirstMethod"></param>
+        /// <param name="NextMethod"></param>
+        /// <returns></returns>
+        private static IEnumerable<string> FindUtil<T>(char[] Buffer, Func<char[],T> FirstMethod, Func<T,char[],bool> NextMethod)
+            where T : SafeHandle
+        {
+            var handle = FirstMethod(Buffer);
+            IEnumerable<string> Generator()
             {
-                const uint bufferLength = 1024;
-                var VolumeMountPoint = new char[bufferLength];
-                var handle = FindFirst(RootPathName, VolumeMountPoint);
-                IEnumerable<string> Generator()
-                {
-                    if (handle.IsClosed)
-                        throw new ObjectDisposedException(nameof(handle));
-                    using (handle)
-                        do
-                        {
-                            var str = FirstFindSplit(VolumeMountPoint, '\0');
-                            if (!string.IsNullOrWhiteSpace(str))
-                                yield return str;
-                        } while (handle.FindNext(VolumeMountPoint));
-                }
-                if (handle.IsInvalid)
-                    using (handle)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                return Generator();
+                if (handle.IsClosed)
+                    throw new ObjectDisposedException(nameof(handle));
+                using (handle)
+                    do
+                    {
+                        var str = FirstFindSplit(Buffer, '\0');
+                        if (!string.IsNullOrWhiteSpace(str))
+                            yield return str;
+                    } while (NextMethod(handle, Buffer));
             }
+            if (handle.IsInvalid)
+                using (handle)
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return Generator();
         }
         /// <summary>
         /// IEnumerable 版の Split
@@ -201,6 +207,13 @@ namespace IoControl.Utils
                 prevIndex = nextIndex + 1;
             }
         }
+        /// <summary>
+        /// 最初の
+        /// </summary>
+        /// <param name="chars"></param>
+        /// <param name="splitter"></param>
+        /// <param name="startIndex"></param>
+        /// <returns></returns>
         private static string FirstFindSplit(char[] chars, char splitter, int startIndex = 0)
         {
             var index = IndexOf(chars, splitter, startIndex);
@@ -208,6 +221,14 @@ namespace IoControl.Utils
                 return new string(chars, startIndex, index);
             return new string(chars, startIndex, chars.Length - startIndex);
         }
+        /// <summary>
+        /// <paramref name="startIndex"/>以降<paramref name="count"/>文字の範囲に存在する<paramref name="splitter"/>までのindexを取得する
+        /// </summary>
+        /// <param name="chars">文字列</param>
+        /// <param name="splitter">調査対象文字</param>
+        /// <param name="startIndex">開始index</param>
+        /// <param name="count">調査範囲</param>
+        /// <returns>発見したindex。見つからなければ-1を返す</returns>
         private static int IndexOf(char[] chars, char splitter, int startIndex = 0, int count = System.Threading.Timeout.Infinite)
         {
             for (int i = startIndex, imax = count > 0 ? count + startIndex : chars.Length ; i < imax; i++)
@@ -215,7 +236,7 @@ namespace IoControl.Utils
                 if (chars[i] == splitter)
                     return i;
             }
-            return -1;
+            return System.Threading.Timeout.Infinite;
         }
         /// <summary>
         /// GetVolumePathNamesForVolumeNameW function ( https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-getvolumepathnamesforvolumenamew )
