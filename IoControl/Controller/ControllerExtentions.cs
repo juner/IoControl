@@ -367,7 +367,7 @@ namespace IoControl.Controller
         /// <returns></returns>
         public static AtaPassThroughDirect AtaPassThroughDirect(this IoControl IoControl, AtaFlags AtaFlags = default, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, uint DataTransferLength = default, IntPtr DataBuffer = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default)
         {
-            if (!AtaPassThroughDirect(IoControl,out var Header, AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, DataTransferLength, DataBuffer, Feature, SectorCouont, SectorNumber, Cylinder, DeviceHead, Command, Reerved))
+            if (!AtaPassThroughDirect(IoControl,out var Header, AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, DataTransferLength, DataBuffer, Feature, SectorCouont, SectorNumber, Cylinder, DeviceHead, Command, Reserved))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return Header;
         }
