@@ -13,7 +13,7 @@ namespace IoControl.Volume.Tests
     [TestClass]
     public class VolumeExtensionsTest
     {
-        private static IEnumerable<object[]> VolumeGetVolumeDiskExtentsTestData => VolumePathGenerator().GetIoControls(CreationDisposition: System.IO.FileMode.Open)
+        private static IEnumerable<object[]> VolumeGetVolumeDiskExtentsTestData => VolumePath.GetIoControls(CreationDisposition: System.IO.FileMode.Open)
             .Where(v => MassStorage.MassStorageExtensions.StorageGetDeviceNumber(v).DeviceType == FileDevice.Disk)
             .Select(v => new object[] { v });
         [TestMethod]

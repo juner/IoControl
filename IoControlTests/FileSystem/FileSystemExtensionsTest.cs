@@ -17,7 +17,7 @@ namespace IoControl.FileSystem.Tests
             get {
                 using (var IoControl = GetIoControl($@"\\.\{Path.GetPathRoot(Directory.GetCurrentDirectory()).TrimEnd('\\')}", FileAccess: FileAccess.Read, FileShare: FileShare.Read | FileShare.Write, CreationDisposition: FileMode.Open))
                     yield return new object[] { IoControl, true };
-                foreach (var path in VolumePathGenerator().Concat(PhysicalDrivePathGenerator()).Concat(LogicalDrivePathGenerator())
+                foreach (var path in VolumePath.Concat(PhysicalDrivePath).Concat(LogicalDrivePath)
                 .GetIoControls(FileAccess: FileAccess.Read, FileShare: FileShare.Read | FileShare.Write, CreationDisposition: FileMode.Open))
                     yield return new object[] { path, null };
             }

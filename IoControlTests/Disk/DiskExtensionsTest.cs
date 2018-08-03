@@ -13,7 +13,7 @@ namespace IoControl.Disk.Tests
     [TestClass]
     public class DiskExtensionsTest
     {
-        private static IEnumerable<string> Generator => LogicalDrivePathGenerator().Concat(PhysicalDrivePathGenerator()).Concat(HarddiskVolumePathGenerator()).Concat(LogicalDrivePathGenerator()).Concat(HardidiskPartitionGenerator());
+        private static IEnumerable<string> Generator => LogicalDrivePath.Concat(PhysicalDrivePath).Concat(HarddiskVolumePath).Concat(HardidiskPartitionPath);
         private static IEnumerable<object[]> DiskGetCacheInformationTestData => Generator.GetIoControls(FileAccess: System.IO.FileAccess.Read, CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(DiskGetCacheInformationTestData))]

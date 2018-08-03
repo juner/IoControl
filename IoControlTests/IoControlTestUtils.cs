@@ -32,10 +32,11 @@ namespace IoControl
         /// </summary>
         /// <returns></returns>
         //public static IEnumerable<string> PhysicalDrivePathGenerator() => PhysicalDrivePathGenerator(0, 10);
-        public static IEnumerable<string> PhysicalDrivePathGenerator() => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("PhysicalDrive") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
-        public static IEnumerable<string> HarddiskVolumePathGenerator() => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("HarddiskVolume") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
-        public static IEnumerable<string> HardidiskPartitionGenerator() => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("Harddisk") == 0 && DeviceName.IndexOf("Partition") >0).Select(DeviceName => $@"\\.\{DeviceName}");
-        public static IEnumerable<string> VolumePathGenerator() => FindVolumes().Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\'));
+        public static IEnumerable<string> PhysicalDrivePath => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("PhysicalDrive") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
+        public static IEnumerable<string> HarddiskVolumePath => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("HarddiskVolume") == 0 && DeviceName.IndexOf("HarddiskVolumeShadowCopy") < 0).Select(DeviceName => $@"\\.\{DeviceName}");
+        public static IEnumerable<string> HarddiskVolumeShadowCopyPath => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("HarddiskVolumeShadowCopy") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
+        public static IEnumerable<string> HardidiskPartitionPath => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("Harddisk") == 0 && DeviceName.IndexOf("Partition") >0).Select(DeviceName => $@"\\.\{DeviceName}");
+        public static IEnumerable<string> VolumePath => FindVolumes().Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\'));
         /// <summary>
         /// 論理ドライブのパスを生成する
         /// </summary>
@@ -46,7 +47,7 @@ namespace IoControl
         /// 論理ドライブのパスを生成する
         /// </summary>
         /// <returns></returns>
-        public static IEnumerable<string> LogicalDrivePathGenerator() => Environment.GetLogicalDrives().Select(GetLogicalDrivePath);
+        public static IEnumerable<string> LogicalDrivePath => Utils.DeviceUtils.GetLogicalDriveStrings().Select(DriveName => $@"\\.\{DriveName.TrimEnd('\\')}");
         /// <summary>
         /// 物理ドライブのパスを元に解放が予約済の<see cref="IoControl"/>を生成する
         /// </summary>
@@ -56,7 +57,7 @@ namespace IoControl
         /// <param name="FlagAndAttributes"></param>
         /// <returns></returns>
         public static IEnumerable<IoControl> GetPhysicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
-            => Using(GetIoControls(PhysicalDrivePathGenerator(), FileAccess, FileShare, CreationDisposition, FlagAndAttributes));
+            => Using(GetIoControls(PhysicalDrivePath, FileAccess, FileShare, CreationDisposition, FlagAndAttributes));
         /// <summary>
         /// 論理ドライブのパスを元に解放が予約済の<see cref="IoControl"/>を生成する
         /// </summary>
@@ -66,7 +67,7 @@ namespace IoControl
         /// <param name="FlagAndAttributes"></param>
         /// <returns></returns>
         public static IEnumerable<IoControl> GetLogicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
-            => Using(GetIoControls(LogicalDrivePathGenerator(), FileAccess, FileShare, CreationDisposition, FlagAndAttributes));
+            => Using(GetIoControls(LogicalDrivePath, FileAccess, FileShare, CreationDisposition, FlagAndAttributes));
         /// <summary>
         /// パスのジェネレータを元に解放が予約済の<see cref="IoControl"/>を生成する。
         /// </summary>
