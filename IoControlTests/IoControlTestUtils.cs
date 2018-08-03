@@ -7,7 +7,7 @@ using static IoControl.Utils.DeviceUtils;
 namespace IoControl
 {
     public static class IoControlTestUtils
-    {   
+    {
         /// <summary>
         /// 物理ドライブのパスを生成する
         /// </summary>
@@ -21,12 +21,20 @@ namespace IoControl
         /// <param name="count">カウント</param>
         /// <returns></returns>
         public static IEnumerable<string> PhysicalDrivePathGenerator(int Start, int Count) => Enumerable.Range(Start, Count).Select(GetPhysicalDrivePath);
+        private static IEnumerable<string> _QueryDocDevice;
+        public static IEnumerable<string> QueryDocDevice(){
+            if (_QueryDocDevice == null)
+                _QueryDocDevice = Utils.DeviceUtils.QueryDocDevice();
+            return _QueryDocDevice;
+        }
         /// <summary>
         /// 物理ドライブのパスを生成する
         /// </summary>
         /// <returns></returns>
         //public static IEnumerable<string> PhysicalDrivePathGenerator() => PhysicalDrivePathGenerator(0, 10);
         public static IEnumerable<string> PhysicalDrivePathGenerator() => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("PhysicalDrive") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
+        public static IEnumerable<string> HarddiskVolumePathGenerator() => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("HarddiskVolume") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
+        public static IEnumerable<string> HardidiskPartitionGenerator() => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("Harddisk") == 0 && DeviceName.IndexOf("Partition") >0).Select(DeviceName => $@"\\.\{DeviceName}");
         public static IEnumerable<string> VolumePathGenerator() => FindVolumes().Select(v => v.Replace(@"\\?\", @"\\.\").TrimEnd('\\'));
         /// <summary>
         /// 論理ドライブのパスを生成する
