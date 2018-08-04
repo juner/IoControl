@@ -66,5 +66,21 @@ namespace IoControl
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Deconstruct(this IOControlCode CtrlCode, out FileDevice DeviceType, out uint Function, out Method Method, out FileAccess Access)
             => (DeviceType, Function, Method, Access) = (GetDeviceType(CtrlCode), GetFunction(CtrlCode), GetMethod(CtrlCode), GetAccess(CtrlCode));
+        /// <summary>
+        /// 部分的に <see cref="IOControlCode"/> の各値の書き換えを行う。
+        /// 引数を全てnullにするとSetを呼んだ自身のCtrlCodeを返す
+        /// </summary>
+        /// <param name="CtrlCode"></param>
+        /// <param name="DeviceType"></param>
+        /// <param name="Function"></param>
+        /// <param name="Method"></param>
+        /// <param name="Access"></param>
+        /// <returns></returns>
+        public static IOControlCode Set(this IOControlCode CtrlCode, FileDevice? DeviceType = null, uint? Function = null, Method? Method = null, FileAccess? Access = null)
+        {
+            if (DeviceType == null && Function == null && Method == null && Access == null) return CtrlCode;
+            var (_DeviceType, _Function, _Method, _Access) = CtrlCode;
+            return IOControlCodeExtensions.CtrlCode(DeviceType ?? _DeviceType, Function ?? _Function, Method ?? _Method, Access ?? _Access);
+        }
     }
 }
