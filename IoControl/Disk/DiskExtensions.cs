@@ -66,40 +66,18 @@ namespace IoControl.Disk
         /// <param name="layout"></param>
         public static bool DiskGetDriveLayout(this IoControl IoControl, out DriveLayoutInformation layout)
         {
-            var Size = (uint)Marshal.SizeOf<DriveLayoutInformation>();
-            var ReturnSize = 0u;
-            while(ReturnSize == 0u)
+            DriveLayoutInformation AddArray(IntPtr Ptr, DriveLayoutInformation _layout)
             {
-                var Ptr = Marshal.AllocCoTaskMem((int)Size);
-                using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
-                {
-                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayout, Ptr, Size, out ReturnSize);
-                    if (result)
-                    {
-                        layout = (DriveLayoutInformation)Marshal.PtrToStructure(Ptr, typeof(DriveLayoutInformation));
-                        var ArrayPtr = IntPtr.Add(Ptr, Marshal.OffsetOf<DriveLayoutInformation>(nameof(layout._PartitionEntry)).ToInt32());
-                        var PartitionSize = Marshal.SizeOf<PartitionInformation>();
-                        layout = layout.Set(PartitionEntry: Enumerable
-                            .Range(0, (int)layout.PartitionCount)
-                            .Select(index => (PartitionInformation)Marshal.PtrToStructure(IntPtr.Add(ArrayPtr, PartitionSize * index), typeof(PartitionInformation)))
-                            .ToArray());
-                        return result;
-                    }
-                    var ErrorCode = Marshal.GetHRForLastWin32Error();
-                    if (ErrorCode == ERROR_INSUFFICIENT_BUFFER)
-                    {
-                        Size *= 2;
-                        continue;
-                    }
-                    else
-                    {
-                        layout = default;
-                        return result;
-                    }
-                }
+                var ArrayPtr = IntPtr.Add(Ptr, Marshal.OffsetOf<DriveLayoutInformation>(nameof(_layout._PartitionEntry)).ToInt32());
+                var PartitionSize = Marshal.SizeOf<PartitionInformation>();
+                return _layout.Set(
+                        PartitionEntry: Enumerable
+                        .Range(0, (int)_layout.PartitionCount)
+                        .Select(index => (PartitionInformation)Marshal.PtrToStructure(IntPtr.Add(ArrayPtr, PartitionSize * index), typeof(PartitionInformation)))
+                        .ToArray()
+                    );
             }
-            layout = default;
-            return false;
+            return IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayout, out layout, AddArray);
         }
         /// <summary>
         /// IOCTL_DISK_GET_DRIVE_LAYOUT IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_get_drive_layout )
@@ -139,42 +117,18 @@ namespace IoControl.Disk
         /// <param name="layout"></param>
         public static bool DiskGetDriveLayoutEx(this IoControl IoControl, out DriveLayoutInformationEx layout)
         {
-            var Size = (uint)Marshal.SizeOf<DriveLayoutInformationEx>();
-            var ReturnSize = 0u;
-            while (ReturnSize == 0u)
+            DriveLayoutInformationEx AddArray(IntPtr Ptr, DriveLayoutInformationEx _layout)
             {
-                var Ptr = Marshal.AllocCoTaskMem((int)Size);
-                using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
-                {
-                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayoutEx, Ptr, Size, out ReturnSize);
-                    if (result)
-                    {
-                        layout = (DriveLayoutInformationEx)Marshal.PtrToStructure(Ptr, typeof(DriveLayoutInformationEx));
-                        var offset = (int)Marshal.OffsetOf<DriveLayoutInformationEx>(nameof(layout._PartitionEntry));
-                        var ArrayPtr = IntPtr.Add(Ptr, offset);
-                        var PartitionSize = Marshal.SizeOf<PartitionInformationEx>();
-                        layout = layout.Set(PartitionEntry: Enumerable
-                            .Range(0, (int)layout.PartitionCount)
-                            .Select(index => (PartitionInformationEx)Marshal.PtrToStructure(IntPtr.Add(ArrayPtr, PartitionSize * index), typeof(PartitionInformationEx)))
-                            .ToArray());
-                        return result;
-                    }
-                    var ErrorCode = Marshal.GetHRForLastWin32Error();
-                    if (ErrorCode == ERROR_INSUFFICIENT_BUFFER)
-                    {
-                        Size *= 2;
-                        continue;
-                    }
-                    else
-                    {
-                        layout = default;
-                        return result;
-                    }
-                }
+                var offset = (int)Marshal.OffsetOf<DriveLayoutInformationEx>(nameof(layout._PartitionEntry));
+                var ArrayPtr = IntPtr.Add(Ptr, offset);
+                var PartitionSize = Marshal.SizeOf<PartitionInformationEx>();
+                return _layout.Set(PartitionEntry: Enumerable
+                    .Range(0, (int)_layout.PartitionCount)
+                    .Select(index => (PartitionInformationEx)Marshal.PtrToStructure(IntPtr.Add(ArrayPtr, PartitionSize * index), typeof(PartitionInformationEx)))
+                    .ToArray());
             }
-            layout = default;
-            return false;
-        }
+            return IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveLayoutEx, out layout, AddArray);
+                    }
         /// <summary>
         /// IOCTL_DISK_GET_DRIVE_LAYOUT_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/winioctl/ni-winioctl-ioctl_disk_get_drive_layout_ex )
         /// </summary>

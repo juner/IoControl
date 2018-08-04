@@ -164,6 +164,37 @@ namespace IoControl
                 return result;
             }
         }
+        const int ERROR_INSUFFICIENT_BUFFER = unchecked((int)0x8007007A);
+        public bool DeviceIoControlOutOnly<T>(IOControlCode IoControlCode, out T output, Func<IntPtr, T, T> Setter)
+            where T : struct
+        {
+            var Size = (uint)Marshal.SizeOf<T>();
+            var ReturnSize = 0u;
+            while (ReturnSize == 0u)
+            {
+                var Ptr = Marshal.AllocCoTaskMem((int)Size);
+                using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
+                {
+                    var result = DeviceIoControlOutOnly(IoControlCode, Ptr, Size, out ReturnSize);
+                    if (result)
+                    {
+                        output = (T)Marshal.PtrToStructure(Ptr, typeof(T));
+                        output = Setter(Ptr, output);
+                        return result;
+                    }
+
+                    var ErrorCode = Marshal.GetHRForLastWin32Error();
+                    if (ErrorCode == ERROR_INSUFFICIENT_BUFFER)
+                    {
+                        Size *= 2;
+                        continue;
+                    }
+                    else break;
+                }
+            }
+            output = default;
+            return false;
+        }
         internal bool DeviceIoControlIs(IOControlCode IOControlCode, params uint[] NotErrorCodes)
         {
             var result = DeviceIoControl(IOControlCode, out var _);
