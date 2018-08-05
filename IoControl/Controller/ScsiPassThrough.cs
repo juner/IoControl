@@ -23,7 +23,5 @@ namespace IoControl.Controller
         public uint SenseInfoOffset;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst =16)]
         public byte[] Cdb;
-
-}
-
+    }
 }

@@ -4,8 +4,14 @@ using System.Runtime.InteropServices;
 namespace IoControl.MassStorage
 {
     /// <summary>
-    /// _STORAGE_DEVICE_DESCRIPTOR structure ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ns-ntddstor-_storage_device_descriptor )
+    /// _STORAGE_DEVICE_DESCRIPTOR structure 
+    /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ns-ntddstor-_storage_device_descriptor
+    /// The <see cref="StorageDeviceDescriptor"/> structure is used in conjunction with the <see cref="IOControlCode.StorageQueryProperty"/> request to retrieve the storage device descriptor data for a device.
     /// </summary>
+    /// <remarks>
+    /// Applications and storage class drivers issue a device-control request with the I/O control code <see cref="IOControlCode.StorageQueryProperty"/> to retrieve this structure, which contains information about a target device. The structure can be retrieved only from an FDO; attempting to retrieve device properties from an adapter causes an error.
+    /// An application or driver can determine the required buffer size by casting the retrieved <see cref="StorageDeviceDescriptor"/> structure to a <see cref="StorageDescriptorHeader"/>, which contains only <see cref="Version"/> and <see cref="Size"/>.
+    /// </remarks>
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct StorageDeviceDescriptor
     {
@@ -20,7 +26,7 @@ namespace IoControl.MassStorage
         /// <summary>
         /// Specifies the device type as defined by the Small Computer Systems Interface (SCSI) specification.
         /// </summary>
-        public readonly byte DeviceType;
+        public readonly Scsi.DeviceType DeviceType;
         /// <summary>
         /// Specifies the device type modifier, if any, as defined by the SCSI specification. If no device type modifier exists, this member is zero.
         /// </summary>
@@ -63,11 +69,11 @@ namespace IoControl.MassStorage
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
         public readonly byte[] RawDeviceProperties;
 
-        public StorageDeviceDescriptor(uint Version, uint Size, byte DeviceType, byte DeviceTypeModifier, bool RemovableMedia, bool CommandQueueing, uint VendorIdOffset, uint ProductIdOffset, uint ProductRevisionOffset, uint SerialNumberOffset, StorageBusType BusType, uint RawPropertiesLength, byte[] RawDeviceProperties)
+        public StorageDeviceDescriptor(uint Version, uint Size, Scsi.DeviceType DeviceType, byte DeviceTypeModifier, bool RemovableMedia, bool CommandQueueing, uint VendorIdOffset, uint ProductIdOffset, uint ProductRevisionOffset, uint SerialNumberOffset, StorageBusType BusType, uint RawPropertiesLength, byte[] RawDeviceProperties)
             => (this.Version, this.Size, this.DeviceType, this.DeviceTypeModifier, this.RemovableMedia, this.CommandQueueing, this.VendorIdOffset, this.ProductIdOffset, this.ProductRevisionOffset, this.SerialNumberOffset, this.BusType, this.RawPropertiesLength, this.RawDeviceProperties)
                 = (Version, Size, DeviceType, DeviceTypeModifier, RemovableMedia, CommandQueueing, VendorIdOffset, ProductIdOffset, ProductRevisionOffset, SerialNumberOffset, BusType, RawPropertiesLength, RawDeviceProperties);
 
-        public void Deconstruct(out uint Version, out uint Size, out byte DeviceType, out byte DeviceTypeModifier, out bool RemovableMedia, out bool CommandQueueing, out uint VendorIdOffset, out uint ProductIdOffset, out uint ProductRevisionOffset, out uint SerialNumberOffset, out StorageBusType BusType, out uint RawPropertiesLength, out byte[] RawDeviceProperties)
+        public void Deconstruct(out uint Version, out uint Size, out Scsi.DeviceType DeviceType, out byte DeviceTypeModifier, out bool RemovableMedia, out bool CommandQueueing, out uint VendorIdOffset, out uint ProductIdOffset, out uint ProductRevisionOffset, out uint SerialNumberOffset, out StorageBusType BusType, out uint RawPropertiesLength, out byte[] RawDeviceProperties)
             => (Version, Size, DeviceType, DeviceTypeModifier, RemovableMedia, CommandQueueing, VendorIdOffset, ProductIdOffset, ProductRevisionOffset, SerialNumberOffset, BusType, RawPropertiesLength, RawDeviceProperties)
             = (this.Version, this.Size, this.DeviceType, this.DeviceTypeModifier, this.RemovableMedia, this.CommandQueueing, this.VendorIdOffset, this.ProductIdOffset, this.ProductRevisionOffset, this.SerialNumberOffset, this.BusType, this.RawPropertiesLength, this.RawDeviceProperties);
         public override string ToString()
