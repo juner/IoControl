@@ -9,18 +9,57 @@ namespace IoControl.MassStorage
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct StorageDeviceDescriptor
     {
+        /// <summary>
+        /// Indicates the size of the STORAGE_DEVICE_DESCRIPTOR structure. The value of this member will change as members are added to the structure.
+        /// </summary>
         public readonly uint Version;
+        /// <summary>
+        /// Specifies the total size of the descriptor in bytes, including ID strings which are appended to the structure.
+        /// </summary>
         public readonly uint Size;
+        /// <summary>
+        /// Specifies the device type as defined by the Small Computer Systems Interface (SCSI) specification.
+        /// </summary>
         public readonly byte DeviceType;
+        /// <summary>
+        /// Specifies the device type modifier, if any, as defined by the SCSI specification. If no device type modifier exists, this member is zero.
+        /// </summary>
         public readonly byte DeviceTypeModifier;
+        /// <summary>
+        /// Indicates when TRUE that the device's media (if any) is removable. If the device has no media, this member should be ignored. When FALSE the device's media is not removable.
+        /// </summary>
         public readonly bool RemovableMedia;
+        /// <summary>
+        /// Indicates when TRUE that the device supports multiple outstanding commands (SCSI tagged queuing or equivalent). When FALSE, the device does not support SCSI-tagged queuing or the equivalent. The STORPORT driver is responsible for synchronizing the commands.
+        /// </summary>
         public readonly bool CommandQueueing;
+        /// <summary>
+        /// Specifies the byte offset from the beginning of the structure to a NULL-terminated ASCII string that contains the device's vendor ID. If the device has no vendor ID, this member is zero.
+        /// </summary>
         public readonly uint VendorIdOffset;
+        /// <summary>
+        /// Specifies the byte offset from the beginning of the structure to a NULL-terminated ASCII string that contains the device's product ID. If the device has no product ID, this member is zero.
+        /// </summary>
         public readonly uint ProductIdOffset;
+        /// <summary>
+        /// Specifies the byte offset from the beginning of the structure to a NULL-terminated ASCII string that contains the device's product revision string. If the device has no product revision string, this member is zero.
+        /// </summary>
         public readonly uint ProductRevisionOffset;
+        /// <summary>
+        /// Specifies the byte offset from the beginning of the structure to a NULL-terminated ASCII string that contains the device's serial number. If the device has no serial number, this member is zero.
+        /// </summary>
         public readonly uint SerialNumberOffset;
+        /// <summary>
+        /// Specifies an enumerator value of type STORAGE_BUS_TYPE that indicates the type of bus to which the device is connected. This should be used to interpret the raw device properties at the end of this structure (if any).
+        /// </summary>
         public readonly StorageBusType BusType;
+        /// <summary>
+        /// Indicates the number of bytes of bus-specific data that have been appended to this descriptor.
+        /// </summary>
         public readonly uint RawPropertiesLength;
+        /// <summary>
+        /// Contains an array of length one that serves as a place holder for the first byte of the bus specific property data.
+        /// </summary>
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
         public readonly byte[] RawDeviceProperties;
 

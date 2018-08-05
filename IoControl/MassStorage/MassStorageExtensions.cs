@@ -8,15 +8,24 @@ namespace IoControl.MassStorage
 {
     public static class MassStorageExtensions
     {
-        public static void StorageGetDeviceNumber(this IoControl IoControl, out StorageDeviceNumber number)
-        {
-            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetDeviceNumber, out number, out var _);
-            if (!result)
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-        }
+        /// <summary>
+        /// IOCTL_STORAGE_GET_DEVICE_NUMBER IOCTL
+        /// https://docs.microsoft.com/en-us/windows/desktop/api/winioctl/ni-winioctl-ioctl_storage_get_device_number
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="number"></param>
+        /// <returns></returns>
+        public static bool StorageGetDeviceNumber(this IoControl IoControl, out StorageDeviceNumber number) => IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetDeviceNumber, out number, out var _);
+        /// <summary>
+        /// IOCTL_STORAGE_GET_DEVICE_NUMBER IOCTL
+        /// https://docs.microsoft.com/en-us/windows/desktop/api/winioctl/ni-winioctl-ioctl_storage_get_device_number
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static StorageDeviceNumber StorageGetDeviceNumber(this IoControl IoControl)
         {
-            StorageGetDeviceNumber(IoControl, out var number);
+            if(!StorageGetDeviceNumber(IoControl, out var number))
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return number;
         }
         public static void StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType, byte[] AdditionalParameters, out StorageDeviceDescriptor descriptor)
@@ -104,34 +113,121 @@ namespace IoControl.MassStorage
             StorageQueryProperty(IoControl, ref query, out var descriptor);
             return descriptor;
         }
-        public static void StorageGetMediaSerialNumber(this IoControl IoControl, out MediaSerialNumberData serialnumberdata)
+        const int ERROR_INSUFFICIENT_BUFFER = unchecked((int)0x8007007A);
+
+        /// <summary>
+        /// IOCTL_STORAGE_GET_MEDIA_SERIAL_NUMBER IOCTL
+        /// https://docs.microsoft.com/en-us/windows/desktop/api/winioctl/ni-winioctl-ioctl_storage_get_media_serial_number
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="MediaSerialNumberData"></param>
+        /// <returns></returns>
+        public static bool StorageGetMediaSerialNumber(this IoControl IoControl, out MediaSerialNumberData MediaSerialNumberData)
         {
-            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetMediaSerialNumber, out serialnumberdata, out var _);
-            if (!result)
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            var Size = (uint)Marshal.SizeOf<MediaSerialNumberData>();
+            var ReturnSize = 0u;
+            while (ReturnSize == 0u)
+            {
+                var Ptr = Marshal.AllocCoTaskMem((int)Size);
+                using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
+                {
+                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetMediaSerialNumber, Ptr, Size, out ReturnSize);
+                    if (result)
+                    {
+                        var offset = (int)Marshal.OffsetOf<MediaSerialNumberData>(nameof(MassStorage.MediaSerialNumberData.SerialNumberData));
+                        MediaSerialNumberData = (MediaSerialNumberData)Marshal.PtrToStructure(Ptr, typeof(MediaSerialNumberData));
+                        var SerialNumberData = new byte[MediaSerialNumberData.SerialNumberLength];
+                        Marshal.Copy(IntPtr.Add(Ptr, offset), SerialNumberData, 0, SerialNumberData.Length);
+                        MediaSerialNumberData = MediaSerialNumberData.Set(SerialNumberData: SerialNumberData);
+                        return result;
+                    }
+                    var ErrorCode = Marshal.GetHRForLastWin32Error();
+                    if (ErrorCode == ERROR_INSUFFICIENT_BUFFER)
+                    {
+                        Size *= 2;
+                        continue;
+                    }
+                    else break;
+                }
+            }
+            MediaSerialNumberData = default;
+            return false;
         }
+        /// <summary>
+        /// IOCTL_STORAGE_GET_MEDIA_SERIAL_NUMBER IOCTL
+        /// https://docs.microsoft.com/en-us/windows/desktop/api/winioctl/ni-winioctl-ioctl_storage_get_media_serial_number
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
         public static MediaSerialNumberData StorageGetMediaSerialNumber(this IoControl IoControl)
         {
-            StorageGetMediaSerialNumber(IoControl, out var serialnumber);
+            if (!StorageGetMediaSerialNumber(IoControl, out var serialnumber))
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return serialnumber;
         }
-    }
-    /// <summary>
-    /// MEDIA_SERIAL_NUMBER_DATA structure ( https://msdn.microsoft.com/library/windows/hardware/ff562213 )
-    /// </summary>
-    public readonly struct MediaSerialNumberData
-    {
-        public readonly uint SerialNumberLength;
-        public readonly uint Result;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst =2)]
-        public readonly uint[] Reserved;
-        [MarshalAs(UnmanagedType.ByValArray,SizeConst = 1)]
-        public readonly byte[] SerialNumberData;
-
-        MediaSerialNumberData(uint SerialNumberLength, uint Result, uint[] Reserved, byte[] SerialNumberData)
-            => (this.SerialNumberLength, this.Result, this.Reserved, this.SerialNumberData) = (SerialNumberLength, Result, Reserved, SerialNumberData);
-        public MediaSerialNumberData(uint SerialNumberLength, uint Result, byte[] SerialNumberData) : this(SerialNumberLength, Result, new uint[2], SerialNumberData) { }
-        public MediaSerialNumberData(uint Result, byte[] SerialNumberData) : this((uint)SerialNumberData.Length, Result, new uint[2], SerialNumberData) { }
+        /// <summary>
+        /// IOCTL_STORAGE_RESET_BUS IOCTL
+        /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ni-ntddstor-ioctl_storage_reset_bus
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        internal static bool StorageResetBus(this IoControl IoControl, in StorageBusResetRequest request) => IoControl.DeviceIoControlInOnly(IOControlCode.StorageResetBus, request, out _);
+        /// <summary>
+        /// IOCTL_STORAGE_RESET_BUS IOCTL
+        /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ni-ntddstor-ioctl_storage_reset_bus
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="PathId"></param>
+        /// <returns></returns>
+        public static bool StorageResetBus(this IoControl IoControl, byte PathId) => StorageResetBus(IoControl, (StorageBusResetRequest)PathId);
+        /// <summary>
+        /// OBSOLETE_IOCTL_STORAGE_RESET_BUS IOCTL
+        /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ni-ntddstor-ioctl_storage_reset_bus
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        internal static bool StorageObsoleteResetBus(this IoControl IoControl, in StorageBusResetRequest request) => IoControl.DeviceIoControlInOnly(IOControlCode.StorageObsoleteResetBus, request, out _);
+        /// <summary>
+        /// OBSOLETE_IOCTL_STORAGE_RESET_BUS IOCTL
+        /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ni-ntddstor-ioctl_storage_reset_bus
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="PathId"></param>
+        /// <returns></returns>
+        public static bool StorageObsoleteResetBus(this IoControl IoControl, byte PathId) => StorageObsoleteResetBus(IoControl, (StorageBusResetRequest)PathId);
+        /// <summary>
+        /// IOCTL_STORAGE_BREAK_RESERVATION IOCTL
+        /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ni-ntddstor-ioctl_storage_break_reservation
+        /// </summary>
+        /// <param name=""></param>
+        /// <returns></returns>
+        internal static bool StorageBreakReservation(this IoControl IoControl, in StorageBreakReservationRequest request) => IoControl.DeviceIoControlInOnly(IOControlCode.StorageBreakReservation, request, out _);
+        /// <summary>
+        /// IOCTL_STORAGE_BREAK_RESERVATION IOCTL
+        /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ni-ntddstor-ioctl_storage_break_reservation
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="PathId"></param>
+        /// <param name="TargetId"></param>
+        /// <param name="Lun"></param>
+        /// <returns></returns>
+        public static bool StorageBreakReservation(this IoControl IoControl, byte PathId, byte TargetId, byte Lun) => StorageBreakReservation(IoControl, (PathId, TargetId, Lun));
+        /// <summary>
+        /// IOCTL_STORAGE_RESET_DEVICE IOCTL
+        /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ni-ntddstor-ioctl_storage_reset_device
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static bool StorageResetDevice(this IoControl IoControl) => IoControl.DeviceIoControl(IOControlCode.StorageResetDevice, out _);
+        /// <summary>
+        /// OBSOLETE_IOCTL_STORAGE_RESET_DEVICE IOCTL
+        /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ni-ntddstor-ioctl_storage_reset_device
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static bool StorageObsoleteResetDevice(this IoControl IoControl) => IoControl.DeviceIoControl(IOControlCode.StorageObsoleteResetDevice, out _);
     }
 
 }

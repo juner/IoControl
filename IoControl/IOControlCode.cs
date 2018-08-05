@@ -12,29 +12,101 @@ namespace IoControl
     public enum IOControlCode : uint
     {
         // STORAGE
+        /// <summary>
+        /// IOCTL_STORAGE_CHECK_VERIFY
+        /// </summary>
         StorageCheckVerify = (FileDevice.MassStorage << 16) | (0x0200 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_CHECK_VERIFY2
+        /// </summary>
         StorageCheckVerify2 = (FileDevice.MassStorage << 16) | (0x0200 << 2) | Method.Buffered | (0 << 14), // FileAccess.Any
+        /// <summary>
+        /// IOCTL_STORAGE_MEDIA_REMOVAL
+        /// </summary>
         StorageMediaRemoval = (FileDevice.MassStorage << 16) | (0x0201 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_EJECT_MEDIA 
+        /// </summary>
         StorageEjectMedia = (FileDevice.MassStorage << 16) | (0x0202 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_LOAD_MEDIA
+        /// </summary>
         StorageLoadMedia = (FileDevice.MassStorage << 16) | (0x0203 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_LOAD_MEDIA2
+        /// </summary>
         StorageLoadMedia2 = (FileDevice.MassStorage << 16) | (0x0203 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_RESERVE
+        /// </summary>
         StorageReserve = (FileDevice.MassStorage << 16) | (0x0204 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_RELEASE
+        /// </summary>
         StorageRelease = (FileDevice.MassStorage << 16) | (0x0205 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_FIND_NEW_DEVICES
+        /// </summary>
         StorageFindNewDevices = (FileDevice.MassStorage << 16) | (0x0206 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_EJECTION_CONTROL
+        /// </summary>
         StorageEjectionControl = (FileDevice.MassStorage << 16) | (0x0250 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_MCN_CONTROL
+        /// </summary>
         StorageMcnControl = (FileDevice.MassStorage << 16) | (0x0251 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_GET_MEDIA_TYPES
+        /// </summary>
         StorageGetMediaTypes = (FileDevice.MassStorage << 16) | (0x0300 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_GET_MEDIA_TYPES_EX
+        /// </summary>
         StorageGetMediaTypesEx = (FileDevice.MassStorage << 16) | (0x0301 << 2) | Method.Buffered | (0 << 14),
         /// <summary>
         /// IOCTL_STORAGE_GET_MEDIA_SERIAL_NUMBER 
         /// </summary>
         StorageGetMediaSerialNumber = (FileDevice.MassStorage << 16) | (0x0304 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_GET_HOTPLUG_INFO
+        /// </summary>
+        StorageGetHotplugInfo = (FileDevice.MassStorage << 16) | (0x0305 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_SET_HOTPLUG_INFO
+        /// </summary>
+        StorageSetHotplugInfo = (FileDevice.MassStorage << 16) | (0x0306 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_RESET_BUS
+        /// </summary>
         StorageResetBus = (FileDevice.MassStorage << 16) | (0x0400 << 2) | Method.Buffered | (FileAccess.Read << 14),
-        StorageResetDevice = (FileDevice.MassStorage << 16) | (0x0401 << 2) | Method.Buffered | (FileAccess.Read << 14),
-        StorageGetDeviceNumber = (FileDevice.MassStorage << 16) | (0x0420 << 2) | Method.Buffered | (0 << 14),
-        StoragePredictFailure = (FileDevice.MassStorage << 16) | (0x0440 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// OBSOLETE_IOCTL_STORAGE_RESET_BUS
+        /// </summary>
         StorageObsoleteResetBus = (FileDevice.MassStorage << 16) | (0x0400 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_RESET_DEVICE
+        /// </summary>
+        StorageResetDevice = (FileDevice.MassStorage << 16) | (0x0401 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// OBSOLETE_IOCTL_STORAGE_RESET_DEVICE
+        /// </summary>
         StorageObsoleteResetDevice = (FileDevice.MassStorage << 16) | (0x0401 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_BREAK_RESERVATION
+        /// </summary>
+        StorageBreakReservation = (FileDevice.MassStorage << 16) | (0x0405 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_GET_DEVICE_NUMBER
+        /// </summary>
+        StorageGetDeviceNumber = (FileDevice.MassStorage << 16) | (0x0420 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_PREDICT_FAILURE
+        /// </summary>
+        StoragePredictFailure = (FileDevice.MassStorage << 16) | (0x0440 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_QUERY_PROPERTY
+        /// </summary>
         StorageQueryProperty = (FileDevice.MassStorage << 16) | (0x0500 << 2) | Method.Buffered | (0 << 14),
         // DISK
         DiskGetDriveGeometry = (FileDevice.Disk << 16) | (0x0000 << 2) | Method.Buffered | (0 << 14),
@@ -600,5 +672,25 @@ namespace IoControl
         /// IOCTL_VOLUME_GET_CSVBLOCKCACHE_CALLBACK CTL_CODE
         /// </summary>
         VolumeGetCsvblockcacheCallbackCtlCode = ('V' << 16) | (26 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_SCSISCAN_CMD
+        /// </summary>
+        ScsiscanCmd = (FileDevice.Scanner << 16) | (Scanner.Scsiscan.CmdCode << 2) | Method.OutDirect | (0 << 14),
+        /// <summary>
+        /// IOCTL_SCSISCAN_LOCKDEVICE
+        /// </summary>
+        ScsiscanLockDevice = (FileDevice.Scanner << 16) | (Scanner.Scsiscan.Lockdevice << 2) | Method.OutDirect | ( 0 << 14),
+        /// <summary>
+        /// IOCTL_SCSISCAN_UNLOCKDEVICE
+        /// </summary>
+        ScsiscanUnlockdevice = (FileDevice.Scanner << 16) | (Scanner.Scsiscan.Unlockdevice << 2) | Method.OutDirect | (0 << 14),
+        /// <summary>
+        /// IOCTL_SCSISCAN_SET_TIMEOUT
+        /// </summary>
+        ScsiscanSetTimeout = (FileDevice.Scanner << 16) | (Scanner.Scsiscan.SetTimeout << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_SCSISCAN_GET_INFO
+        /// </summary>
+        ScsiscanGetInfo = (FileDevice.Scanner << 16) | (Scanner.Scsiscan.GetInfo << 2) | Method.OutDirect | (0 << 14),
     }
 }

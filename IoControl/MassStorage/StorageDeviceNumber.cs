@@ -9,11 +9,19 @@ namespace IoControl.MassStorage
     public struct StorageDeviceNumber
     {
         /// <summary>
-        /// The type of device. Values from 0 through 32,767 are reserved for use by Microsoft. Values from 32,768 through 65,535 are reserved for use by other vendors. The following values are defined by Microsoft:
+        /// The FILE_DEVICE_XXX type for this device.
         /// </summary>
         public FileDevice DeviceType;
+        /// <summary>
+        /// The number of this device
+        /// </summary>
         public uint DeviceNumber;
+        /// <summary>
+        /// If the device is partitionable, the partition number of the device.
+        /// Otherwise -1
+        /// </summary>
         public uint PartitionNumber;
+        public bool IsNotHubPartitionNumber => PartitionNumber == uint.MaxValue;
         public override string ToString()
             => $"{nameof(StorageDeviceNumber)}{{{nameof(DeviceType)}:{DeviceType}, {nameof(DeviceNumber)}:{DeviceNumber}, {nameof(PartitionNumber)}:{PartitionNumber}}}";
     }
