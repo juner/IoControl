@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static IoControl.IoControlTestUtils;
 using System.Diagnostics;
 using IoControl.Disk;
+using System.Threading;
 
 namespace IoControl.Disk.Tests
 {
@@ -14,10 +15,14 @@ namespace IoControl.Disk.Tests
     public class DiskExtensionsTest
     {
         private static IEnumerable<string> Generator => LogicalDrivePath.Concat(PhysicalDrivePath).Concat(HarddiskVolumePath).Concat(HardidiskPartitionPath);
-        private static IEnumerable<IoControl> DiskAreVolumesReadyAsyncTestData => Generator.GetIoControls(FileAccess: System.IO.FileAccess.Read, FileShare: System.IO.FileShare.ReadWrite, CreationDisposition: System.IO.FileMode.Open, FlagAndAttributes: FileFlagAndAttributesExtensions.Create(FileFlags.Overlapped));
+        private static IEnumerable<object[]> DiskAreVolumesReadyAsyncTestData => Generator
+            .GetIoControls(FileAccess: System.IO.FileAccess.Read, FileShare: System.IO.FileShare.ReadWrite, CreationDisposition: System.IO.FileMode.Open, FlagAndAttributes: FileFlagAndAttributesExtensions.Create(FileFlags.Overlapped))
+            .Select(v => new object[] { v });
         [TestMethod]
+        [DynamicData(nameof(DiskAreVolumesReadyAsyncTestData))]
         public async Task DiskAreVolumesReadyAsyncTest(IoControl IoControl) {
-            Trace.WriteLine(await IoControl.DiskAreVolumesReadyAsync());
+            using (var source= new CancellationTokenSource(TimeSpan.FromMilliseconds(1000)))
+                Trace.WriteLine(await IoControl.DiskAreVolumesReadyAsync(source.Token));
         }
         private static IEnumerable<object[]> DiskGetCacheInformationTestData => Generator.GetIoControls(FileAccess: System.IO.FileAccess.Read, CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
