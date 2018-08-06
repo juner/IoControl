@@ -44,7 +44,7 @@ namespace IoControl.Tests
         }
         [TestMethod]
         [DynamicData(nameof(NewIoControlTestData))]
-        public void NewIoControlTest(string Path, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
+        public void NewIoControlTest(string Path, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagAndAttributes = default)
         {
             using (var IoControl = new IoControl(Path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes))
             {
@@ -57,7 +57,7 @@ namespace IoControl.Tests
                 FileAccess: FileAccess.ReadWrite,
                     FileShare: FileShare.ReadWrite,
                     CreationDisposition: FileMode.Open,
-                    FlagAndAttributes: FileAttributes.Normal).Select(v => new object[] { v });
+                    FlagAndAttributes: FileFlagAndAttributesExtensions.Create(FileAttributes.Normal)).Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(PhysicalDriveOpenTestData))]
         public void PhysicalDriveOpenTest(IoControl IoControl)

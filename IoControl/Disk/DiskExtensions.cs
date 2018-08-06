@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IoControl.Disk
@@ -18,7 +19,21 @@ namespace IoControl.Disk
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
-        public static Task DiskAreVolumesReadyAsync(this IoControl IoControl) =>  throw new NotImplementedException();
+        public static Task<bool> DiskAreVolumesReadyAsync(this IoControl IoControl, CancellationToken Token = default) => IoControl.DeviceIoControlAsync(IOControlCode.DiskAreVolumesReady,Token:Token);
+        /// <summary>
+        /// IOCTL_DISK_ARE_VOLUMES_READY IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/fileio/ioctl-disk-are-volumes-ready )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static bool DiskAreVolumeReady(this IoControl IoControl) => IoControl.DeviceIoControl(IOControlCode.DiskAreVolumesReady, out _);
+        /// <summary>
+        /// IOCTL_DISK_VOLUMES_ARE_READY IOCTL 
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="argment"></param>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+        public static Task<bool> DiskVolumesAreReadyAsync(this IoControl IoControl, uint argment, CancellationToken Token = default) => throw new NotImplementedException();
         public static void CreateDisk(this IoControl IoControl, in CreateDisk CreateDisk) => throw new NotImplementedException();
         /// <summary>
         /// IOCTL_DISK_GET_CACHE_INFORMATION IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_cache_information )

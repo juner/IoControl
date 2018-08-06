@@ -56,7 +56,7 @@ namespace IoControl
         /// <param name="CreationDisposition"></param>
         /// <param name="FlagAndAttributes"></param>
         /// <returns></returns>
-        public static IEnumerable<IoControl> GetPhysicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
+        public static IEnumerable<IoControl> GetPhysicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagAndAttributes = default)
             => Using(GetIoControls(PhysicalDrivePath, FileAccess, FileShare, CreationDisposition, FlagAndAttributes));
         /// <summary>
         /// 論理ドライブのパスを元に解放が予約済の<see cref="IoControl"/>を生成する
@@ -66,7 +66,7 @@ namespace IoControl
         /// <param name="CreationDisposition"></param>
         /// <param name="FlagAndAttributes"></param>
         /// <returns></returns>
-        public static IEnumerable<IoControl> GetLogicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
+        public static IEnumerable<IoControl> GetLogicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagAndAttributes = default)
             => Using(GetIoControls(LogicalDrivePath, FileAccess, FileShare, CreationDisposition, FlagAndAttributes));
         /// <summary>
         /// パスのジェネレータを元に解放が予約済の<see cref="IoControl"/>を生成する。
@@ -78,7 +78,7 @@ namespace IoControl
         /// <param name="FlagAndAttributes"></param>
         /// <returns></returns>
         /// <exception cref="AssertInconclusiveException"><paramref name="PathGenerator"/>により生成されたパスが一つも開けなかった場合</exception>
-        public static IEnumerable<IoControl> GetIoControls(this IEnumerable<string> PathGenerator, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default)
+        public static IEnumerable<IoControl> GetIoControls(this IEnumerable<string> PathGenerator, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagAndAttributes = default)
         {
             IEnumerable<IoControl> Genarator() {
                 foreach (var path in PathGenerator)
@@ -95,7 +95,7 @@ namespace IoControl
                 throw new ArgumentNullException(nameof(PathGenerator));
             return Genarator();
         }
-        public static IoControl GetIoControl(string path, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagAndAttributes = default) => new IoControl(path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes);
+        public static IoControl GetIoControl(string path, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagAndAttributes = default) => new IoControl(path, FileAccess, FileShare, CreationDisposition, FlagAndAttributes);
         /// <summary>
         /// 解放予約を行う
         /// </summary>

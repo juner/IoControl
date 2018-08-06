@@ -143,6 +143,14 @@ namespace IoControl
         DiskGetCacheInformation = (FileDevice.Disk << 16) | (0x0035 << 2) | Method.Buffered | (FileAccess.Read << 14),
         DiskSetCacheInformation = (FileDevice.Disk << 16) | (0x0036 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         DiskDeleteDriveLayout = (FileDevice.Disk << 16) | (0x0040 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_DISK_ARE_VOLUMES_READY
+        /// </summary>
+        DiskAreVolumesReady = (FileDevice.Disk << 16) | (0x0087 << 2) | Method.Buffered | (FileAccess.Read  << 14),
+        /// <summary>
+        /// IOCTL_DISK_VOLUMES_ARE_READY
+        /// </summary>
+        DiskVolumesAreReady = (FileDevice.Disk << 16) | (0x0088 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         DiskFormatDrive = (FileDevice.Disk << 16) | (0x00f3 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         DiskSenseDevice = (FileDevice.Disk << 16) | (0x00f8 << 2) | Method.Buffered | (0 << 14),
         DiskCheckVerify = (FileDevice.Disk << 16) | (0x0200 << 2) | Method.Buffered | (FileAccess.Read << 14),

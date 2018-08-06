@@ -14,6 +14,11 @@ namespace IoControl.Disk.Tests
     public class DiskExtensionsTest
     {
         private static IEnumerable<string> Generator => LogicalDrivePath.Concat(PhysicalDrivePath).Concat(HarddiskVolumePath).Concat(HardidiskPartitionPath);
+        private static IEnumerable<IoControl> DiskAreVolumesReadyAsyncTestData => Generator.GetIoControls(FileAccess: System.IO.FileAccess.Read, FileShare: System.IO.FileShare.ReadWrite, CreationDisposition: System.IO.FileMode.Open, FlagAndAttributes: FileFlagAndAttributesExtensions.Create(FileFlags.Overlapped));
+        [TestMethod]
+        public async Task DiskAreVolumesReadyAsyncTest(IoControl IoControl) {
+            Trace.WriteLine(await IoControl.DiskAreVolumesReadyAsync());
+        }
         private static IEnumerable<object[]> DiskGetCacheInformationTestData => Generator.GetIoControls(FileAccess: System.IO.FileAccess.Read, CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(DiskGetCacheInformationTestData))]

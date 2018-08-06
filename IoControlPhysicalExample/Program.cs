@@ -30,7 +30,7 @@ namespace IoControlPhysicalExample
                         FileAccess: FileAccess.ReadWrite,
                         FileShare: FileShare.ReadWrite,
                         CreationDisposition: FileMode.Open,
-                        FlagsAndAttributes: FileAttributes.Normal))
+                        FlagsAndAttributes: FileFlagAndAttributesExtensions.Create(FileAttributes.Normal)))
                     .Using())
             {
                 try
@@ -64,7 +64,7 @@ namespace IoControlPhysicalExample
                 FileAccess: FileAccess.ReadWrite,
                     FileShare: FileShare.ReadWrite,
                     CreationDisposition: FileMode.Open,
-                    FlagsAndAttributes: FileAttributes.Normal))
+                    FlagsAndAttributes: FileFlagAndAttributesExtensions.Create(FileAttributes.Normal)))
             {
                 try
                 {
@@ -159,7 +159,7 @@ namespace IoControlPhysicalExample
             }
             Console.ReadLine();
         }
-        public static IEnumerable<IoControl.IoControl> GetPhysicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagsAndAttributes = default)
+        public static IEnumerable<IoControl.IoControl> GetPhysicalDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagsAndAttributes = default)
         {
             bool hasDrive = false;
             foreach (var DeviceName in QueryDocDevice().Where(v => v.IndexOf("PhysicalDrive") == 0))

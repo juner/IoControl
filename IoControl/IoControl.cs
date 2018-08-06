@@ -3,6 +3,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IoControl
 {
@@ -15,7 +17,7 @@ namespace IoControl
         public bool IsClosed => Handle.IsClosed;
         public IoControl(SafeFileHandle Handle, bool Diposable = false, string Filename = null)
             => (this.Handle, this.Disposable, this.Filename) = (Handle, Diposable, Filename);
-        public IoControl(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagsAndAttributes = default)
+        public IoControl(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagsAndAttributes = default)
             : this(CreateFile(Filename, FileAccess, FileShare, CreationDisposition, FlagsAndAttributes), true, Filename) { }
         public void Dispose()
         {
@@ -33,7 +35,7 @@ namespace IoControl
                  [MarshalAs(UnmanagedType.U4)] FileShare share,
                  IntPtr securityAttributes,
                  [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-                 [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
+                 [MarshalAs(UnmanagedType.U4)] FileFlagAndAttributes flagsAndAttributes,
                  SafeFileHandle templateFile);
 
             [DllImport("kernel32.dll", SetLastError = true,
@@ -45,7 +47,7 @@ namespace IoControl
                  [MarshalAs(UnmanagedType.U4)] FileShare share,
                  IntPtr securityAttributes,
                  [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-                 [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
+                 [MarshalAs(UnmanagedType.U4)] FileFlagAndAttributes flagsAndAttributes,
                  IntPtr templateFile);
 
             [DllImport("kernel32.dll", SetLastError = true,
@@ -74,6 +76,13 @@ namespace IoControl
                 IntPtr pBytesReturned = default,
                 IntPtr Overlapped = default
             );
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool GetOverlappedResult(
+                  SafeFileHandle hFile,                       // ファイル、パイプ、通信デバイスのハンドル
+                  DeviceIoOverlapped lpOverlapped,          // オーバーラップ構造体
+                  out ushort lpNumberOfBytesTransferred, // 転送されたバイト数
+                  bool bWait                          // 待機オプション
+                );
         }
 
         public bool DeviceIoControl(IOControlCode IoControlCode, IntPtr InputPtr, uint InputSize, IntPtr OutputPtr, uint OutputSize, out uint ReturnBytes)
@@ -124,6 +133,28 @@ namespace IoControl
         }
         public bool DeviceIoControl(IOControlCode dwIoControlCode, out uint ReturnBytes)
             => NativeMethod.DeviceIoControl(Handle, dwIoControlCode, IntPtr.Zero, 0, IntPtr.Zero, 0, out ReturnBytes);
+
+        public async Task<bool> DeviceIoControlAsync(IOControlCode dwIoControlCode, int millisecondTimeout = Timeout.Infinite, CancellationToken Token = default)
+        {
+
+            using (var deviceIoOverlapped = new DeviceIoOverlapped())
+            using (var hEvent = new ManualResetEvent(false))
+            {
+                deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
+
+                var result = NativeMethod.DeviceIoControl(Handle, dwIoControlCode, IntPtr.Zero, 0, IntPtr.Zero, 9, out var ret, deviceIoOverlapped.GlobalOverlapped);
+                var hrCode = Marshal.GetHRForLastWin32Error();
+                if (!result)
+                    Marshal.ThrowExceptionForHR(hrCode);
+                await hEvent.WaitOneAsync();
+
+                result = NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false);
+                hrCode = Marshal.GetHRForLastWin32Error();
+                if (!result)
+                    Marshal.ThrowExceptionForHR(hrCode);
+                return result;
+            }
+        }
 
         public bool DeviceIoControlInOnly(IOControlCode dwIoControlCode, IntPtr InPtr, uint InSize, out uint ReturnBytes)
             => NativeMethod.DeviceIoControl(Handle, dwIoControlCode, InPtr, InSize, IntPtr.Zero, 0u, out ReturnBytes);
@@ -206,9 +237,9 @@ namespace IoControl
             }
             return result;
         }
-        internal static SafeFileHandle CreateFile(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagsAndAttributes = default, SafeFileHandle TemplateFile = default)
+        internal static SafeFileHandle CreateFile(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagsAndAttributes = default, SafeFileHandle TemplateFile = default)
             => NativeMethod.CreateFile(Filename, FileAccess, FileShare, IntPtr.Zero, CreationDisposition, FlagsAndAttributes, TemplateFile);
-        internal static SafeFileHandle CreateFile(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileAttributes FlagsAndAttributes = default)
+        internal static SafeFileHandle CreateFile(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagsAndAttributes = default)
             => NativeMethod.CreateFileW(Filename, FileAccess, FileShare, IntPtr.Zero, CreationDisposition, FlagsAndAttributes, IntPtr.Zero);
         public override string ToString()
             => $"{nameof(IoControl)}{{{(string.IsNullOrEmpty(Filename) ? string.Empty : $"{nameof(Filename)}:{Filename},")} {nameof(Disposable)}:{Disposable} {nameof(IsInvalid)}:{IsInvalid}, {nameof(IsClosed)}:{IsClosed}}}";
