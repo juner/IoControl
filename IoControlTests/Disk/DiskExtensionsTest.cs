@@ -8,6 +8,7 @@ using static IoControl.IoControlTestUtils;
 using System.Diagnostics;
 using IoControl.Disk;
 using System.Threading;
+using IoControl.Tests;
 
 namespace IoControl.Disk.Tests
 {
@@ -21,7 +22,8 @@ namespace IoControl.Disk.Tests
         [TestMethod]
         [DynamicData(nameof(DiskAreVolumesReadyAsyncTestData))]
         public async Task DiskAreVolumesReadyAsyncTest(IoControl IoControl) {
-            using (var source= new CancellationTokenSource(TimeSpan.FromMilliseconds(1000)))
+            using (var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(1000)))
+            using (Disposable.Create(source.Cancel))
                 Trace.WriteLine(await IoControl.DiskAreVolumesReadyAsync(source.Token));
         }
         private static IEnumerable<object[]> DiskGetCacheInformationTestData => Generator.GetIoControls(FileAccess: System.IO.FileAccess.Read, CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
