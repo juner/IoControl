@@ -84,12 +84,94 @@ namespace IoControl
                   bool bWait                          // 待機オプション
                 );
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControlCode"></param>
+        /// <param name="InputPtr"></param>
+        /// <param name="InputSize"></param>
+        /// <param name="OutputPtr"></param>
+        /// <param name="OutputSize"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
         public bool DeviceIoControl(IOControlCode IoControlCode, IntPtr InputPtr, uint InputSize, IntPtr OutputPtr, uint OutputSize, out uint ReturnBytes)
             => NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out ReturnBytes);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControlCode"></param>
+        /// <param name="InputPtr"></param>
+        /// <param name="InputSize"></param>
+        /// <param name="OutputPtr"></param>
+        /// <param name="OutputSize"></param>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+        public async Task<(bool Result,ushort ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, IntPtr InputPtr, uint InputSize, IntPtr OutputPtr, uint OutputSize, CancellationToken Token = default)
+        {
+            using (var deviceIoOverlapped = new DeviceIoOverlapped())
+            using (var hEvent = new ManualResetEvent(false))
+            {
+                deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
+
+                var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
+                var hrCode = Marshal.GetHRForLastWin32Error();
+                if (!result)
+                    Marshal.ThrowExceptionForHR(hrCode);
+                await hEvent.WaitOneAsync();
+
+                result = NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false);
+                hrCode = Marshal.GetHRForLastWin32Error();
+                if (!result)
+                    Marshal.ThrowExceptionForHR(hrCode);
+                return (result, ret2);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControlCode"></param>
+        /// <param name="InOutPtr"></param>
+        /// <param name="InOutSize"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
         public bool DeviceIoControl(IOControlCode IoControlCode, IntPtr InOutPtr, uint InOutSize, out uint ReturnBytes)
             => NativeMethod.DeviceIoControl(Handle, IoControlCode, InOutPtr, InOutSize, InOutPtr, InOutSize, out ReturnBytes);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControlCode"></param>
+        /// <param name="InOutPtr"></param>
+        /// <param name="InOutSize"></param>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+        public async Task<(bool Result, ushort ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, IntPtr InOutPtr, uint InOutSize, CancellationToken Token = default)
+        {
+            using (var deviceIoOverlapped = new DeviceIoOverlapped())
+            using (var hEvent = new ManualResetEvent(false))
+            {
+                deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
 
+                var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InOutPtr, InOutSize, InOutPtr, InOutSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
+                var hrCode = Marshal.GetHRForLastWin32Error();
+                if (!result)
+                    Marshal.ThrowExceptionForHR(hrCode);
+                await hEvent.WaitOneAsync();
+
+                result = NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false);
+                hrCode = Marshal.GetHRForLastWin32Error();
+                if (!result)
+                    Marshal.ThrowExceptionForHR(hrCode);
+                return (result, ret2);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TINOUT"></typeparam>
+        /// <param name="IoControlCode"></param>
+        /// <param name="InOutBuffer"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
         public bool DeviceIoControl<TINOUT>(IOControlCode IoControlCode, ref TINOUT InOutBuffer, out uint ReturnBytes)
             where TINOUT : struct
         {
@@ -103,6 +185,33 @@ namespace IoControl
                 return result;
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TINOUT"></typeparam>
+        /// <param name="IoControlCode"></param>
+        /// <param name="InBuffer"></param>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+        public async Task<(bool Result, TINOUT OutBuffer)> DeviceIoControlAsync<TINOUT>(IOControlCode IoControlCode, TINOUT InBuffer, CancellationToken Token = default)
+            where TINOUT: struct
+        {
+            var inoutSize = (uint)Marshal.SizeOf(typeof(TINOUT));
+            var inoutPtr = Marshal.AllocCoTaskMem((int)inoutSize);
+            using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(inoutPtr)))
+            {
+                Marshal.StructureToPtr(InBuffer, inoutPtr, false);
+                var (result,ReturnBytes) = await DeviceIoControlAsync(IoControlCode, inoutPtr, inoutSize, Token);
+                return (result, (TINOUT)Marshal.PtrToStructure(inoutPtr, typeof(TINOUT)));
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControlCode"></param>
+        /// <param name="InOutBuffer"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
         public bool DeviceIoControl(IOControlCode IoControlCode, byte[] InOutBuffer, out uint ReturnBytes)
         {
             var inoutSize = (uint)InOutBuffer.Length * sizeof(byte);
@@ -110,8 +219,24 @@ namespace IoControl
             using (global::IoControl.Disposable.Create(iogch.Free))
             {
                 var inoutPtr = iogch.AddrOfPinnedObject();
-                var result = DeviceIoControl(IoControlCode, inoutPtr, inoutSize, out ReturnBytes);
-                return result;
+                return DeviceIoControl(IoControlCode, inoutPtr, inoutSize, out ReturnBytes);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControlCode"></param>
+        /// <param name="InOutBuffer"></param>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+        public async Task<(bool Result, ushort ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, byte[] InOutBuffer, CancellationToken Token = default)
+        {
+            var inoutSize = (uint)InOutBuffer.Length * sizeof(byte);
+            var iogch = GCHandle.Alloc(InOutBuffer, GCHandleType.Pinned);
+            using (global::IoControl.Disposable.Create(iogch.Free))
+            {
+                var inoutPtr = iogch.AddrOfPinnedObject();
+                return await DeviceIoControlAsync(IoControlCode, inoutPtr, inoutSize, Token);
             }
         }
         public bool DeviceIoControl<TIN, TOUT>(IOControlCode IoControlCode, in TIN InBuffer, out TOUT OutBuffer, out uint ReturnBytes)
@@ -131,6 +256,22 @@ namespace IoControl
                 return result;
             }
         }
+        public async Task<(bool Result, TOUT OutBuffer)> DeviceIoControlAsync<TIN,TOUT>(IOControlCode IoControlCode, TIN InBuffer, CancellationToken Token = default)
+            where TIN : struct
+            where TOUT : struct
+        {
+            var inSize = (uint)Marshal.SizeOf(typeof(TIN));
+            var inPtr = Marshal.AllocCoTaskMem((int)inSize);
+            var outSize = (uint)Marshal.SizeOf(typeof(TOUT));
+            var outPtr = Marshal.AllocCoTaskMem((int)outSize);
+            using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(inPtr)))
+            using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(outPtr)))
+            {
+                Marshal.StructureToPtr(InBuffer, inPtr, false);
+                var (result, ReturnBytes) = await DeviceIoControlAsync(IoControlCode, inPtr, inSize, outPtr, outSize, Token);
+                return (result,(TOUT)Marshal.PtrToStructure(outPtr, typeof(TOUT)));
+            }
+        }
         public bool DeviceIoControl(IOControlCode dwIoControlCode, out uint ReturnBytes)
             => NativeMethod.DeviceIoControl(Handle, dwIoControlCode, IntPtr.Zero, 0, IntPtr.Zero, 0, out ReturnBytes);
 
@@ -142,7 +283,7 @@ namespace IoControl
             {
                 deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
 
-                var result = NativeMethod.DeviceIoControl(Handle, dwIoControlCode, IntPtr.Zero, 0, IntPtr.Zero, 9, out var ret, deviceIoOverlapped.GlobalOverlapped);
+                var result = NativeMethod.DeviceIoControl(Handle, dwIoControlCode, IntPtr.Zero, 0, IntPtr.Zero, 0, out var ret, deviceIoOverlapped.GlobalOverlapped);
                 var hrCode = Marshal.GetHRForLastWin32Error();
                 if (!result)
                     Marshal.ThrowExceptionForHR(hrCode);
