@@ -215,7 +215,7 @@ namespace IoControl.Disk
         /// </summary>
         /// <param name="IoControl"></param>
         /// <param name="geometry"></param>
-        public static bool DiskGetDriveGeometryEx(this IoControl IoControl, out DiskGeometryEx geometry) => IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveGeometryEx, out geometry, out _);
+        public static bool DiskGetDriveGeometryEx(this IoControl IoControl, out DiskGeometryEx geometry, out uint ByteSize) => IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveGeometryEx, out geometry, out ByteSize);
         /// <summary>
         /// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_drive_geometry_ex )
         /// </summary>
@@ -223,7 +223,7 @@ namespace IoControl.Disk
         /// <returns></returns>
         public static DiskGeometryEx DiskGetDriveGeometryEx(this IoControl IoControl)
         {
-            if (!DiskGetDriveGeometryEx(IoControl, out var geometry))
+            if (!DiskGetDriveGeometryEx(IoControl, out var geometry, out var ByteSize) && ByteSize == 0)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return geometry;
         }
@@ -231,18 +231,26 @@ namespace IoControl.Disk
         /// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_drive_geometry_ex )
         /// </summary>
         /// <param name="IoControl"></param>
-        /// <param name="geometry"></param>
-        public static bool DiskGetDriveGeometryEx2(this IoControl IoControl, out DiskGeometryEx2 geometry) => IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveGeometryEx, out geometry, out _);
+        /// <param name="Geometry"></param>
+        public static bool DiskGetDriveGeometryEx(this IoControl IoControl, out DiskGeometry Geometry, out long Size, out DiskPartitionInfo PartitionInfo, out DiskDetectionInfo DetectionInfo, out uint ByteSize)
+        {
+            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveGeometryEx, out DiskGeometryEx2 geometryEx, out ByteSize);
+            if (ByteSize > 0)
+                (Geometry, Size, PartitionInfo, DetectionInfo) = geometryEx;
+            else
+                (Geometry, Size, PartitionInfo, DetectionInfo) = (default, default, default, default);
+            return result;
+        }
         /// <summary>
         /// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_drive_geometry_ex )
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
-        public static DiskGeometryEx2 DiskGetDriveGeometryEx2(this IoControl IoControl)
+        public static (DiskGeometry Geometry, long Size, DiskPartitionInfo PartitionInfo, DiskDetectionInfo DetectionInfo) DiskGetDriveGeometryEx2(this IoControl IoControl)
         {
-            if (!DiskGetDriveGeometryEx2(IoControl, out var geometry))
+            if (!DiskGetDriveGeometryEx(IoControl, out var Geometry, out var Size, out var PartitionInfo, out var DetectionInfo, out var ByteSize) && ByteSize == 0)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            return geometry;
+            return (Geometry, Size, PartitionInfo, DetectionInfo);
         }
         /// <summary>
         /// IOCTL_DISK_CONTROLLER_NUMBER IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ni-ntdddisk-ioctl_disk_controller_number )
