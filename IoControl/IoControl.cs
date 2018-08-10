@@ -423,17 +423,17 @@ namespace IoControl
             }
         }
         const int ERROR_INSUFFICIENT_BUFFER = unchecked((int)0x8007007A);
-        public bool DeviceIoControlOutOnly<T>(IOControlCode IoControlCode, out T output, Func<IntPtr, T, T> Setter)
+        public bool DeviceIoControlOutOnly<T>(IOControlCode IoControlCode, out T output, Func<IntPtr, T, T> Setter, out uint ReturnBytes)
             where T : struct
         {
             var Size = (uint)Marshal.SizeOf<T>();
-            var ReturnSize = 0u;
-            while (ReturnSize == 0u)
+            ReturnBytes = 0u;
+            while (ReturnBytes == 0u)
             {
                 var Ptr = Marshal.AllocCoTaskMem((int)Size);
                 using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
                 {
-                    var result = DeviceIoControlOutOnly(IoControlCode, Ptr, Size, out ReturnSize);
+                    var result = DeviceIoControlOutOnly(IoControlCode, Ptr, Size, out ReturnBytes);
                     if (result)
                     {
                         output = (T)Marshal.PtrToStructure(Ptr, typeof(T));
@@ -447,7 +447,7 @@ namespace IoControl
                         Size *= 2;
                         continue;
                     }
-                    else break;
+                    break;
                 }
             }
             output = default;

@@ -158,7 +158,7 @@ namespace IoControl.Controller
         /// <param name="Command"></param>
         /// <param name="Reserved"></param>
         /// <returns></returns>
-        public static bool AtaPassThrough<T>(this IoControl IoControl, out AtaPassThroughEx Header, out T Data, AtaFlags AtaFlags, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default)
+        public static bool AtaPassThrough<T>(this IoControl IoControl, out AtaPassThroughEx Header, out T Data, out uint ReturnBytes, AtaFlags AtaFlags, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default)
             where T : struct
         {
             var DataTransferLength = (uint)Marshal.SizeOf<T>();
@@ -187,7 +187,7 @@ namespace IoControl.Controller
             using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
             {
                 Marshal.StructureToPtr(Header, Ptr, false);
-                var result = IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, Ptr, Size, out var _);
+                var result = IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, Ptr, Size, out ReturnBytes);
                 Header = result ? (AtaPassThroughEx)Marshal.PtrToStructure(Ptr, typeof(AtaPassThroughEx)) : default;
                 Data = result ? (T)Marshal.PtrToStructure(IntPtr.Add(Ptr, Marshal.SizeOf<AtaPassThroughEx>()), typeof(T)) : default;
                 return result;
@@ -219,6 +219,7 @@ namespace IoControl.Controller
             if (!AtaPassThrough<T>(IoControl,
                 Header: out var Header,
                 Data: out var Data,
+                ReturnBytes: out var ReturnBytes,
                 AtaFlags: AtaFlags,
                 PathId: PathId,
                 TargetId: TargetId,
@@ -232,7 +233,7 @@ namespace IoControl.Controller
                 Cylinder: Cylinder,
                 DeviceHead: DeviceHead,
                 Command: Command,
-                Reserved: Reserved))
+                Reserved: Reserved) && ReturnBytes == 0)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return (Header, Data);
         }
@@ -243,11 +244,12 @@ namespace IoControl.Controller
         /// <param name="Header"></param>
         /// <param name="Data"></param>
         /// <returns></returns>
-        public static bool AtaPassThroughIdentifyDevice(this IoControl IoControl, out AtaPassThroughEx Header,out AtaIdentifyDevice Data)
+        public static bool AtaPassThroughIdentifyDevice(this IoControl IoControl, out AtaPassThroughEx Header,out AtaIdentifyDevice Data, out uint ReturnBytes)
             => AtaPassThrough(
                 IoControl: IoControl,
                 Header: out Header,
                 Data: out Data,
+                ReturnBytes: out ReturnBytes,
                 AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
                 TimeOutValue: 3,
                 Command: 0xEC
@@ -271,12 +273,13 @@ namespace IoControl.Controller
         /// <param name="Header"></param>
         /// <param name="Data"></param>
         /// <returns></returns>
-        public static bool AtaPassThroughSmartAttributes(this IoControl IoControl, out AtaPassThroughEx Header, out SmartAttribute[] Data)
+        public static bool AtaPassThroughSmartAttributes(this IoControl IoControl, out AtaPassThroughEx Header, out SmartAttribute[] Data, out uint ReturnBytes)
         {
             var result = AtaPassThrough<SmartAttributes>(
                 IoControl: IoControl,
                 Header: out Header,
                 Data: out var Data_,
+                ReturnBytes: out ReturnBytes,
                 AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
                 TimeOutValue: 3,
                 Feature: 0xd0,

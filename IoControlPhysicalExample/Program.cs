@@ -69,7 +69,7 @@ namespace IoControlPhysicalExample
                 try
                 {
                     Trace.WriteLine(nameof(MassStorageExtensions.StorageGetDeviceNumber));
-                    IoControl.StorageGetDeviceNumber(out var number);
+                    IoControl.StorageGetDeviceNumber(out var number, out _);
                     Trace.WriteLine(number);
                 }catch(Exception e)
                 {
@@ -78,8 +78,9 @@ namespace IoControlPhysicalExample
                 try
                 {
                     Trace.WriteLine(nameof(DiskExtensions.DiskGetDriveGeometryEx2));
-                    IoControl.DiskGetDriveGeometryEx(out var geometry, out _);
-                    Trace.WriteLine(geometry);
+                    IoControl.DiskGetDriveGeometryEx(out var geometry, out var disksize, out _);
+                    Trace.WriteLine($"Geometry: {geometry}");
+                    Trace.WriteLine($"DiskSize: {disksize}");
                 }
                 catch (Exception e)
                 {
@@ -88,39 +89,10 @@ namespace IoControlPhysicalExample
                 try
                 {
                     Trace.WriteLine(nameof(IOControlCode.AtaPassThrough));
-                    IoControl.AtaPassThroughSmartAttributes(out var Header, out var Attributes);
+                    IoControl.AtaPassThroughSmartAttributes(out var Header, out var Attributes, out _);
                     Trace.WriteLine(Header);
-                    foreach (var Attribute in Attributes)
+                    foreach (var Attribute in Attributes ?? Enumerable.Empty<SmartAttribute>())
                         Trace.WriteLine(Attribute);
-                    {
-                        var buffer = new byte[512];
-                        var Handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                        var DataBuffer = Handle.AddrOfPinnedObject();
-                        using (Disposable.Create(Handle.Free))
-                        {
-                            IoControl.AtaPassThroughDirect(
-                                out var Header2,
-                                AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
-                                TimeOutValue: 3,
-                                DataBuffer: DataBuffer,
-                                DataTransferLength: (uint)buffer.Length,
-                                Feature: 0xd0,
-                                Cylinder: 0xc24f,
-                                Command: 0xb0
-                            );
-                            var Base = IntPtr.Add(DataBuffer, sizeof(ushort));
-                            var AttributeSize = Marshal.SizeOf(typeof(SmartAttribute));
-                            Trace.WriteLine("\r\ndirect");
-                            foreach (var attribute in Enumerable.Range(0, 30)
-                                .Select(index => (SmartAttribute)Marshal.PtrToStructure(IntPtr.Add(Base,index * AttributeSize), typeof(SmartAttribute)))
-                                .TakeWhile(attr => attr.Id > 0))
-                                Trace.WriteLine(attribute);
-
-                        }
-                        Trace.WriteLine("bytes: ");
-                        Trace.WriteLine($"[{string.Join(" ",(buffer.Select(v => $"{v:X2}")))}]");
-
-                    }
                 }catch (Exception e)
                 {
                     Trace.WriteLine(e);
@@ -128,7 +100,7 @@ namespace IoControlPhysicalExample
                 try
                 {
                     Trace.WriteLine(nameof(IOControlCode.AtaPassThrough));
-                    IoControl.AtaPassThroughIdentifyDevice(out var Header, out var Identify);
+                    IoControl.AtaPassThroughIdentifyDevice(out var Header, out var Identify, out _);
                     Trace.WriteLine(Header);
                     Trace.WriteLine(Identify);
 
@@ -149,7 +121,7 @@ namespace IoControlPhysicalExample
                 try
                 {
                     Trace.WriteLine(nameof(IOControlCode.DiskGetDriveLayoutEx));
-                    IoControl.DiskGetDriveLayoutEx(out var layout);
+                    IoControl.DiskGetDriveLayoutEx(out var layout, out _);
                     Trace.WriteLine(layout);
                 }
                 catch (Exception e)

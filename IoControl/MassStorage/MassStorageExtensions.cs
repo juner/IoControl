@@ -15,7 +15,7 @@ namespace IoControl.MassStorage
         /// <param name="IoControl"></param>
         /// <param name="number"></param>
         /// <returns></returns>
-        public static bool StorageGetDeviceNumber(this IoControl IoControl, out StorageDeviceNumber number) => IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetDeviceNumber, out number, out var _);
+        public static bool StorageGetDeviceNumber(this IoControl IoControl, out StorageDeviceNumber number, out uint ReturnBytes) => IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetDeviceNumber, out number, out ReturnBytes);
         /// <summary>
         /// IOCTL_STORAGE_GET_DEVICE_NUMBER IOCTL
         /// https://docs.microsoft.com/en-us/windows/desktop/api/winioctl/ni-winioctl-ioctl_storage_get_device_number
@@ -24,7 +24,7 @@ namespace IoControl.MassStorage
         /// <returns></returns>
         public static StorageDeviceNumber StorageGetDeviceNumber(this IoControl IoControl)
         {
-            if(!StorageGetDeviceNumber(IoControl, out var number))
+            if(!StorageGetDeviceNumber(IoControl, out var number, out var ReturnBytes) && ReturnBytes == 0)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return number;
         }

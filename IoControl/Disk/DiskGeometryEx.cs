@@ -13,6 +13,8 @@ namespace IoControl.Disk
         public long DiskSize;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
         public byte[] Data;
+        public void Deconstruct(out DiskGeometry Geometry, out long DiskSize)
+            => (Geometry, DiskSize) = (this.Geometry, this.DiskSize);
         public override string ToString()
             => $"{nameof(DiskGeometryEx)}{{{nameof(Geometry)}:{Geometry}, {nameof(DiskSize)}:{DiskSize}, {nameof(Data)}:[{string.Join(" ", (Data ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}]}}";
     }
