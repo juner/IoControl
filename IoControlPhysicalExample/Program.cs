@@ -78,7 +78,7 @@ namespace IoControlPhysicalExample
                 try
                 {
                     Trace.WriteLine(nameof(DiskExtensions.DiskGetDriveGeometryEx2));
-                    IoControl.DiskGetDriveGeometryEx(out var geometry);
+                    IoControl.DiskGetDriveGeometryEx(out var geometry, out _);
                     Trace.WriteLine(geometry);
                 }
                 catch (Exception e)
