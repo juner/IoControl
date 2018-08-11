@@ -47,6 +47,25 @@ namespace IoControl.MassStorage
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return number;
         }
+        /// <summary>
+        /// IOCTL_STORAGE_GET_DEVICE_NUMBER_EX IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="number"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
+        public static bool StorageGetDeviceNumberEx(this IoControl IoControl, out StorageDeviceNumberEx number, out uint ReturnBytes) => IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetDeviceNumberEx, out number, out ReturnBytes);
+        /// <summary>
+        /// IOCTL_STORAGE_GET_DEVICE_NUMBER_EX IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static StorageDeviceNumberEx StorageGetDeviceNumberEx(this IoControl IoControl)
+        {
+            if (!StorageGetDeviceNumberEx(IoControl, out var number, out var ReturnBytes) && ReturnBytes == 0)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return number;
+        }
         public static void StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType, byte[] AdditionalParameters, out StorageDeviceDescriptor descriptor)
         {
             var query = new StoragePropertyQuery (

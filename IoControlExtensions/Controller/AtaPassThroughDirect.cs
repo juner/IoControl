@@ -6,7 +6,8 @@ using static IoControl.Controller.AtaPassThroughUtils;
 namespace IoControl.Controller
 {
     /// <summary>
-    /// ATA_PASS_THROUGH_DIRECT structure ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ns-ntddscsi-_ata_pass_through_direct )
+    /// ATA_PASS_THROUGH_DIRECT structure
+    /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ns-ntddscsi-_ata_pass_through_direct
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public readonly struct  AtaPassThroughDirect

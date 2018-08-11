@@ -13,6 +13,9 @@ namespace IoControl.MassStorage.Tests
         [TestMethod]
         [DynamicData(nameof(StorageGetDeviceNumberTestData))]
         public void StorageGetDeviceNumberTest(IoControl IoControl) => Trace.WriteLine(IoControl.StorageGetDeviceNumber());
+        [TestMethod]
+        [DynamicData(nameof(StorageGetDeviceNumberTestData))]
+        public void StorageGetDeviceNumberExTest(IoControl IoControl) => Trace.WriteLine(IoControl.StorageGetDeviceNumberEx());
         private static IEnumerable<object[]> StorageQueryPropertyTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v, StoragePropertyId.StorageDeviceIdProperty, StorageQueryType.StandardQuery });
         [TestMethod]
         [DynamicData(nameof(StorageQueryPropertyTestData))]

@@ -109,6 +109,10 @@ namespace IoControl
         /// </summary>
         StorageGetDeviceNumber = (FileDevice.MassStorage << 16) | (0x0420 << 2) | Method.Buffered | (0 << 14),
         /// <summary>
+        /// IOCTL_STORAGE_GET_DEVICE_NUMBER_EX
+        /// </summary>
+        StorageGetDeviceNumberEx = (FileDevice.MassStorage << 16) | (0x0421 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
         /// IOCTL_STORAGE_PREDICT_FAILURE
         /// </summary>
         StoragePredictFailure = (FileDevice.MassStorage << 16) | (0x0440 << 2) | Method.Buffered | (0 << 14),
