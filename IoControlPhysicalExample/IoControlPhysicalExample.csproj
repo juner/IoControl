@@ -58,6 +58,10 @@
     <None Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\IoControlExtensions\IoControlExtensions.csproj">
+      <Project>{e1f8e9fb-8a90-47bd-ab76-97c711f29cc5}</Project>
+      <Name>IoControlExtensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\IoControl\IoControl.csproj">
       <Project>{f08d1879-0936-4cfd-ac29-806b382a4392}</Project>
       <Name>IoControl</Name>

@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace IoControl.MassStorage
 {
@@ -20,6 +21,25 @@ namespace IoControl.MassStorage
         public void Deconstruct(out uint Version, out uint Size) => (Version, Size) = (this.Version, this.Size);
         public override string ToString()
             => $"{nameof(StorageDescriptorHeader)}{{{nameof(Version)}:{Version}, {nameof(Size)}:{Size}}}";
+        public static StorageDescriptorHeader FromPtr(IntPtr IntPtr, uint Size) => (StorageDescriptorHeader)Marshal.PtrToStructure(IntPtr, typeof(StorageDescriptorHeader));
+        public IDisposable GetPtr(out IntPtr IntPtr, out uint Size)
+        {
+            var _Size = Marshal.SizeOf<StorageDescriptorHeader>();
+            var _IntPtr = Marshal.AllocCoTaskMem(_Size);
+            var Dispose = Disposable.Create(() => Marshal.FreeCoTaskMem(_IntPtr));
+            try
+            {
+                Marshal.StructureToPtr(this, _IntPtr, false);
+                IntPtr = _IntPtr;
+                Size = (uint)_Size;
+            }
+            catch
+            {
+                Dispose.Dispose();
+                throw;
+            }
+            return Dispose;
+        }
     }
 
 }

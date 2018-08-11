@@ -97,6 +97,14 @@ namespace IoControl
         /// </summary>
         StorageBreakReservation = (FileDevice.MassStorage << 16) | (0x0405 << 2) | Method.Buffered | (FileAccess.Read << 14),
         /// <summary>
+        /// IOCTL_STORAGE_PERSISTENT_RESERVE_IN
+        /// </summary>
+        StoragePersistentReserveIn = (FileDevice.MassStorage << 16) | (0x0406 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_PERSISTENT_RESERVE_OUT
+        /// </summary>
+        StoragePersistentReserveOut = (FileDevice.MassStorage << 16) | (0x0407 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
         /// IOCTL_STORAGE_GET_DEVICE_NUMBER
         /// </summary>
         StorageGetDeviceNumber = (FileDevice.MassStorage << 16) | (0x0420 << 2) | Method.Buffered | (0 << 14),
@@ -105,9 +113,109 @@ namespace IoControl
         /// </summary>
         StoragePredictFailure = (FileDevice.MassStorage << 16) | (0x0440 << 2) | Method.Buffered | (0 << 14),
         /// <summary>
+        /// IOCTL_STORAGE_FAILURE_PREDICTION_CONFIG
+        /// </summary>
+        StorageFailurePredictionConfig = (FileDevice.MassStorage << 16) | (0x0441 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_READ_CAPACITY
+        /// </summary>
+        StorageReadCapacity = (FileDevice.MassStorage << 16) | (0x0450 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_GET_DEVICE_TELEMETRY
+        /// </summary>
+        StorageGetDeviceTelemetry = (FileDevice.MassStorage << 16) | (0x0470 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_DEVICE_TELEMETRY_NOTIFY
+        /// </summary>
+        StorageDeviceTelemetryNotify = (FileDevice.MassStorage << 16) | (0x0471 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_DEVICE_TELEMETRY_QUERY_CAPS
+        /// </summary>
+        StorageDeviceTelemetryQueryCaps = (FileDevice.MassStorage << 16) | (0x0472 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_GET_DEVICE_TELEMETRY_RAW
+        /// </summary>
+        StorageGetDeviceTelemetryRaw = (FileDevice.MassStorage << 16) | (0x0473 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_SET_TEMPERATURE_THRESHOLD
+        /// </summary>
+        StorageSetTemperatureThreshold = (FileDevice.MassStorage << 16) | (0x0480 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_PROTOCOL_COMMAND
+        /// </summary>
+        StorageProtocolCommand = (FileDevice.MassStorage << 16) | (0x04F0 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
         /// IOCTL_STORAGE_QUERY_PROPERTY
         /// </summary>
         StorageQueryProperty = (FileDevice.MassStorage << 16) | (0x0500 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_MANAGE_DATA_SET_ATTRIBUTES
+        /// </summary>
+        StorageManageDataSetAttributes = (FileDevice.MassStorage << 16) | (0x0501 << 2) | Method.Buffered | (FileAccess.Write << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_GET_LB_PROVISIONING_MAP_RESOURCES
+        /// </summary>
+        StorageGetLbProvisioningMapResources = (FileDevice.MassStorage << 16) | (0x0502 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_GET_BC_PROPERTIES
+        /// </summary>
+        StorageGetBcProperties = (FileDevice.MassStorage << 16) | (0x0600 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_ALLOCATE_BC_STREAM
+        /// </summary>
+        StorageAllocateBcStream = (FileDevice.MassStorage << 16) | (0x0601 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_FREE_BC_STREAM
+        /// </summary>
+        StorageFreeBcStream = (FileDevice.MassStorage << 16) | (0x0602 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_CHECK_PRIORITY_HINT_SUPPORT
+        /// </summary>
+        StorageCheckPriorityHintSupport = (FileDevice.MassStorage << 16) | (0x0620 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_START_DATA_INTEGRITY_CHECK
+        /// </summary>
+        StorageStartDataIntegrityCheck = (FileDevice.MassStorage << 16) | (0x0621 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_STOP_DATA_INTEGRITY_CHECK
+        /// </summary>
+        StorageStopDataIntegrityCheck = (FileDevice.MassStorage << 16) | (0x0622 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_FIRMWARE_GET_INFO
+        /// </summary>
+        StorageFirmwareGetInfo = (FileDevice.MassStorage << 16) | (0x0700 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_FIRMWARE_DOWNLOAD
+        /// </summary>
+        StorageFirmwareDownload = (FileDevice.MassStorage << 16) | (0x0701 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_FIRMWARE_ACTIVATE
+        /// </summary>
+        StorageFirmwareActivate = (FileDevice.MassStorage << 16) | (0x0702 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_ENABLE_IDLE_POWER
+        /// </summary>
+        StorageEnableIdlePower = (FileDevice.MassStorage << 16) | (0x0720 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_GET_IDLE_POWERUP_REASON
+        /// </summary>
+        StorageGetIdlePowerupReason = (FileDevice.MassStorage << 16) | (0x0721 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_POWER_ACTIVE
+        /// </summary>
+        StoragePowerActive = (FileDevice.MassStorage << 16) | (0x0722 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_POWER_IDLE
+        /// </summary>
+        StoragePowerIdle = (FileDevice.MassStorage << 16) | (0x0723 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_EVENT_NOTIFICATION
+        /// </summary>
+        StorageEventNotification = (FileDevice.MassStorage << 16) | (0x0724 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// IOCTL_STORAGE_DEVICE_POWER_CAP
+        /// </summary>
+        StorageDevicePowerCap = (FileDevice.MassStorage << 16) | (0x0725 << 2) | Method.Buffered | (0 << 14),
         // DISK
         DiskGetDriveGeometry = (FileDevice.Disk << 16) | (0x0000 << 2) | Method.Buffered | (0 << 14),
         DiskGetPartitionInfo = (FileDevice.Disk << 16) | (0x0001 << 2) | Method.Buffered | (FileAccess.Read << 14),

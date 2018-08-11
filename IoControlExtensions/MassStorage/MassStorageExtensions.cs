@@ -9,6 +9,25 @@ namespace IoControl.MassStorage
     public static class MassStorageExtensions
     {
         /// <summary>
+        /// IOCTL_STORAGE_GET_HOTPLUG_INFO IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="info"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
+        public static bool StorageGetHotplugInfo(this IoControl IoControl, out StorageHotplugInfo info, out uint ReturnBytes) => IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetHotplugInfo, out info, out ReturnBytes);
+        /// <summary>
+        /// IOCTL_STORAGE_GET_HOTPLUG_INFO IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static StorageHotplugInfo StorageGetHotplugInfo(this IoControl IoControl)
+        {
+            if (!StorageGetHotplugInfo(IoControl, out var info, out var ReturnBytes) && ReturnBytes == 0)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return info;
+        }
+        /// <summary>
         /// IOCTL_STORAGE_GET_DEVICE_NUMBER IOCTL
         /// https://docs.microsoft.com/en-us/windows/desktop/api/winioctl/ni-winioctl-ioctl_storage_get_device_number
         /// </summary>
@@ -30,11 +49,11 @@ namespace IoControl.MassStorage
         }
         public static void StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType, byte[] AdditionalParameters, out StorageDeviceDescriptor descriptor)
         {
-            var query = new StoragePropertyQuery {
-                PropertyId = PropertyId,
-                QueryType = QueryType,
-                AdditionalParameters = AdditionalParameters ?? new byte[1],
-            };
+            var query = new StoragePropertyQuery (
+                PropertyId: PropertyId,
+                QueryType: QueryType,
+                AdditionalParameters: AdditionalParameters ?? new byte[1]
+            );
             StorageQueryProperty(IoControl, ref query, out descriptor);
         }
         public static StorageDeviceDescriptor StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType = default, params byte[] AdditionalParameters)

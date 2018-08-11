@@ -2,6 +2,9 @@
 
 namespace IoControl.MassStorage
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct StorageHotplugInfo
     {
