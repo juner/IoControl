@@ -3,7 +3,7 @@
     /// <summary>
     /// STORAGE_BUS_TYPE ( https://msdn.microsoft.com/library/windows/hardware/ff566356 )
     /// </summary>
-    public enum StorageBusType
+    public enum StorageBusType : byte
     {
         BusTypeUnknown = 0x00,
         BusTypeScsi = 0x1,

@@ -24,5 +24,15 @@ namespace IoControl.MassStorage.Tests
         [TestMethod]
         [DynamicData(nameof(StorageGetMediaSerialNumberTestData))]
         public void StorageGetMediaSerialNumberTest(IoControl IoControl) => Trace.WriteLine(IoControl.StorageGetMediaSerialNumber());
+        private static IEnumerable<object[]> StorageGetMediaTypesTestData => GetPhysicalDrives(CreationDisposition: System.IO.FileMode.Open).Select(v => new object[] { v });
+        [TestMethod]
+        [DynamicData(nameof(StorageGetMediaTypesTestData))]
+        public void StorageGetMediaTypesTest(IoControl IoControl) {
+            foreach (var MediaType in IoControl.StorageGetMediaTypes())
+                Trace.WriteLine(MediaType);
+        }
+        [TestMethod]
+        [DynamicData(nameof(StorageGetMediaTypesTestData))]
+        public void StorageGetMediaTypesExTest(IoControl IoControl) => Trace.WriteLine(IoControl.StorageGetMediaTypesEx());
     }
 }

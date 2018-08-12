@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using static IoControl.IoControl;
+using static IoControl.PtrUtils;
 
 namespace IoControl.MassStorage
 {
@@ -251,7 +253,7 @@ namespace IoControl.MassStorage
         /// <param name="TargetId"></param>
         /// <param name="Lun"></param>
         /// <returns></returns>
-        public static bool StorageBreakReservation(this IoControl IoControl, byte PathId, byte TargetId, byte Lun) => StorageBreakReservation(IoControl, (PathId, TargetId, Lun));
+        public static bool StorageBreakReservation(this IoControl IoControl, byte PathId, byte TargetId, byte Lun) => StorageBreakReservation(IoControl, new StorageBreakReservationRequest(PathId, TargetId, Lun));
         /// <summary>
         /// IOCTL_STORAGE_RESET_DEVICE IOCTL
         /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ni-ntddstor-ioctl_storage_reset_device
@@ -266,6 +268,92 @@ namespace IoControl.MassStorage
         /// <param name="IoControl"></param>
         /// <returns></returns>
         public static bool StorageObsoleteResetDevice(this IoControl IoControl) => IoControl.DeviceIoControl(IOControlCode.StorageObsoleteResetDevice, out _);
+        /// <summary>
+        /// IOCTL_STORAGE_MEDIA_REMOVAL IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="PreventMediaRemoval"><see cref="true"/> means prevent media from being removed. <see cref="false"/> means allow media removal.</param>
+        /// <returns></returns>
+        public static bool StorageMediaRemoval(this IoControl IoControl, bool PreventMediaRemoval) => IoControl.DeviceIoControlInOnly(IOControlCode.StorageMediaRemoval, new PreventMediaRemoval(PreventMediaRemoval), out _);
+        /// <summary>
+        /// IOCTL_STORAGE_GET_MEDIA_TYPES
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="MediaTypes"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
+        public static bool StorageGetMediaTypes(this IoControl IoControl, out Disk.DiskGeometry[] MediaTypes, out uint ReturnBytes)
+        {
+            var BaseSize = (uint)Marshal.SizeOf<Disk.DiskGeometry>() * 8u;
+            var Size = BaseSize;
+            var ReturnSize = 0u;
+            while (ReturnSize == 0u)
+                using (CreatePtr(Size, out var Ptr))
+                {
+                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetMediaTypes, Ptr, Size, out ReturnSize);
+                    if (result)
+                    {
+                        MediaTypes = Enumerable.Range(0, (int)(ReturnSize / BaseSize))
+                            .Select(index => PtrToStructure<Disk.DiskGeometry>(IntPtr.Add(Ptr, (int)BaseSize * index), BaseSize))
+                            .ToArray();
+                        ReturnBytes = ReturnSize;
+                        return result;
+                    }
+                    var ErrorCode = Marshal.GetHRForLastWin32Error();
+                    if (ErrorCode == ERROR_INSUFFICIENT_BUFFER)
+                    {
+                        Size *= 2;
+                        continue;
+                    }
+                    break;
+                }
+            ReturnBytes = ReturnSize;
+            MediaTypes = null;
+            return false;
+        }
+        /// <summary>
+        /// IOCTL_STORAGE_GET_MEDIA_TYPES
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static Disk.DiskGeometry[] StorageGetMediaTypes(this IoControl IoControl)
+        {
+            if (!StorageGetMediaTypes(IoControl, out var MediaTypes, out var ReturnBytes) && ReturnBytes == 0)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return MediaTypes;
+        }
+        public static bool StorageGetMediaTypesEx(this IoControl IoControl, out GetMediaTypes MediaTypes, out uint ReturnBytes)
+        {
+            var BaseSize = (uint)Marshal.SizeOf<GetMediaTypes>() * 8u;
+            var Size = BaseSize;
+            var ReturnSize = 0u;
+            while (ReturnSize == 0u)
+                using (CreatePtr(Size, out var Ptr))
+                {
+                    var result = IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetMediaTypesEx, Ptr, Size, out ReturnSize);
+                    if (result)
+                    {
+                        MediaTypes = GetMediaTypes.FromPtr(Ptr, ReturnSize);
+                        ReturnBytes = ReturnSize;
+                        return result;
+                    }
+                    var ErrorCode = Marshal.GetHRForLastWin32Error();
+                    if (ErrorCode == ERROR_INSUFFICIENT_BUFFER)
+                    {
+                        Size *= 2;
+                        continue;
+                    }
+                    break;
+                }
+            ReturnBytes = ReturnSize;
+            MediaTypes = default;
+            return false;
+        }
+        public static GetMediaTypes StorageGetMediaTypesEx(this IoControl IoControl)
+        {
+            if (!StorageGetMediaTypesEx(IoControl, out var MediaTypes, out var ReturnBytes) && ReturnBytes == 0)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return MediaTypes;
+        }
     }
-
 }
