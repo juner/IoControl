@@ -83,6 +83,8 @@ namespace IoControl
                   out ushort lpNumberOfBytesTransferred, // 転送されたバイト数
                   bool bWait                          // 待機オプション
                 );
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool CancelIoEx(SafeFileHandle hFile, IntPtr lpOverlapped = default);
         }
         /// <summary>
         /// 
@@ -122,16 +124,17 @@ namespace IoControl
         /// <returns></returns>
         public async Task<(bool Result,uint ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, IntPtr InputPtr, uint InputSize, IntPtr OutputPtr, uint OutputSize, CancellationToken Token = default)
         {
+            Token.ThrowIfCancellationRequested();
             using (var deviceIoOverlapped = new DeviceIoOverlapped())
             using (var hEvent = new ManualResetEvent(false))
             {
                 deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
-
-                var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
-                if (result)
-                    return (result, (ushort)ret);
-                await hEvent.WaitOneAsync(Token);
-
+                using (Token.Register(() => NativeMethod.CancelIoEx(Handle, deviceIoOverlapped.GlobalOverlapped))) {
+                    var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
+                    if (result)
+                        return (result, (ushort)ret);
+                    await hEvent.WaitOneAsync(Token);
+                }
                 return (NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false), ret2);
             }
         }
