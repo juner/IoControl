@@ -120,7 +120,7 @@ namespace IoControl
         /// <param name="OutputSize"></param>
         /// <param name="Token"></param>
         /// <returns></returns>
-        public async Task<(bool Result,ushort ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, IntPtr InputPtr, uint InputSize, IntPtr OutputPtr, uint OutputSize, CancellationToken Token = default)
+        public async Task<(bool Result,uint ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, IntPtr InputPtr, uint InputSize, IntPtr OutputPtr, uint OutputSize, CancellationToken Token = default)
         {
             using (var deviceIoOverlapped = new DeviceIoOverlapped())
             using (var hEvent = new ManualResetEvent(false))
@@ -130,7 +130,7 @@ namespace IoControl
                 var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
                 if (result)
                     return (result, (ushort)ret);
-                await hEvent.WaitOneAsync();
+                await hEvent.WaitOneAsync(Token);
 
                 return (NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false), ret2);
             }
@@ -153,26 +153,7 @@ namespace IoControl
         /// <param name="InOutSize"></param>
         /// <param name="Token"></param>
         /// <returns></returns>
-        public async Task<(bool Result, uint ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, IntPtr InOutPtr, uint InOutSize, CancellationToken Token = default)
-        {
-            using (var deviceIoOverlapped = new DeviceIoOverlapped())
-            using (var hEvent = new ManualResetEvent(false))
-            {
-                deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
-
-                var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InOutPtr, InOutSize, InOutPtr, InOutSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
-                var hrCode = Marshal.GetHRForLastWin32Error();
-                if (!result)
-                    Marshal.ThrowExceptionForHR(hrCode);
-                await hEvent.WaitOneAsync();
-
-                result = NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false);
-                hrCode = Marshal.GetHRForLastWin32Error();
-                if (!result)
-                    Marshal.ThrowExceptionForHR(hrCode);
-                return (result, ret2);
-            }
-        }
+        public Task<(bool Result, uint ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, IntPtr InOutPtr, uint InOutSize, CancellationToken Token = default) => DeviceIoControlAsync(IoControlCode, InOutPtr, InOutSize, InOutPtr, InOutSize, Token);
         /// <summary>
         /// 
         /// </summary>
@@ -325,22 +306,7 @@ namespace IoControl
         /// <param name="millisecondTimeout"></param>
         /// <param name="Token"></param>
         /// <returns></returns>
-        public async Task<bool> DeviceIoControlAsync(IOControlCode dwIoControlCode, CancellationToken Token = default)
-        {
-            using (var deviceIoOverlapped = new DeviceIoOverlapped())
-            using (var hEvent = new ManualResetEvent(false))
-            {
-                deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
-
-                var result = NativeMethod.DeviceIoControl(Handle, dwIoControlCode, IntPtr.Zero, 0, IntPtr.Zero, 0, out var ret, deviceIoOverlapped.GlobalOverlapped);
-                var hrCode = Marshal.GetHRForLastWin32Error();
-                if (!result)
-                    return result;
-                await hEvent.WaitOneAsync();
-
-                return NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false);
-            }
-        }
+        public async Task<bool> DeviceIoControlAsync(IOControlCode IoControlCode, CancellationToken Token = default) => (await DeviceIoControlAsync(IoControlCode, IntPtr.Zero, 0u, IntPtr.Zero, 0u, Token)).Result;
         /// <summary>
         /// 
         /// </summary>
