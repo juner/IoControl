@@ -11,8 +11,10 @@ namespace IoControl.MassStorage
     /// If excessive protocol errors occur on an HBA that supports synchronous transfers(<see cref="StorageAdapterDescriptor.AcceleratedTransfer"/> is <see cref="true"/>), the storage class driver can disable synchronous transfers by setting SRB_FLAGS_DISABLE_SYNCH_TRANSFER in SRBs.
     /// </remarks>
     [StructLayout(LayoutKind.Sequential)]
-    public struct StorageAdapterDescriptor
+    public struct StorageAdapterDescriptor : IStorageDescriptor
     {
+        uint IStorageDescriptor.Size => Size;
+        uint IStorageDescriptor.Version => Version;
         /// <summary>
         /// Contains the version of the structure STORAGE_ADAPTER_DESCRIPTOR. The value of this member will change as members are added to the structure.
         /// </summary>

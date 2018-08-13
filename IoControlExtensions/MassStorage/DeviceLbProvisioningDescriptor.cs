@@ -10,8 +10,10 @@ namespace IoControl.MassStorage
     /// 
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct DeviceLbProvisioningDescriptor
+    public readonly struct DeviceLbProvisioningDescriptor : IStorageDescriptor
     {
+        uint IStorageDescriptor.Size => Size;
+        uint IStorageDescriptor.Version => Version;
         /// <summary>
         /// The version of this structure.
         /// </summary>

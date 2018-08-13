@@ -7,8 +7,10 @@ namespace IoControl.MassStorage
     /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ns-ntddstor-_device_power_descriptor
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct DevicePowerDescriptor
+    public readonly struct DevicePowerDescriptor : IStorageDescriptor
     {
+        uint IStorageDescriptor.Size => Size;
+        uint IStorageDescriptor.Version => Version;
         /// <summary>
         /// Contains the size of this structure, in bytes. The value of this member will change as members are added to the structure.
         /// </summary>

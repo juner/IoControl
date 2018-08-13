@@ -81,90 +81,50 @@ namespace IoControl.MassStorage
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return number;
         }
-        public static void StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType, byte[] AdditionalParameters, out StorageDeviceDescriptor descriptor)
+        public static bool StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType, byte[] AdditionalParameters, out IStorageDescriptor descriptor, out uint ReturnBytes)
         {
-            var query = new StoragePropertyQuery (
-                PropertyId: PropertyId,
-                QueryType: QueryType,
-                AdditionalParameters: AdditionalParameters ?? new byte[1]
-            );
-            StorageQueryProperty(IoControl, ref query, out descriptor);
+            var genericType = PropertyId.GetDestType();
+            if (genericType == null)
+                throw new ArgumentException($"{nameof(PropertyId)} is not have {nameof(StoragePropertyAttribute)}.{nameof(StoragePropertyAttribute.DestType)}");
+            var query = new StoragePropertyQuery(PropertyId, QueryType, AdditionalParameters);
+            var argument = new object[] { IoControl, query, null, null };
+            var result = (bool)typeof(MassStorageExtensions)
+                .GetMethod(nameof(StorageQueryProperty))
+                .MakeGenericMethod(genericType)
+                .Invoke(null, argument);
+            descriptor = (IStorageDescriptor)argument[2];
+            ReturnBytes = (uint)argument[3];
+            return result;
+            
         }
-        public static StorageDeviceDescriptor StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType = default, params byte[] AdditionalParameters)
+        public static IStorageDescriptor StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType = default, params byte[] AdditionalParameters)
         {
-            StorageQueryProperty(IoControl, PropertyId, QueryType, AdditionalParameters, out var descriptor);
+            if (!StorageQueryProperty(IoControl, PropertyId, QueryType, AdditionalParameters, out var descriptor, out var ReturnBytes) && ReturnBytes == 0)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return descriptor;
         }
-        public static void StorageQueryProperty(this IoControl IoControl, ref StoragePropertyQuery query, out StorageDeviceDescriptor descriptor)
+        public static bool StorageQueryProperty<T>(this IoControl IoControl, in StoragePropertyQuery query, out T descriptor, out uint ReturnBytes)
+            where T: struct, IStorageDescriptor
         {
-            var Pack = typeof(StoragePropertyQuery).StructLayoutAttribute.Pack;
-            const int propertyIdSize = sizeof(StoragePropertyId);
-            const int queryTypeSize = sizeof(StorageQueryType);
-            int additionalSize = sizeof(byte) * (query.AdditionalParameters?.Length + 1) ?? 1;
-            uint inSize = (uint)(propertyIdSize + queryTypeSize + additionalSize);
-            if (inSize % Pack > 0) inSize = (uint)(int)(Math.Ceiling(inSize / (double)Pack) * Pack);
-
-            var inPtr = Marshal.AllocCoTaskMem((int)inSize);
-            uint outSize;
-            using (Disposable.Create(() => Marshal.FreeCoTaskMem(inPtr)))
+            using (query.CreatePtr(out var inPtr, out var inSize))
             {
-                var _inPtr = inPtr;
-                Marshal.WriteInt32(_inPtr, unchecked((int)query.PropertyId));
-                _inPtr += propertyIdSize;
-                Marshal.WriteInt32(_inPtr, unchecked((int)query.QueryType));
-                _inPtr += queryTypeSize;
-                foreach (var elm in query.AdditionalParameters)
+                uint outSize;
+                using (CreatePtr<StorageDescriptorHeader>(out var headerPtr, out var headerSize))
                 {
-                    Marshal.WriteByte(_inPtr, elm);
-                    _inPtr += sizeof(byte);
-                }
-                Marshal.WriteByte(_inPtr, unchecked((byte)-1));
-                var headerSize = (uint)Marshal.SizeOf(typeof(StorageDescriptorHeader));
-                var headerPtr = Marshal.AllocCoTaskMem((int)headerSize);
-                using (Disposable.Create(() => Marshal.FreeCoTaskMem(headerPtr)))
-                {
-                    
-                    var result = IoControl.DeviceIoControl(IOControlCode.StorageQueryProperty, inPtr, inSize, headerPtr, headerSize, out var _);
+                    var result = IoControl.DeviceIoControl(IOControlCode.StorageQueryProperty, inPtr, inSize, headerPtr, headerSize, out var _ReturnBytes);
                     if (!result)
                         Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    var header = (StorageDescriptorHeader)Marshal.PtrToStructure(headerPtr, typeof(StorageDescriptorHeader));
+                    var header = new StorageDescriptorHeader(headerPtr, _ReturnBytes);
                     System.Diagnostics.Debug.WriteLine(header);
                     outSize = header.Size;
                 }
-                var outPtr = Marshal.AllocCoTaskMem((int)outSize);
-                using (Disposable.Create(() => Marshal.FreeCoTaskMem(outPtr)))
+                using (CreatePtr(outSize, out var outPtr))
                 {
-                    var result = IoControl.DeviceIoControl(IOControlCode.StorageQueryProperty, inPtr, inSize, outPtr, outSize, out var _);
-                    if (!result)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    var d = (StorageDeviceDescriptor)Marshal.PtrToStructure(outPtr, typeof(StorageDeviceDescriptor));
-                    var raw = new byte[outSize - Marshal.SizeOf<StorageDeviceDescriptor>()];
-                    var rawPtr = IntPtr.Add(outPtr, Marshal.OffsetOf<StorageDeviceDescriptor>(nameof(StorageDeviceDescriptor.RawDeviceProperties)).ToInt32());
-                    Marshal.Copy(rawPtr, raw, 0, raw.Length);
-                    descriptor = new StorageDeviceDescriptor(
-                            d.Version,
-                            d.Size,
-                            d.DeviceType,
-                            d.DeviceTypeModifier,
-                            d.RemovableMedia,
-                            d.CommandQueueing,
-                            d.VendorIdOffset,
-                            d.ProductIdOffset,
-                            d.ProductRevisionOffset,
-                            d.SerialNumberOffset,
-                            d.BusType,
-                            d.RawPropertiesLength,
-                            raw
-                        );
-                    return;
-                    
+                    var result = IoControl.DeviceIoControl(IOControlCode.StorageQueryProperty, inPtr, inSize, outPtr, outSize, out ReturnBytes);
+                    descriptor = PtrToStructure<T>(outPtr, ReturnBytes);
+                    return result;
                 }
             }
-        }
-        public static StorageDeviceDescriptor StorageQueryProperty(this IoControl IoControl, ref StoragePropertyQuery query)
-        {
-            StorageQueryProperty(IoControl, ref query, out var descriptor);
-            return descriptor;
         }
         const int ERROR_INSUFFICIENT_BUFFER = unchecked((int)0x8007007A);
 

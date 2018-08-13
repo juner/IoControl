@@ -11,7 +11,10 @@ namespace IoControl.MassStorage
     /// Storage class drivers issue a device-control request with the I/O control code <see cref="IOControlCode.StorageQueryProperty"/> to retrieve this structure, which contains trim information for the device. The structure can be retrieved either from the device object for the bus or from an FDO, which forwards the request to the underlying bus.
     /// </remarks>
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct DeviceTrimDescriptor {
+    public readonly struct DeviceTrimDescriptor : IStorageDescriptor
+    {
+        uint IStorageDescriptor.Size => Size;
+        uint IStorageDescriptor.Version => Version;
         /// <summary>
         /// Contains the size of the structure <see cref="DeviceTrimDescriptor"/>. The value of this member will change as members are added to the structure.
         /// </summary>

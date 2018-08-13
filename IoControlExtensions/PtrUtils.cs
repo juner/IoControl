@@ -1,11 +1,17 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace IoControl
 {
     internal static class PtrUtils
     {
-        public static T PtrToStructure<T>(IntPtr IntPtr, uint Size) where T : struct => (T)Marshal.PtrToStructure(IntPtr, typeof(T));
+        public static T PtrToStructure<T>(IntPtr IntPtr, uint Size) where T : struct
+        {
+            if (typeof(T).GetConstructor(new Type[] { typeof(IntPtr), typeof(uint) }) is ConstructorInfo c)
+                return (T)c.Invoke(new object[] { IntPtr, Size });
+            return (T)Marshal.PtrToStructure(IntPtr, typeof(T));
+        }
         public static IDisposable CreatePtr(uint Size, out IntPtr IntPtr)
         {
             var _IntPtr = Marshal.AllocCoTaskMem((int)Size);
