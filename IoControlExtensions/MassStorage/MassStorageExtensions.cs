@@ -11,6 +11,19 @@ namespace IoControl.MassStorage
     public static class MassStorageExtensions
     {
         /// <summary>
+        /// IOCTL_STORAGE_CHECK_VERIFY IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static bool StorageCheckVerify(this IoControl IoControl) => IoControl.DeviceIoControl(IOControlCode.StorageCheckVerify, out _);
+        /// <summary>
+        /// IOCTL_STORAGE_CHECK_VERIFY2 IOCTL
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static bool StorageCheckVerify2(this IoControl IoControl) => IoControl.DeviceIoControl(IOControlCode.StorageCheckVerify2, out _);
+
+        /// <summary>
         /// IOCTL_STORAGE_GET_HOTPLUG_INFO IOCTL
         /// </summary>
         /// <param name="IoControl"></param>
