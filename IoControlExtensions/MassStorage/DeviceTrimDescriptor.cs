@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace IoControl.MassStorage
 {
@@ -26,6 +27,21 @@ namespace IoControl.MassStorage
         /// <summary>
         /// Specifies whether trim is enabled for the device.
         /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
         public readonly bool TrimEnabled;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="TrimEnabled"></param>
+        public DeviceTrimDescriptor(bool TrimEnabled)
+            => (Version, Size, this.TrimEnabled) = ((uint)Marshal.SizeOf<DeviceTrimDescriptor>(), (uint)Marshal.SizeOf<DeviceTrimDescriptor>(), TrimEnabled);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IntPtr"></param>
+        /// <param name="Size"></param>
+        public DeviceTrimDescriptor(IntPtr IntPtr, uint Size) => this = (DeviceTrimDescriptor)Marshal.PtrToStructure(IntPtr, typeof(DeviceTrimDescriptor));
+        public override string ToString()
+            => $"{nameof(DeviceTrimDescriptor)}{{{nameof(Version)}:{Version}, {nameof(Size)}:{Size}, {nameof(TrimEnabled)}:{TrimEnabled}}}";
     }
 }

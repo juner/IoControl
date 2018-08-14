@@ -40,6 +40,8 @@ namespace IoControl.MassStorage.Tests
                     //yield return new object[] { c, StoragePropertyId.StorageDeviceUniqueIdProperty, StorageQueryType.ExistsQuery };
                     yield return new object[] { c, StoragePropertyId.StorageDeviceWriteCacheProperty, StorageQueryType.StandardQuery };
                     yield return new object[] { c, StoragePropertyId.StorageAccessAlignmentProperty, StorageQueryType.StandardQuery };
+                    yield return new object[] { c, StoragePropertyId.StorageDeviceSeekPenaltyProperty, StorageQueryType.StandardQuery };
+                    yield return new object[] { c, StoragePropertyId.StorageDeviceTrimProperty, StorageQueryType.StandardQuery };
 
                 }
             }
