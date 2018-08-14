@@ -20,11 +20,11 @@ namespace IoControl
             mPtrOverlapped = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(NativeOverlapped)));
 
             // Find the structural starting positions in the NativeOverlapped structure.
-            mFieldOffset_InternalLow = Marshal.OffsetOf(typeof(NativeOverlapped), "InternalLow").ToInt32();
-            mFieldOffset_InternalHigh = Marshal.OffsetOf(typeof(NativeOverlapped), "InternalHigh").ToInt32();
-            mFieldOffset_OffsetLow = Marshal.OffsetOf(typeof(NativeOverlapped), "OffsetLow").ToInt32();
-            mFieldOffset_OffsetHigh = Marshal.OffsetOf(typeof(NativeOverlapped), "OffsetHigh").ToInt32();
-            mFieldOffset_EventHandle = Marshal.OffsetOf(typeof(NativeOverlapped), "EventHandle").ToInt32();
+            mFieldOffset_InternalLow = Marshal.OffsetOf(typeof(NativeOverlapped), nameof(NativeOverlapped.InternalLow)).ToInt32();
+            mFieldOffset_InternalHigh = Marshal.OffsetOf(typeof(NativeOverlapped), nameof(NativeOverlapped.InternalHigh)).ToInt32();
+            mFieldOffset_OffsetLow = Marshal.OffsetOf(typeof(NativeOverlapped), nameof(NativeOverlapped.OffsetLow)).ToInt32();
+            mFieldOffset_OffsetHigh = Marshal.OffsetOf(typeof(NativeOverlapped), nameof(NativeOverlapped.OffsetHigh)).ToInt32();
+            mFieldOffset_EventHandle = Marshal.OffsetOf(typeof(NativeOverlapped), nameof(NativeOverlapped.EventHandle)).ToInt32();
         }
 
         public IntPtr InternalLow {
