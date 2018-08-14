@@ -16,8 +16,8 @@ namespace IoControl.MassStorage
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct StorageDeviceDescriptor : IStorageDescriptor
     {
-        uint IStorageDescriptor.Size => Size;
         uint IStorageDescriptor.Version => Version;
+        uint IStorageDescriptor.Size => Size;
         /// <summary>
         /// Indicates the size of the STORAGE_DEVICE_DESCRIPTOR structure. The value of this member will change as members are added to the structure.
         /// </summary>

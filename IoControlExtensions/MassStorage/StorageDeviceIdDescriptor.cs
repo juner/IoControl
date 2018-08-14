@@ -9,8 +9,8 @@ namespace IoControl.MassStorage
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct StorageDeviceIdDescriptor : IStorageDescriptor
     {
-        uint IStorageDescriptor.Size => Size;
         uint IStorageDescriptor.Version => Version;
+        uint IStorageDescriptor.Size => Size;
         public readonly uint Version;
         public readonly uint Size;
         public readonly uint NumberOfIdentifiers;
@@ -33,6 +33,6 @@ namespace IoControl.MassStorage
             
         }
         public override string ToString()
-            => $"{nameof(StorageDeviceIdDescriptor)}{{{nameof(Size)}:{Size}, {nameof(Version)}:{Version}, {nameof(NumberOfIdentifiers)}:{NumberOfIdentifiers}, {nameof(Identifiers)}:[{string.Join(" ",Identifiers.Select(v => $"{v:X2}"))}]}}";
+            => $"{nameof(StorageDeviceIdDescriptor)}{{{nameof(Version)}:{Version}, {nameof(Size)}:{Size}, {nameof(NumberOfIdentifiers)}:{NumberOfIdentifiers}, {nameof(Identifiers)}:[{string.Join(" ",Identifiers.Select(v => $"{v:X2}"))}]}}";
     }
 }
