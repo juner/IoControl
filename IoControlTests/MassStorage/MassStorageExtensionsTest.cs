@@ -30,7 +30,7 @@ namespace IoControl.MassStorage.Tests
                 var ControlList = Generator.GetIoControls(CreationDisposition: System.IO.FileMode.Open)
                     .Using()
                     .Where(c => c.StorageGetDeviceNumber(out var number, out _) && number.DeviceType == FileDevice.Disk);
-                bool isFirst = true;
+                StorageProtocolSpecificData Data;
                 foreach (var c in ControlList)
                 {
                     yield return new object[] { c, StoragePropertyId.StorageDeviceProperty, StorageQueryType.StandardQuery };
@@ -42,6 +42,8 @@ namespace IoControl.MassStorage.Tests
                     yield return new object[] { c, StoragePropertyId.StorageAccessAlignmentProperty, StorageQueryType.StandardQuery };
                     yield return new object[] { c, StoragePropertyId.StorageDeviceSeekPenaltyProperty, StorageQueryType.StandardQuery };
                     yield return new object[] { c, StoragePropertyId.StorageDeviceTrimProperty, StorageQueryType.StandardQuery };
+                    //yield return new object[] { c, StoragePropertyId.StorageAdapterProtocolSpecificProperty, StorageQueryType.StandardQuery };
+                    //yield return new object[] { c, StoragePropertyId.StorageDeviceProtocolSpecificProperty, StorageQueryType.StandardQuery };
 
                 }
             }

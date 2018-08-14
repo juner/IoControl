@@ -18,61 +18,81 @@ namespace IoControl.MassStorage
         /// Indicates that the caller is querying for the adapter descriptor. <see cref="StorageAdapterDescriptor"/>
         /// </summary>
         [StorageProperty(typeof(StorageAdapterDescriptor))]
-        StorageAdapterProperty = 1,
+        StorageAdapterProperty,
         /// <summary>
         /// Indicates that the caller is querying for the device identifiers provided with the SCSI vital product data pages. Datais returned using the <see cref="StorageDeviceIdDescriptor"/> structure.
         /// </summary>
         [StorageProperty(typeof(StorageDeviceIdDescriptor))]
-        StorageDeviceIdProperty = 2,
+        StorageDeviceIdProperty,
         /// <summary>
         /// Indicates that the caller is querying for the unique device identifiers. Data is returned using the <see cref="StorageDeviceUniqueIdentifier"/> structure.
         /// </summary>
         [StorageProperty(typeof(StorageDeviceUniqueIdentifier))]
-        StorageDeviceUniqueIdProperty = 3,
+        StorageDeviceUniqueIdProperty,
         /// <summary>
         /// Indicates that the caller is querying for the write cache property. Data is returned using the <see cref="StorageWriteCacheProperty"/> structure.
         /// </summary>
         [StorageProperty(typeof(StorageWriteCacheProperty))]
-        StorageDeviceWriteCacheProperty = 4,
+        StorageDeviceWriteCacheProperty,
         /// <summary>
         /// Reserved for System use.
         /// </summary>
-        StorageMiniportProperty = 5,
+        StorageMiniportProperty,
         /// <summary>
         /// Indicates that the caller is querying for the access aligment descriptor. <see cref="StorageAccessAlignmentDescriptor"/>
         /// </summary>
         [StorageProperty(typeof(StorageAccessAlignmentDescriptor))]
-        StorageAccessAlignmentProperty = 6,
+        StorageAccessAlignmentProperty,
         /// <summary>
         /// Indicates that the caller is querying for the seekpanalty descriptor <see cref="DeviceSeekPenaltyDescriptor"/>
         /// </summary>
         [StorageProperty(typeof(DeviceSeekPenaltyDescriptor))]
-        StorageDeviceSeekPenaltyProperty = 7,
+        StorageDeviceSeekPenaltyProperty,
         /// <summary>
         /// Indicates that the caller is querying for the trim descriptor, <see cref="DeviceTrimDescriptor"/>.
         /// </summary>
         [StorageProperty(typeof(DeviceTrimDescriptor))]
-        StorageDeviceTrimProperty = 8,
+        StorageDeviceTrimProperty,
         /// <summary>
         /// Reserved for system use.
         /// </summary>
-        StorageDeviceWriteAggregationProperty = 9,
+        StorageDeviceWriteAggregationProperty,
         /// <summary>
         /// Reserved for system use.
         /// </summary>
-        StorageDeviceDeviceTelemetryProperty = 10,
+        StorageDeviceDeviceTelemetryProperty,
         /// <summary>
         /// Indicates that the caller is querying for the logical block provisioning property. Data is returned using the <see cref="DeviceLbProvisioningDescriptor"/> structure.
         /// </summary>
         [StorageProperty(typeof(DeviceLbProvisioningDescriptor))]
-        StorageDeviceLBProvisioningProperty = 11, // 0xB
+        StorageDeviceLBProvisioningProperty,
         /// <summary>
         /// Indicates that the caller is querying for the device power descriptor. Data is returned using the <see cref="DevicePowerDescriptor"/> structure.
         /// </summary>
         [StorageProperty(typeof(DevicePowerDescriptor))]
-        StorageDevicePowerProperty = 12, // 0xC
-        StorageDeviceCopyOffloadProperty = 13, // 0xD
-        StorageDeviceResiliencyProperty = 14 // 0xE
+        StorageDevicePowerProperty,
+        StorageDeviceCopyOffloadProperty,
+        StorageDeviceResiliencyProperty,
+        StorageDeviceMediumProductType,
+        StorageDeviceIoCapabilityProperty = 48,
+        /// <summary>
+        /// Indicates that the caller is querying for protocol-specific data from the adapter. Data is returned using the <see cref="StorageProtocolDataDescriptor"/> structure. See the remarks for more info.
+        /// </summary>
+        [StorageProperty(typeof(StorageProtocolDataDescriptor))]
+        StorageAdapterProtocolSpecificProperty,
+        /// <summary>
+        /// Indicates that the caller is querying for protocol-specific data from the device. Data is returned using the <see cref="StorageProtocolDataDescriptor"/> structure. See the remarks for more info.
+        /// </summary>
+        [StorageProperty(typeof(StorageProtocolDataDescriptor))]
+        StorageDeviceProtocolSpecificProperty,
+        StorageAdapterTemperatureProperty,
+        StorageDeviceTemperatureProperty,
+        StorageAdapterPhysicalTopologyProperty,
+        StorageDevicePhysicalTopologyProperty,
+        /// <summary>
+        /// Reserved for future use.
+        /// </summary>
+        StorageDeviceAttributesProperty,
     }
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public class StoragePropertyAttribute : Attribute
