@@ -136,20 +136,15 @@ namespace IoControl.MassStorage
             using (query.CreatePtr(out var inPtr, out var inSize))
             {
                 uint outSize;
-                if (typeof(StorageDeviceUniqueIdentifier) == typeof(T))
-                    outSize = 1024;
-                else
+                using (CreatePtr<StorageDescriptorHeader>(out var headerPtr, out var headerSize))
                 {
-                    using (CreatePtr<StorageDescriptorHeader>(out var headerPtr, out var headerSize))
+                    var result = IoControl.DeviceIoControl(IOControlCode.StorageQueryProperty, inPtr, inSize, headerPtr, headerSize, out ReturnBytes);
+                    if (!result)
                     {
-                        var result = IoControl.DeviceIoControl(IOControlCode.StorageQueryProperty, inPtr, inSize, headerPtr, headerSize, out ReturnBytes);
-                        if (!result)
-                        {
-                            descriptor = default;
-                            return result;
-                        }
-                        outSize = new StorageDescriptorHeader(headerPtr, ReturnBytes).Size;
+                        descriptor = default;
+                        return result;
                     }
+                    outSize = new StorageDescriptorHeader(headerPtr, ReturnBytes).Size;
                 }
                 using (CreatePtr(outSize, out var outPtr))
                 {
