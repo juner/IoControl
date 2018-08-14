@@ -37,10 +37,12 @@ namespace IoControl.MassStorage
         /// <summary>
         /// Indicates when TRUE that the device's media (if any) is removable. If the device has no media, this member should be ignored. When FALSE the device's media is not removable.
         /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
         public readonly bool RemovableMedia;
         /// <summary>
         /// Indicates when TRUE that the device supports multiple outstanding commands (SCSI tagged queuing or equivalent). When FALSE, the device does not support SCSI-tagged queuing or the equivalent. The STORPORT driver is responsible for synchronizing the commands.
         /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
         public readonly bool CommandQueueing;
         /// <summary>
         /// Specifies the byte offset from the beginning of the structure to a NULL-terminated ASCII string that contains the device's vendor ID. If the device has no vendor ID, this member is zero.
@@ -70,12 +72,11 @@ namespace IoControl.MassStorage
         /// Contains an array of length one that serves as a place holder for the first byte of the bus specific property data.
         /// </summary>
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-        public readonly byte[] RawDeviceProperties;
+        private readonly byte[] _RawDeviceProperties;
+        public byte[] RawDeviceProperties => (_RawDeviceProperties ?? Enumerable.Empty<byte>()).Take((int)RawPropertiesLength).ToArray();
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="Version"></param>
-        /// <param name="Size"></param>
         /// <param name="DeviceType"></param>
         /// <param name="DeviceTypeModifier"></param>
         /// <param name="RemovableMedia"></param>
@@ -86,21 +87,69 @@ namespace IoControl.MassStorage
         /// <param name="SerialNumberOffset"></param>
         /// <param name="BusType"></param>
         /// <param name="RawDeviceProperties"></param>
-        public StorageDeviceDescriptor(uint Version, uint Size, Scsi.DeviceType DeviceType, byte DeviceTypeModifier, bool RemovableMedia, bool CommandQueueing, uint VendorIdOffset, uint ProductIdOffset, uint ProductRevisionOffset, uint SerialNumberOffset, StorageBusType BusType, byte[] RawDeviceProperties)
-            => (this.Version, this.Size, this.DeviceType, this.DeviceTypeModifier, this.RemovableMedia, this.CommandQueueing, this.VendorIdOffset, this.ProductIdOffset, this.ProductRevisionOffset, this.SerialNumberOffset, this.BusType, RawPropertiesLength, this.RawDeviceProperties)
-                = (Version, Size, DeviceType, DeviceTypeModifier, RemovableMedia, CommandQueueing, VendorIdOffset, ProductIdOffset, ProductRevisionOffset, SerialNumberOffset, BusType, (uint)(RawDeviceProperties?.Length ?? 0), (RawDeviceProperties?.Length ?? 0) == 0 ? new byte[1] : RawDeviceProperties);
+        public StorageDeviceDescriptor(Scsi.DeviceType DeviceType, byte DeviceTypeModifier, bool RemovableMedia, bool CommandQueueing, uint VendorIdOffset, uint ProductIdOffset, uint ProductRevisionOffset, uint SerialNumberOffset, StorageBusType BusType, byte[] RawDeviceProperties)
+            => (Version, this.Size, this.DeviceType, this.DeviceTypeModifier, this.RemovableMedia, this.CommandQueueing, this.VendorIdOffset, this.ProductIdOffset, this.ProductRevisionOffset, this.SerialNumberOffset, this.BusType, RawPropertiesLength, this._RawDeviceProperties)
+                = ((uint)Marshal.SizeOf<StorageDeviceDescriptor>(), (uint)(Marshal.SizeOf<StorageDeviceDescriptor>() + (RawDeviceProperties?.Length ?? 1) - 1), DeviceType, DeviceTypeModifier, RemovableMedia, CommandQueueing, VendorIdOffset, ProductIdOffset, ProductRevisionOffset, SerialNumberOffset, BusType, (uint)(RawDeviceProperties?.Length ?? 0), (RawDeviceProperties?.Length ?? 0) == 0 ? new byte[1] : RawDeviceProperties);
+        /// <summary>
+        /// Ptr to Structure
+        /// </summary>
+        /// <param name="IntPtr"></param>
+        /// <param name="Size"></param>
         public StorageDeviceDescriptor(IntPtr IntPtr, uint Size)
         {
             this = (StorageDeviceDescriptor)Marshal.PtrToStructure(IntPtr, typeof(StorageDeviceDescriptor));
-            var RawDeviceProperties = new byte[RawPropertiesLength];
-            Marshal.Copy(IntPtr.Add(IntPtr, (int)Marshal.OffsetOf<StorageDeviceDescriptor>(nameof(RawDeviceProperties))), RawDeviceProperties, 0, (int)RawPropertiesLength);
-            this = Set(RawDeviceProperties: RawDeviceProperties);
+            var _Size = Marshal.SizeOf<StorageDeviceDescriptor>();
+            if (Size == (uint)_Size)
+                return;
+            /// <see cref="RawPropertiesLength"/> がアテにならないので実際のサイズから長さを求める
+            var offset = (int)Marshal.OffsetOf<StorageDeviceDescriptor>(nameof(_RawDeviceProperties));
+            _RawDeviceProperties = new byte[Size - offset];
+            RawPropertiesLength = (uint)_RawDeviceProperties.Length;
+            Marshal.Copy(IntPtr.Add(IntPtr, (int)Marshal.OffsetOf<StorageDeviceDescriptor>(nameof(_RawDeviceProperties))), _RawDeviceProperties, 0, _RawDeviceProperties.Length);
         }
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="Version"></param>
+        /// <param name="VendorId"></param>
+        /// <param name="ProductId"></param>
+        /// <param name="ProductRevision"></param>
+        /// <param name="SerialNumber"></param>
+        public void Deconstruct(out string VendorId, out string ProductId, out string ProductRevision, out string SerialNumber)
+        {
+            using (CreatePtr(out var Ptr, out var Size))
+            {
+                VendorId = VendorIdOffset == 0u ? default : Marshal.PtrToStringAnsi(IntPtr.Add(Ptr, (int)VendorIdOffset));
+                ProductId = ProductIdOffset == 0u ? default : Marshal.PtrToStringAnsi(IntPtr.Add(Ptr, (int)ProductIdOffset));
+                ProductRevision = ProductRevisionOffset == 0u ? default : Marshal.PtrToStringAnsi(IntPtr.Add(Ptr, (int)ProductRevisionOffset));
+                SerialNumber = SerialNumberOffset == 0u ? default : Marshal.PtrToStringAnsi(IntPtr.Add(Ptr, (int)SerialNumberOffset));
+            }
+        }
+        /// <summary>
+        /// Structure to Ptr
+        /// </summary>
+        /// <param name="IntPtr"></param>
         /// <param name="Size"></param>
+        /// <returns></returns>
+        public IDisposable CreatePtr(out IntPtr IntPtr, out uint Size)
+        {
+            var Dispose = PtrUtils.CreatePtr(this.Size, out IntPtr);
+            try
+            {
+                Marshal.StructureToPtr(this, IntPtr, false);
+                var offset = (int)Marshal.OffsetOf<StorageDeviceDescriptor>(nameof(_RawDeviceProperties));
+                Marshal.Copy(_RawDeviceProperties, 0, IntPtr.Add(IntPtr,offset), _RawDeviceProperties.Length);
+                Size = this.Size;
+                return Dispose;
+            }
+            catch
+            {
+                Dispose.Dispose();
+                throw;
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="DeviceType"></param>
         /// <param name="DeviceTypeModifier"></param>
         /// <param name="RemovableMedia"></param>
@@ -112,9 +161,9 @@ namespace IoControl.MassStorage
         /// <param name="BusType"></param>
         /// <param name="RawDeviceProperties"></param>
         /// <returns></returns>
-        public StorageDeviceDescriptor Set(uint? Version = null, uint? Size = null, Scsi.DeviceType? DeviceType = null, byte? DeviceTypeModifier = null, bool? RemovableMedia = null, bool? CommandQueueing = null, uint? VendorIdOffset = null, uint? ProductIdOffset = null, uint? ProductRevisionOffset = null, uint? SerialNumberOffset = null, StorageBusType? BusType = null, byte[] RawDeviceProperties = null)
-            => Version == null && Size == null && DeviceType == null && DeviceTypeModifier == null && RemovableMedia == null && CommandQueueing == null && VendorIdOffset == null && ProductIdOffset == null && ProductRevisionOffset == null && SerialNumberOffset == null && BusType == null && RawDeviceProperties == null
-            ? this : new StorageDeviceDescriptor(Version ?? this.Version, Size ?? this.Size, DeviceType ?? this.DeviceType, DeviceTypeModifier ?? this.DeviceTypeModifier, RemovableMedia ?? this.RemovableMedia, CommandQueueing ?? this.CommandQueueing, VendorIdOffset ?? this.VendorIdOffset, ProductIdOffset ?? this.ProductIdOffset, ProductRevisionOffset ?? this.ProductRevisionOffset, SerialNumberOffset ?? this.SerialNumberOffset, BusType ?? this.BusType, RawDeviceProperties ?? this.RawDeviceProperties);
+        public StorageDeviceDescriptor Set(Scsi.DeviceType? DeviceType = null, byte? DeviceTypeModifier = null, bool? RemovableMedia = null, bool? CommandQueueing = null, uint? VendorIdOffset = null, uint? ProductIdOffset = null, uint? ProductRevisionOffset = null, uint? SerialNumberOffset = null, StorageBusType? BusType = null, byte[] RawDeviceProperties = null)
+            => DeviceType == null && DeviceTypeModifier == null && RemovableMedia == null && CommandQueueing == null && VendorIdOffset == null && ProductIdOffset == null && ProductRevisionOffset == null && SerialNumberOffset == null && BusType == null && RawDeviceProperties == null
+            ? this : new StorageDeviceDescriptor(DeviceType ?? this.DeviceType, DeviceTypeModifier ?? this.DeviceTypeModifier, RemovableMedia ?? this.RemovableMedia, CommandQueueing ?? this.CommandQueueing, VendorIdOffset ?? this.VendorIdOffset, ProductIdOffset ?? this.ProductIdOffset, ProductRevisionOffset ?? this.ProductRevisionOffset, SerialNumberOffset ?? this.SerialNumberOffset, BusType ?? this.BusType, RawDeviceProperties ?? this._RawDeviceProperties);
         /// <summary>
         /// 
         /// </summary>
@@ -133,8 +182,15 @@ namespace IoControl.MassStorage
         /// <param name="RawDeviceProperties"></param>
         public void Deconstruct(out uint Version, out uint Size, out Scsi.DeviceType DeviceType, out byte DeviceTypeModifier, out bool RemovableMedia, out bool CommandQueueing, out uint VendorIdOffset, out uint ProductIdOffset, out uint ProductRevisionOffset, out uint SerialNumberOffset, out StorageBusType BusType, out uint RawPropertiesLength, out byte[] RawDeviceProperties)
             => (Version, Size, DeviceType, DeviceTypeModifier, RemovableMedia, CommandQueueing, VendorIdOffset, ProductIdOffset, ProductRevisionOffset, SerialNumberOffset, BusType, RawPropertiesLength, RawDeviceProperties)
-            = (this.Version, this.Size, this.DeviceType, this.DeviceTypeModifier, this.RemovableMedia, this.CommandQueueing, this.VendorIdOffset, this.ProductIdOffset, this.ProductRevisionOffset, this.SerialNumberOffset, this.BusType, this.RawPropertiesLength, this.RawDeviceProperties);
+            = (this.Version, this.Size, this.DeviceType, this.DeviceTypeModifier, this.RemovableMedia, this.CommandQueueing, this.VendorIdOffset, this.ProductIdOffset, this.ProductRevisionOffset, this.SerialNumberOffset, this.BusType, this.RawPropertiesLength, this._RawDeviceProperties);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
-            => $"{nameof(StorageDeviceDescriptor)}{{{nameof(Version)}:{Version}, {nameof(Size)}:{Size}, {nameof(DeviceType)}:{DeviceType}, {nameof(DeviceTypeModifier)}:{DeviceTypeModifier}, {nameof(RemovableMedia)}:{RemovableMedia}, {nameof(CommandQueueing)}:{CommandQueueing}, {nameof(VendorIdOffset)}:{VendorIdOffset}, {nameof(ProductIdOffset)}:{ProductIdOffset},{nameof(ProductRevisionOffset)}:{ProductRevisionOffset}, {nameof(SerialNumberOffset)}:{SerialNumberOffset},{nameof(BusType)}:{BusType}, {nameof(RawPropertiesLength)}:{RawPropertiesLength}, {nameof(RawDeviceProperties)}:[{string.Join(" ",(RawDeviceProperties ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}}}";
+        {
+            var (VendorId, ProductId, ProductRevision, SerialNumber) = this;
+            return $"{nameof(StorageDeviceDescriptor)}{{{nameof(Version)}:{Version}, {nameof(Size)}:{Size}, {nameof(DeviceType)}:{DeviceType}, {nameof(DeviceTypeModifier)}:{DeviceTypeModifier}, {nameof(RemovableMedia)}:{RemovableMedia}, {nameof(CommandQueueing)}:{CommandQueueing}, {nameof(VendorIdOffset)}:{VendorIdOffset}{(VendorIdOffset == 0 ? "" : $", {nameof(VendorId)}:{VendorId}")}, {nameof(ProductIdOffset)}:{ProductIdOffset}{(ProductIdOffset == 0 ? "" : $", {nameof(ProductId)}:{ProductId}")}, {nameof(ProductRevisionOffset)}:{ProductRevisionOffset}{(ProductRevisionOffset == 0 ? "" : $", {nameof(ProductRevision)}:{ProductRevision}")}, {nameof(SerialNumberOffset)}:{SerialNumberOffset}{(SerialNumberOffset == 0 ? "" : $", {nameof(SerialNumber)}:{SerialNumber}")}, {nameof(BusType)}:{BusType}, {nameof(RawPropertiesLength)}:{RawPropertiesLength}, {nameof(_RawDeviceProperties)}:[{string.Join(" ", (_RawDeviceProperties ?? Enumerable.Empty<byte>()).Select(v => $"{v:X2}"))}}}";
+        }
     }
 }

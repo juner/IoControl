@@ -25,9 +25,18 @@ namespace IoControl.MassStorage.Tests
         [TestMethod]
         [DynamicData(nameof(StorageGetDeviceNumberTestData))]
         public void StorageGetDeviceNumberExTest(IoControl IoControl) => Trace.WriteLine(IoControl.StorageGetDeviceNumberEx());
-        private static IEnumerable<object[]> StorageQueryPropertyTestData => Generator.GetIoControls(CreationDisposition: System.IO.FileMode.Open).Using()
-            .Where(c => c.StorageGetDeviceNumber(out var number, out _) && number.DeviceType == FileDevice.Disk)
-            .Select(v => new object[] { v, StoragePropertyId.StorageDeviceIdProperty, StorageQueryType.StandardQuery });
+        private static IEnumerable<object[]> StorageQueryPropertyTestData {
+            get {
+                var ControlList = Generator.GetIoControls(CreationDisposition: System.IO.FileMode.Open)
+                    .Using()
+                    .Where(c => c.StorageGetDeviceNumber(out var number, out _) && number.DeviceType == FileDevice.Disk);
+                foreach (var c in ControlList)
+                {
+                    yield return new object[] { c, StoragePropertyId.StorageDeviceIdProperty, StorageQueryType.StandardQuery };
+                    yield return new object[] { c, StoragePropertyId.StorageDeviceProperty, StorageQueryType.StandardQuery };
+                }  
+            }
+        }
         [TestMethod]
         [DynamicData(nameof(StorageQueryPropertyTestData))]
         public void StorageQueryPropertyTest(IoControl IoControl, StoragePropertyId StoragePropertyId, StorageQueryType StorageQueryType) => Trace.WriteLine(IoControl.StorageQueryProperty(StoragePropertyId, StorageQueryType));

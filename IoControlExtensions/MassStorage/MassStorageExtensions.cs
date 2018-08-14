@@ -81,6 +81,16 @@ namespace IoControl.MassStorage
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return number;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="PropertyId"></param>
+        /// <param name="QueryType"></param>
+        /// <param name="AdditionalParameters"></param>
+        /// <param name="descriptor"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
         public static bool StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType, byte[] AdditionalParameters, out IStorageDescriptor descriptor, out uint ReturnBytes)
         {
             var genericType = PropertyId.GetDestType() ?? typeof(StorageDescriptor);
@@ -95,15 +105,31 @@ namespace IoControl.MassStorage
                 .Invoke(null, argument);
             descriptor = (IStorageDescriptor)argument[2];
             ReturnBytes = (uint)argument[3];
-            return result;
-            
+            return result;    
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="PropertyId"></param>
+        /// <param name="QueryType"></param>
+        /// <param name="AdditionalParameters"></param>
+        /// <returns></returns>
         public static IStorageDescriptor StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType = default, params byte[] AdditionalParameters)
         {
             if (!StorageQueryProperty(IoControl, PropertyId, QueryType, AdditionalParameters, out var descriptor, out var ReturnBytes) && ReturnBytes == 0)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return descriptor;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="IoControl"></param>
+        /// <param name="query"></param>
+        /// <param name="descriptor"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
         public static bool StorageQueryProperty<T>(this IoControl IoControl, in StoragePropertyQuery query, out T descriptor, out uint ReturnBytes)
             where T: struct, IStorageDescriptor
         {
