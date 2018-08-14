@@ -32,8 +32,9 @@ namespace IoControl.MassStorage.Tests
                     .Where(c => c.StorageGetDeviceNumber(out var number, out _) && number.DeviceType == FileDevice.Disk);
                 foreach (var c in ControlList)
                 {
-                    yield return new object[] { c, StoragePropertyId.StorageDeviceIdProperty, StorageQueryType.StandardQuery };
                     yield return new object[] { c, StoragePropertyId.StorageDeviceProperty, StorageQueryType.StandardQuery };
+                    yield return new object[] { c, StoragePropertyId.StorageAdapterProperty, StorageQueryType.StandardQuery };
+                    yield return new object[] { c, StoragePropertyId.StorageDeviceIdProperty, StorageQueryType.StandardQuery };
                 }  
             }
         }
