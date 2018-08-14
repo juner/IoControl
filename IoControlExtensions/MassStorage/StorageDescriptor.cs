@@ -52,16 +52,15 @@ namespace IoControl.MassStorage
         /// <param name="IntPtr"></param>
         /// <param name="Size"></param>
         /// <returns></returns>
-        public static StorageDescriptor FromPtr(IntPtr IntPtr, uint Size)
+        public StorageDescriptor(IntPtr IntPtr, uint Size)
         {
             var BaseSize = Marshal.SizeOf<StorageDescriptor>();
             if (Size < BaseSize)
                 throw new ArgumentException($"引数:{nameof(Size)} の値が {BaseSize} よりも小さいです。");
             var ByteSize = (int)(Size - (BaseSize - 1));
-            var data = PtrUtils.PtrToStructure<StorageDescriptor>(IntPtr, Size);
+            this = (StorageDescriptor)Marshal.PtrToStructure(IntPtr, typeof(StorageDescriptor));
             var Data = new byte[ByteSize];
             Marshal.Copy(IntPtr.Add(IntPtr, (int)Marshal.OffsetOf<StorageDescriptor>(nameof(_Data))), Data, 0, ByteSize);
-            return data.Set(Data: Data);
         }
         /// <summary>
         /// 

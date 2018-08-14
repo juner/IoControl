@@ -83,13 +83,14 @@ namespace IoControl.MassStorage
         }
         public static bool StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType, byte[] AdditionalParameters, out IStorageDescriptor descriptor, out uint ReturnBytes)
         {
-            var genericType = PropertyId.GetDestType();
+            var genericType = PropertyId.GetDestType() ?? typeof(StorageDescriptor);
             if (genericType == null)
                 throw new ArgumentException($"{nameof(PropertyId)} is not have {nameof(StoragePropertyAttribute)}.{nameof(StoragePropertyAttribute.DestType)}");
             var query = new StoragePropertyQuery(PropertyId, QueryType, AdditionalParameters);
             var argument = new object[] { IoControl, query, null, null };
             var result = (bool)typeof(MassStorageExtensions)
-                .GetMethod(nameof(StorageQueryProperty))
+                .GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                .FirstOrDefault(mi => mi.Name == nameof(StorageQueryProperty) && mi.IsGenericMethodDefinition)
                 .MakeGenericMethod(genericType)
                 .Invoke(null, argument);
             descriptor = (IStorageDescriptor)argument[2];
@@ -111,12 +112,13 @@ namespace IoControl.MassStorage
                 uint outSize;
                 using (CreatePtr<StorageDescriptorHeader>(out var headerPtr, out var headerSize))
                 {
-                    var result = IoControl.DeviceIoControl(IOControlCode.StorageQueryProperty, inPtr, inSize, headerPtr, headerSize, out var _ReturnBytes);
+                    var result = IoControl.DeviceIoControl(IOControlCode.StorageQueryProperty, inPtr, inSize, headerPtr, headerSize, out ReturnBytes);
                     if (!result)
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    var header = new StorageDescriptorHeader(headerPtr, _ReturnBytes);
-                    System.Diagnostics.Debug.WriteLine(header);
-                    outSize = header.Size;
+                    {
+                        descriptor = default;
+                        return result;
+                    }
+                    outSize = new StorageDescriptorHeader(headerPtr, ReturnBytes).Size;
                 }
                 using (CreatePtr(outSize, out var outPtr))
                 {
