@@ -333,7 +333,7 @@ namespace IoControl.MassStorage
                     var result = IoControl.DeviceIoControlOutOnly(IOControlCode.StorageGetMediaTypesEx, Ptr, Size, out ReturnSize);
                     if (result)
                     {
-                        MediaTypes = GetMediaTypes.FromPtr(Ptr, ReturnSize);
+                        MediaTypes = new GetMediaTypes(Ptr, ReturnSize);
                         ReturnBytes = ReturnSize;
                         return result;
                     }

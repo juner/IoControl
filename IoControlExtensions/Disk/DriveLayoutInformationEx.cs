@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace IoControl.Disk
@@ -54,6 +55,17 @@ namespace IoControl.Disk
         /// </summary>
         /// <param name="PartitionEntry"></param>
         public DriveLayoutInformationEx(params PartitionInformationEx[] PartitionEntry) : this(PartitionStyle.Raw, default, PartitionEntry) { }
+        public DriveLayoutInformationEx(IntPtr IntPtr, uint Size)
+        {
+            this = (DriveLayoutInformationEx)Marshal.PtrToStructure(IntPtr, typeof(DriveLayoutInformationEx));
+            if (PartitionCount <= 1)
+                return;
+            var ArrayPtr = IntPtr.Add(IntPtr, (int)Marshal.OffsetOf<DriveLayoutInformationEx>(nameof(_PartitionEntry)));
+            var PartitionSize = Marshal.SizeOf<PartitionInformationEx>();
+            _PartitionEntry = Enumerable.Range(0, (int)PartitionCount)
+                .Select(index => (PartitionInformationEx)Marshal.PtrToStructure(IntPtr.Add(ArrayPtr, PartitionSize), typeof(PartitionInformationEx)))
+                .ToArray();
+        }
         /// <summary>
         /// 
         /// </summary>
