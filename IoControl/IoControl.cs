@@ -392,7 +392,7 @@ namespace IoControl
             }
         }
         const int ERROR_INSUFFICIENT_BUFFER = unchecked((int)0x8007007A);
-        public bool DeviceIoControlOutOnly<T>(IOControlCode IoControlCode, out T output, Func<IntPtr, T, T> Setter, out uint ReturnBytes)
+        public bool DeviceIoControlOutOnly<T>(IOControlCode IoControlCode, out T output, Func<IntPtr, uint, T> Creater, out uint ReturnBytes)
             where T : struct
         {
             var Size = (uint)Marshal.SizeOf<T>();
@@ -405,8 +405,7 @@ namespace IoControl
                     var result = DeviceIoControlOutOnly(IoControlCode, Ptr, Size, out ReturnBytes);
                     if (result)
                     {
-                        output = (T)Marshal.PtrToStructure(Ptr, typeof(T));
-                        output = Setter(Ptr, output);
+                        output = Creater(Ptr, ReturnBytes);
                         return result;
                     }
 

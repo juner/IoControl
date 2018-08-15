@@ -21,8 +21,8 @@ namespace IoControl.MassStorage
             => DeviceType == null && MediaInfo == null ? this : new GetMediaTypes(DeviceType ?? this.DeviceType, MediaInfo ?? this._MediaInfo);
         public override string ToString()
             => $"{nameof(GetMediaTypes)}{{{nameof(DeviceType)}:{DeviceType}, {nameof(MediaInfoCount)}:{MediaInfoCount}, [{string.Join(", ", MediaInfo)}]}}";
-        public static GetMediaTypes FromPtr(IntPtr IntPtr, uint Size)
-            => PtrToStructure<GetMediaTypes>(IntPtr, Size) is GetMediaTypes MediaTypes
+        public GetMediaTypes(IntPtr IntPtr, uint Size)
+            => this = PtrToStructure<GetMediaTypes>(IntPtr, Size) is GetMediaTypes MediaTypes
                 && Marshal.SizeOf<DeviceMediaInfo>() is int ArrayItemSize
                 && IntPtr.Add(IntPtr, (int)Marshal.OffsetOf<GetMediaTypes>(nameof(MediaTypes._MediaInfo))) is IntPtr ArrayPtr
                 ? MediaTypes.Set(MediaInfo: Enumerable.Range(0, (int)MediaTypes.MediaInfoCount)
