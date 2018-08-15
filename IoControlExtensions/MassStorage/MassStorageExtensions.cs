@@ -94,8 +94,7 @@ namespace IoControl.MassStorage
         public static bool StorageQueryProperty(this IoControl IoControl, StoragePropertyId PropertyId, StorageQueryType QueryType, byte[] AdditionalParameters, out IStorageDescriptor descriptor, out uint ReturnBytes)
         {
             var genericType = PropertyId.GetDestType() ?? typeof(StorageDescriptor);
-            if (genericType == null)
-                throw new ArgumentException($"{nameof(PropertyId)} is not have {nameof(StoragePropertyAttribute)}.{nameof(StoragePropertyAttribute.DestType)}");
+
             var query = new StoragePropertyQuery(PropertyId, QueryType, AdditionalParameters);
             var argument = new object[] { IoControl, query, null, null };
             var result = (bool)typeof(MassStorageExtensions)
