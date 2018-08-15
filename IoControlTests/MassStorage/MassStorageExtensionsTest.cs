@@ -18,7 +18,9 @@ namespace IoControl.MassStorage.Tests
         [TestMethod]
         [DynamicData(nameof(StorageCheckVerify2TestData))]
         public void StorageCheckVerify2Test(IoControl IoControl) => Trace.WriteLine(IoControl.StorageCheckVerify2());
-        private static IEnumerable<object[]> StorageGetDeviceNumberTestData => Generator.GetIoControls(CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
+        private static IEnumerable<object[]> StorageGetDeviceNumberTestData => Generator.GetIoControls(CreationDisposition: System.IO.FileMode.Open).Using()
+            .Where(v => v.StorageCheckVerify2())
+            .Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(StorageGetDeviceNumberTestData))]
         public void StorageGetDeviceNumberTest(IoControl IoControl) => Trace.WriteLine(IoControl.StorageGetDeviceNumber());
