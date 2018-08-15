@@ -22,11 +22,11 @@ namespace IoControl.MassStorage
         public override string ToString()
             => $"{nameof(GetMediaTypes)}{{{nameof(DeviceType)}:{DeviceType}, {nameof(MediaInfoCount)}:{MediaInfoCount}, [{string.Join(", ", MediaInfo)}]}}";
         public GetMediaTypes(IntPtr IntPtr, uint Size)
-            => this = PtrToStructure<GetMediaTypes>(IntPtr, Size) is GetMediaTypes MediaTypes
+            => this = Marshal.PtrToStructure(IntPtr, typeof(GetMediaTypes)) is GetMediaTypes MediaTypes
                 && Marshal.SizeOf<DeviceMediaInfo>() is int ArrayItemSize
                 && IntPtr.Add(IntPtr, (int)Marshal.OffsetOf<GetMediaTypes>(nameof(MediaTypes._MediaInfo))) is IntPtr ArrayPtr
                 ? MediaTypes.Set(MediaInfo: Enumerable.Range(0, (int)MediaTypes.MediaInfoCount)
-                .Select(index => PtrToStructure<DeviceMediaInfo>(IntPtr.Add(ArrayPtr, index * ArrayItemSize), (uint)ArrayItemSize))
+                .Select(index => (DeviceMediaInfo)Marshal.PtrToStructure(IntPtr.Add(ArrayPtr, index * ArrayItemSize), typeof(DeviceMediaInfo)))
                 .ToArray()) : default;
     }
 }

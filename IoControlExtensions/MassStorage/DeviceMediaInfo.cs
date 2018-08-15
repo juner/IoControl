@@ -15,6 +15,8 @@ namespace IoControl.MassStorage
         public DeviceMediaInfo(DeviceMediaDiskInfo DiskInfo) => DeviceSpecific = DiskInfo;
         public DeviceMediaInfo(DeviceMediaRemovableDiskInfo RemovableDiskInfo) => DeviceSpecific = RemovableDiskInfo;
         public DeviceMediaInfo(DeviceMediaTapInfo TapInfo) => DeviceSpecific = TapInfo;
+        public override string ToString()
+            => $"{nameof(DeviceMediaInfo)}{{{(DiskInfo.MediaType == StorageMediaType.FixedMedia ? $"{nameof(DiskInfo)}:{DiskInfo}" : DiskInfo.MediaType == StorageMediaType.RemovableMedia ? $"{nameof(RemovableDiskInfo)}:{RemovableDiskInfo}" : $"{nameof(TapInfo)}:{TapInfo}")}}}";
         [StructLayout(LayoutKind.Explicit)]
         internal readonly struct DeviceMediaDeviceSpecific
         {

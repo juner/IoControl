@@ -12,5 +12,13 @@ namespace IoControl.MassStorage
         public readonly uint BytesPerSector;
         public readonly uint NumberMediaSides;
         public readonly MediaFlags MediaCharacteristics;
+        public DeviceMediaDiskInfo(long Cylinders, StorageMediaType MediaType, uint TracksPerCylinder, uint SectorsPerTrack, uint BytesPerSector, uint NumberMediaSides, MediaFlags MediaCharacteristics)
+           => (this.Cylinders, this.MediaType, this.TracksPerCylinder, this.SectorsPerTrack, this.BytesPerSector, this.NumberMediaSides, this.MediaCharacteristics)
+           = (Cylinders, MediaType, TracksPerCylinder, SectorsPerTrack, BytesPerSector, NumberMediaSides, MediaCharacteristics);
+        public DeviceMediaDiskInfo Set(long? Cylinders, StorageMediaType? MediaType, uint? TracksPerCylinder, uint? SectorsPerTrack, uint? BytesPerSector, uint? NumberMediaSides, MediaFlags? MediaCharacteristics)
+            => Cylinders == null && MediaType == null && TracksPerCylinder == null && SectorsPerTrack == null && BytesPerSector == null && NumberMediaSides == null && MediaCharacteristics == null ? this
+            : new DeviceMediaDiskInfo(Cylinders ?? this.Cylinders, MediaType ?? this.MediaType, TracksPerCylinder ?? this.TracksPerCylinder, SectorsPerTrack ?? this.SectorsPerTrack, BytesPerSector ?? this.BytesPerSector, NumberMediaSides ?? this.NumberMediaSides, MediaCharacteristics ?? this.MediaCharacteristics);
+        public override string ToString()
+            => $"{nameof(DeviceMediaDiskInfo)}:{{{nameof(Cylinders)}:{Cylinders}, {nameof(MediaType)}:{MediaType}, {nameof(TracksPerCylinder)}:{TracksPerCylinder}, {nameof(SectorsPerTrack)}:{SectorsPerTrack}, {nameof(BytesPerSector)}:{BytesPerSector}, {nameof(NumberMediaSides)}:{NumberMediaSides}, {nameof(MediaCharacteristics)}:{MediaCharacteristics}}}";
     }
 }

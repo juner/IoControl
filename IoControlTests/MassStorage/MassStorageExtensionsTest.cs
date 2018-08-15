@@ -30,7 +30,6 @@ namespace IoControl.MassStorage.Tests
                 var ControlList = Generator.GetIoControls(CreationDisposition: System.IO.FileMode.Open)
                     .Using()
                     .Where(c => c.StorageGetDeviceNumber(out var number, out _) && number.DeviceType == FileDevice.Disk);
-                StorageProtocolSpecificData Data;
                 foreach (var c in ControlList)
                 {
                     yield return new object[] { c, StoragePropertyId.StorageDeviceProperty, StorageQueryType.StandardQuery };

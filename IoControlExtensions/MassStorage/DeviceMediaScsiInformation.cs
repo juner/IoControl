@@ -9,5 +9,7 @@ namespace IoControl.MassStorage
         public readonly byte DensityCode;
         public DeviceMediaScsiInformation(byte MediumType, byte DensityCode)
             => (this.MediumType, this.DensityCode) = (MediumType, DensityCode);
+        public override string ToString()
+            => $"{nameof(DeviceMediaScsiInformation)}{{{nameof(MediumType)}:{MediumType}, {nameof(DensityCode)}:{DensityCode}}}";
     }
 }
