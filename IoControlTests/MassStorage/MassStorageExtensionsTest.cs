@@ -9,7 +9,7 @@ namespace IoControl.MassStorage.Tests
     [TestClass]
     public class MassStorageExtensionsTest
     {
-        private static IEnumerable<string> Generator = VolumePath.Concat(PhysicalDrivePath).ToArray();
+        private static IEnumerable<string> Generator = LogicalDrivePath.Concat(VolumePath).Concat(PhysicalDrivePath).ToArray();
         private static IEnumerable<object[]> StorageCheckVerifyTestData => Generator.GetIoControls(FileAccess: System.IO.FileAccess.Read, FileShare: System.IO.FileShare.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(StorageCheckVerifyTestData))]
