@@ -129,12 +129,11 @@ namespace IoControl
             using (var hEvent = new ManualResetEvent(false))
             {
                 deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
-                using (Token.Register(() => NativeMethod.CancelIoEx(Handle, deviceIoOverlapped.GlobalOverlapped))) {
-                    var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
-                    if (result)
-                        return (result, (ushort)ret);
+                var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
+                if (result)
+                    return (result, (ushort)ret);
+                using (Token.Register(() => NativeMethod.CancelIoEx(Handle, deviceIoOverlapped.GlobalOverlapped)))    
                     await hEvent.WaitOneAsync(Token);
-                }
                 return (NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false), ret2);
             }
         }
