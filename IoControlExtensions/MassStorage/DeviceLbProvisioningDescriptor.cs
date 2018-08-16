@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace IoControl.MassStorage
 {
@@ -10,7 +11,8 @@ namespace IoControl.MassStorage
     /// 
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct DeviceLbProvisioningDescriptor : IStorageDescriptor
+    public readonly struct DeviceLbProvisioningDescriptor 
+        : IStorageDescriptor
     {
         uint IStorageDescriptor.Size => Size;
         uint IStorageDescriptor.Version => Version;
@@ -80,8 +82,6 @@ namespace IoControl.MassStorage
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="Version"></param>
-        /// <param name="Size"></param>
         /// <param name="ThinProvisioningEnabled"></param>
         /// <param name="ThinProvisioningReadZeros"></param>
         /// <param name="AnchorSupported"></param>
@@ -92,9 +92,9 @@ namespace IoControl.MassStorage
         /// <param name="UnmapGranularityAlignment"></param>
         /// <param name="MaxUnmapLbaCount"></param>
         /// <param name="MaxUnmapBlockDescriptorCount"></param>
-        public DeviceLbProvisioningDescriptor(uint Version, uint Size, bool ThinProvisioningEnabled, bool ThinProvisioningReadZeros, bool AnchorSupported, bool UnmapGranularityAlignmentValid, byte Reserved0, byte[] Reserved1, ulong OptimalUnmapGranularity, ulong UnmapGranularityAlignment, uint MaxUnmapLbaCount, uint MaxUnmapBlockDescriptorCount)
+        public DeviceLbProvisioningDescriptor(bool ThinProvisioningEnabled, bool ThinProvisioningReadZeros, bool AnchorSupported, bool UnmapGranularityAlignmentValid, byte Reserved0, byte[] Reserved1, ulong OptimalUnmapGranularity, ulong UnmapGranularityAlignment, uint MaxUnmapLbaCount, uint MaxUnmapBlockDescriptorCount)
             => (this.Version, this.Size, this.ThinProvisioningEnabled, this.ThinProvisioningReadZeros, this.AnchorSupported, this.UnmapGranularityAlignmentValid, this.Reserved0, this.Reserved1, this.OptimalUnmapGranularity, this.UnmapGranularityAlignment, this.MaxUnmapLbaCount, this.MaxUnmapBlockDescriptorCount)
-            = (Version, Size, ThinProvisioningEnabled, ThinProvisioningReadZeros, AnchorSupported, UnmapGranularityAlignmentValid, Reserved0, Reserved1, OptimalUnmapGranularity, UnmapGranularityAlignment, MaxUnmapLbaCount, MaxUnmapBlockDescriptorCount);
+            = ((uint)Marshal.SizeOf<DeviceLbProvisioningDescriptor>(), (uint)Marshal.SizeOf<DeviceLbProvisioningDescriptor>(), ThinProvisioningEnabled, ThinProvisioningReadZeros, AnchorSupported, UnmapGranularityAlignmentValid, Reserved0, Reserved1, OptimalUnmapGranularity, UnmapGranularityAlignment, MaxUnmapLbaCount, MaxUnmapBlockDescriptorCount);
         /// <summary>
         /// 
         /// </summary>
@@ -109,6 +109,13 @@ namespace IoControl.MassStorage
         /// <param name="MaxUnmapLbaCount"></param>
         /// <param name="MaxUnmapBlockDescriptorCount"></param>
         public DeviceLbProvisioningDescriptor(uint Version, uint Size, bool ThinProvisioningEnabled, bool ThinProvisioningReadZeros, bool AnchorSupported, bool UnmapGranularityAlignmentValid, ulong OptimalUnmapGranularity, ulong UnmapGranularityAlignment, uint MaxUnmapLbaCount, uint MaxUnmapBlockDescriptorCount) 
-            : this(Version, Size, ThinProvisioningEnabled, ThinProvisioningReadZeros, AnchorSupported, UnmapGranularityAlignmentValid, 0, new byte[7], OptimalUnmapGranularity, UnmapGranularityAlignment, MaxUnmapLbaCount, MaxUnmapBlockDescriptorCount) { }
+            : this(ThinProvisioningEnabled, ThinProvisioningReadZeros, AnchorSupported, UnmapGranularityAlignmentValid, 0, new byte[7], OptimalUnmapGranularity, UnmapGranularityAlignment, MaxUnmapLbaCount, MaxUnmapBlockDescriptorCount) { }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IntPtr"></param>
+        /// <param name="Size"></param>
+        public DeviceLbProvisioningDescriptor(IntPtr IntPtr, uint Size) => this = (DeviceLbProvisioningDescriptor)Marshal.PtrToStructure(IntPtr, typeof(DeviceLbProvisioningDescriptor));
+        public IDisposable CreatePtr(out IntPtr IntPtr, out uint Size) => PtrUtils.CreatePtr(this,out IntPtr, out Size);
     }
 }
