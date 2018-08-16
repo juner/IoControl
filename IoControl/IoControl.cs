@@ -13,8 +13,26 @@ namespace IoControl
         readonly SafeFileHandle Handle;
         readonly string Filename;
         readonly bool Disposable;
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsInvalid => Handle.IsInvalid;
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsClosed => Handle.IsClosed;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IntPtr DangerousGetHandle() => Handle.DangerousGetHandle();
+        public FileType FileType => NativeMethod.GetFileType(Handle);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Handle"></param>
+        /// <param name="Diposable"></param>
+        /// <param name="Filename"></param>
         public IoControl(SafeFileHandle Handle, bool Diposable = false, string Filename = null)
             => (this.Handle, this.Disposable, this.Filename) = (Handle, Diposable, Filename);
         public IoControl(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagsAndAttributes = default)
@@ -85,6 +103,9 @@ namespace IoControl
                 );
             [DllImport("kernel32.dll", SetLastError = true)]
             public static extern bool CancelIoEx(SafeFileHandle hFile, IntPtr lpOverlapped = default);
+            [DllImport("kernel32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.U4)]
+            public static extern FileType GetFileType(SafeFileHandle hFile);
         }
         /// <summary>
         /// 
@@ -464,5 +485,14 @@ namespace IoControl
             self = (T)Marshal.PtrToStructure(IntPtr, typeof(T));
             return ref self;
         }
+    }
+    public enum FileType : uint
+    {
+        Unknown = 0x0000,
+        Disk = 0x0001,
+        Char = 0x0002,
+        Pipe = 0x0003,
+        Remote = 0x0004,
+
     }
 }
