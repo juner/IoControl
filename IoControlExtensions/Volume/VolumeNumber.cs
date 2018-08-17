@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace IoControl.Volume
 {
@@ -17,22 +19,23 @@ namespace IoControl.Volume
         /// Specifies the name of the volume manager driver.  If this is less than 8, it is padded with blanks.
         /// </summary>
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        public ushort[] VolumeManagerName;
+        public ushort[] _VolumeManagerName;
+        public string VolumeManagerName => Encoding.Unicode.GetString((_VolumeManagerName ?? Enumerable.Empty<ushort>()).SelectMany(v => BitConverter.GetBytes(v)).ToArray());
         /// <summary>
         /// 
         /// </summary>
         /// <param name="VolumeNumber"></param>
         /// <param name="VolumeManagerName"></param>
         public VolumeNumber(uint VolumeNumber, ushort[] VolumeManagerName)
-            => (Number, this.VolumeManagerName) = (VolumeNumber, VolumeManagerName);
+            => (Number, this._VolumeManagerName) = (VolumeNumber, VolumeManagerName);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="VolumeNumber"></param>
         /// <param name="VolumeManagerName"></param>
         public void Deconstruct(out uint VolumeNumber, out ushort[] VolumeManagerName)
-            => (VolumeNumber, VolumeManagerName) = (Number, this.VolumeManagerName);
+            => (VolumeNumber, VolumeManagerName) = (Number, this._VolumeManagerName);
         public override string ToString()
-            => $"{nameof(VolumeNumber)}{{{nameof(Number)}:{Number}, {nameof(VolumeManagerName)}:[{string.Join("", (VolumeManagerName ?? Enumerable.Empty<ushort>()).Select(v => char.ConvertFromUtf32(v)))}]}}";
+            => $"{nameof(VolumeNumber)}{{{nameof(Number)}:{Number}, {nameof(VolumeManagerName)}:{VolumeManagerName}}}";
     }
 }
