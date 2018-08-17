@@ -15,11 +15,12 @@ namespace IoControl.Volume
         /// Specifies the  number associated with this volume for the current session.
         /// </summary>
         public uint Number;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+        private ushort[] _VolumeManagerName;
+
         /// <summary>
         /// Specifies the name of the volume manager driver.  If this is less than 8, it is padded with blanks.
         /// </summary>
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        public ushort[] _VolumeManagerName;
         public string VolumeManagerName => Encoding.Unicode.GetString((_VolumeManagerName ?? Enumerable.Empty<ushort>()).SelectMany(v => BitConverter.GetBytes(v)).ToArray());
         /// <summary>
         /// 
