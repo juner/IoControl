@@ -63,7 +63,7 @@ namespace IoControl.Disk
             var ArrayPtr = IntPtr.Add(IntPtr, (int)Marshal.OffsetOf<DriveLayoutInformationEx>(nameof(_PartitionEntry)));
             var PartitionSize = Marshal.SizeOf<PartitionInformationEx>();
             _PartitionEntry = Enumerable.Range(0, (int)PartitionCount)
-                .Select(index => (PartitionInformationEx)Marshal.PtrToStructure(IntPtr.Add(ArrayPtr, PartitionSize), typeof(PartitionInformationEx)))
+                .Select(index => (PartitionInformationEx)Marshal.PtrToStructure(IntPtr.Add(ArrayPtr, PartitionSize * index), typeof(PartitionInformationEx)))
                 .ToArray();
         }
         /// <summary>
