@@ -22,46 +22,26 @@ namespace IoControl.Volume
         /// </summary>
         /// <param name="IoControl"></param>
         /// <param name="extent"></param>
-        public static void VolumeGetVolumeDiskExtents(this IoControl IoControl, out VolumeDiskExtent extent)
+        public static bool VolumeGetVolumeDiskExtents(this IoControl IoControl, out VolumeDiskExtent extent, out uint ReturnBytes)
         {
-            const int ERROR_INSUFFICIENT_BUFFER = 122;
-            const int ERROR_MORE_DATA = 234;
             var Size = (uint)Marshal.SizeOf(typeof(VolumeDiskExtent));
             var OutPtr = Marshal.AllocCoTaskMem((int)Size);
             using (Disposable.Create(() => Marshal.FreeCoTaskMem(OutPtr)))
             {
-                var get_volume_disk_result = IoControl.DeviceIoControlOutOnly(IOControlCode.VolumeGetVolumeDiskExtents, OutPtr, Size, out var ReturnBytes);
-                var query_size_error = Marshal.GetHRForLastWin32Error();
-                System.Diagnostics.Debug.WriteLine($"{nameof(get_volume_disk_result)}:{get_volume_disk_result}");
-                System.Diagnostics.Debug.WriteLine($"{nameof(ReturnBytes)}:{ReturnBytes}");
-                System.Diagnostics.Debug.WriteLine($"{nameof(query_size_error)}:0x{unchecked((uint)query_size_error):X8}");
-                extent = (VolumeDiskExtent)Marshal.PtrToStructure(OutPtr, typeof(VolumeDiskExtent));
-                System.Diagnostics.Debug.WriteLine($"{nameof(extent.NumberOfDiskExtents)}:{extent.NumberOfDiskExtents}");
+                var get_volume_disk_result = IoControl.DeviceIoControlOutOnly(IOControlCode.VolumeGetVolumeDiskExtents, OutPtr, Size, out ReturnBytes);
+                extent = new VolumeDiskExtent(OutPtr, ReturnBytes);
                 if (get_volume_disk_result && extent.NumberOfDiskExtents == 1)
-                {
-                    return;
-                }
-                if (query_size_error != ERROR_INSUFFICIENT_BUFFER && query_size_error != ERROR_MORE_DATA)
-                {
-                    Marshal.ThrowExceptionForHR(query_size_error);
-                    return;
-                }
+                    return get_volume_disk_result;
+                if (extent.NumberOfDiskExtents == 0 || extent.NumberOfDiskExtents == (uint)extent.Extents.Length)
+                    return get_volume_disk_result;
             }
             Size = (uint)(Marshal.SizeOf(typeof(VolumeDiskExtent)) + Marshal.SizeOf(typeof(DiskExtent)) * (extent.NumberOfDiskExtents - 1));
             OutPtr = Marshal.AllocCoTaskMem((int)Size);
             using (Disposable.Create(() => Marshal.FreeCoTaskMem(OutPtr)))
             {
-                var devide_ioc_result = IoControl.DeviceIoControlOutOnly(IOControlCode.VolumeGetVolumeDiskExtents, OutPtr, Size, out var ReturnBytes);
-                if (!devide_ioc_result)
-                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                extent = (VolumeDiskExtent)Marshal.PtrToStructure(OutPtr, typeof(VolumeDiskExtent));
-                var ExtentsPtr = IntPtr.Add(OutPtr, Marshal.OffsetOf<VolumeDiskExtent>(nameof(VolumeDiskExtent.Extents)).ToInt32());
-                var ExtentSize = Marshal.SizeOf(typeof(DiskExtent));
-                extent.Extents = Enumerable
-                        .Range(0, (int)extent.NumberOfDiskExtents)
-                        .Select(index => (DiskExtent)Marshal.PtrToStructure(IntPtr.Add(ExtentsPtr, ExtentSize * index), typeof(DiskExtent)))
-                        .ToArray();
-                return;
+                var devide_ioc_result = IoControl.DeviceIoControlOutOnly(IOControlCode.VolumeGetVolumeDiskExtents, OutPtr, Size, out ReturnBytes);
+                extent = new VolumeDiskExtent(OutPtr, ReturnBytes);
+                return devide_ioc_result;
             }
         }
         /// <summary>
@@ -71,7 +51,8 @@ namespace IoControl.Volume
         /// <returns></returns>
         public static VolumeDiskExtent VolumeGetVolumeDiskExtents(this IoControl IoControl)
         {
-            VolumeGetVolumeDiskExtents(IoControl, out var extent);
+            if (!VolumeGetVolumeDiskExtents(IoControl, out var extent, out var ReturnBytes) && ReturnBytes == 0)
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return extent;
         }
         /// <summary>

@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using IoControl.Volume;
 
 namespace IoControlPhysicalExample
 {
@@ -59,6 +60,16 @@ namespace IoControlPhysicalExample
                 {
                     Trace.WriteLine(e);
                 }
+                try
+                {
+                    Trace.WriteLine($"{nameof(VolumeExtensions.VolumeGetVolumeDiskExtents)}");
+                    Trace.WriteLine(IoControl.VolumeGetVolumeDiskExtents());
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+
             }
             foreach (var IoControl in GetPhysicalDrives(
                 FileAccess: FileAccess.ReadWrite,
