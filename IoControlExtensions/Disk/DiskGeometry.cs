@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace IoControl.Disk
 {
@@ -40,6 +41,12 @@ namespace IoControl.Disk
         public DiskGeometry(long Cylinders, MediaType MediaType, uint TrackPerCylinder, uint SectorsPerTrack, uint BytesPerSector)
             => (this.Cylinders, this.MediaType, this.TrackPerCylinder, this.SectorsPerTrack, this.BytesPerSector)
             = (Cylinders, MediaType, TrackPerCylinder, SectorsPerTrack, BytesPerSector);
+        /// <summary>
+        /// ptr to structure
+        /// </summary>
+        /// <param name="IntPtr"></param>
+        /// <param name="Size"></param>
+        public DiskGeometry(IntPtr IntPtr, uint Size) => this = (DiskGeometry)Marshal.PtrToStructure(IntPtr, typeof(DiskGeometry));
         /// <summary>
         /// 
         /// </summary>
