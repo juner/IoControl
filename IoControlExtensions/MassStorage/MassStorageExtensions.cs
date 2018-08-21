@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using static IoControl.IoControl;
 using static IoControl.PtrUtils;
 
@@ -22,6 +24,14 @@ namespace IoControl.MassStorage
         /// <param name="IoControl"></param>
         /// <returns></returns>
         public static bool StorageCheckVerify2(this IoControl IoControl) => IoControl.DeviceIoControl(IOControlCode.StorageCheckVerify2, out _);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+        public static Task<bool> StorageCheckVerify2Async(this IoControl IoControl, CancellationToken Token = default)
+            => IoControl.DeviceIoControlAsync(IOControlCode.StorageCheckVerify2, Token);
 
         /// <summary>
         /// IOCTL_STORAGE_GET_HOTPLUG_INFO IOCTL

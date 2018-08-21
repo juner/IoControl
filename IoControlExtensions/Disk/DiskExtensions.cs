@@ -172,17 +172,17 @@ namespace IoControl.Disk
         /// </summary>
         /// <param name="IoControl"></param>
         /// <param name="geometry"></param>
-        public static bool DiskGetDriveGeometry(this IoControl IoControl, out DiskGeometry geometry) => IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveGeometry, out geometry, out _);
+        public static bool DiskGetDriveGeometry(this IoControl IoControl, out DiskGeometry geometry, out uint ReturnBytes) => IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetDriveGeometry, out geometry, out ReturnBytes);
         /// <summary>
         /// IOCTL_DISK_GET_DRIVE_GEOMETRY IOCTL
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
-        public static DiskGeometry DiskGetDriveGeometry(this IoControl IoControl)
+        public static DiskGeometry? DiskGetDriveGeometry(this IoControl IoControl) => !DiskGetDriveGeometry(IoControl, out var geometry, out var ReturnBytes) && ReturnBytes == 0 ? (DiskGeometry?)null : geometry;
+        public static async Task<DiskGeometry?> DiskGetDriveGeometryAsync(this IoControl IoControl, CancellationToken Token = default)
         {
-            if (!DiskGetDriveGeometry(IoControl, out var geometry))
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            return geometry;
+            var (Result, DiskGeometry, ReturnBytes) = await IoControl.DeviceIoControlIOutOnlyAsync<DiskGeometry>(IOControlCode.DiskGetDriveGeometry, Token);
+            return !Result && ReturnBytes == 0 ? (DiskGeometry?)null : DiskGeometry;
         }
         /// <summary>
         /// 

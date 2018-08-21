@@ -10,6 +10,7 @@ using IoControl.Disk;
 using System.Threading;
 using IoControl.Tests;
 using IoControl.MassStorage;
+using System.Runtime.InteropServices;
 
 namespace IoControl.Disk.Tests
 {
@@ -70,7 +71,24 @@ namespace IoControl.Disk.Tests
             .Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(DiskGetDriveGeometryTestData))]
-        public void DiskGetDriveGeometryTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetDriveGeometry());
+        public void DiskGetDriveGeometryTest(IoControl IoControl)
+        {
+            if (IoControl.DiskGetDriveGeometry() is DiskGeometry DiskGeometry)
+                Trace.WriteLine(DiskGeometry);
+            else
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        private static IEnumerable<object[]> DiskGetDriveGeometryAsyncTestData => Generator.GetIoControls(CreationDisposition: System.IO.FileMode.Open, FlagAndAttributes: FileFlagAndAttributesExtensions.Create(FileFlags.Overlapped)).Using()
+            .Select(v => new object[] { v });
+        [TestMethod]
+        [DynamicData(nameof(DiskGetDriveGeometryAsyncTestData))]
+        public async Task DiskGetDriveGeometryAsyncTest(IoControl IoControl)
+        {
+            if (await IoControl.DiskGetDriveGeometryAsync() is DiskGeometry DiskGeometry)
+                Trace.WriteLine(DiskGeometry);
+            else
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
         [TestMethod]
         [DynamicData(nameof(DiskGetDriveGeometryTestData))]
         public void DiskGetDriveGeometryExTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetDriveGeometryEx());

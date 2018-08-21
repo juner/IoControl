@@ -306,13 +306,13 @@ namespace IoControl
         /// <param name="InBuffer"></param>
         /// <param name="Token"></param>
         /// <returns></returns>
-        public async Task<(bool Result, TOUT OutBuffer)> DeviceIoControlAsync<TIN,TOUT>(IOControlCode IoControlCode, TIN InBuffer, CancellationToken Token = default)
+        public async Task<TOUT?> DeviceIoControlAsync<TIN,TOUT>(IOControlCode IoControlCode, TIN InBuffer, CancellationToken Token = default)
             where TIN : struct
             where TOUT : struct
         {
             var OutDataPtr = new DataPtr.StructPtr<TOUT>();
             var (result, ReturnBytes) = await DeviceIoControlAsync(IoControlCode, new DataPtr.StructPtr<TIN>(InBuffer), OutDataPtr, Token);
-            return (result, OutDataPtr.Get());
+            return result ? OutDataPtr.Get() : (TOUT?)null;
         }
         /// <summary>
         /// 
@@ -340,6 +340,16 @@ namespace IoControl
         /// <returns></returns>
         public bool DeviceIoControlInOnly(IOControlCode IoControlCode, IntPtr InPtr, uint InSize, out uint ReturnBytes)
             => NativeMethod.DeviceIoControl(Handle, IoControlCode, InPtr, InSize, IntPtr.Zero, 0u, out ReturnBytes);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControlCode"></param>
+        /// <param name="InPtr"></param>
+        /// <param name="InSize"></param>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+        public async Task<bool> DeviceIoControlInOnlyAsync(IOControlCode IoControlCode, IntPtr InPtr, uint InSize, CancellationToken Token = default)
+            => (await DeviceIoControlAsync(IoControlCode, InPtr, InSize, IntPtr.Zero, 0, Token)).Result;
         /// <summary>
         /// 
         /// </summary>
@@ -376,6 +386,16 @@ namespace IoControl
         /// 
         /// </summary>
         /// <param name="IoControlCode"></param>
+        /// <param name="OutPtr"></param>
+        /// <param name="OutSize"></param>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+        public Task<(bool Result, uint ReturnBytes)> DeviceIoControlIOutOnlyAsync(IOControlCode IoControlCode, IntPtr OutPtr, uint OutSize, CancellationToken Token = default)
+            => DeviceIoControlAsync(IoControlCode, IntPtr.Zero, 0, OutPtr, OutSize, Token);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControlCode"></param>
         /// <param name="DataPtr"></param>
         /// <param name="ReturnBytes"></param>
         /// <returns></returns>
@@ -388,17 +408,25 @@ namespace IoControl
                 return result;
             }
         }
+        public async Task<(bool Result, uint ReturnBytes)> DeviceIoControlIOutOnlyAsync(IOControlCode IoControlCode, DataPtr.DataPtr DataPtr, CancellationToken Token = default)
+        {
+            using (DataPtr.GetPtrAndSize(out var OutPtr, out var OutSize))
+                return await DeviceIoControlIOutOnlyAsync(IoControlCode, OutPtr, OutSize, Token);
+        }
         public bool DeviceIoControlOutOnly<TOUT>(IOControlCode IoControlCode, out TOUT OutBuffer, out uint ReturnBytes)
             where TOUT : struct
         {
-            var outSize = (uint)Marshal.SizeOf(typeof(TOUT));
-            var outPtr = Marshal.AllocCoTaskMem((int)outSize);
-            using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(outPtr)))
-            {
-                bool result = DeviceIoControlOutOnly(IoControlCode, outPtr, outSize, out ReturnBytes);
-                OutBuffer = (TOUT)Marshal.PtrToStructure(outPtr, typeof(TOUT));
-                return result;
-            }
+            var data = new DataPtr.StructPtr<TOUT>();
+            var result = DeviceIoControlOutOnly(IoControlCode, data, out ReturnBytes);
+            OutBuffer = data.Get();
+            return result;
+        }
+        public async  Task<(bool Result, TOUT Output, uint ReturnBytes)> DeviceIoControlIOutOnlyAsync<TOUT>(IOControlCode IoControlCode, CancellationToken Token = default)
+            where TOUT : struct
+        {
+            var data = new DataPtr.StructPtr<TOUT>();
+            var (Result, ReturnBytes) = await DeviceIoControlIOutOnlyAsync(IoControlCode, data, Token);
+            return (Result, data.Get(), ReturnBytes);
         }
         public bool DeviceIoControlOutOnly(IOControlCode IoControlCode, byte[] OutBuffer, out uint ReturnBytes)
         {

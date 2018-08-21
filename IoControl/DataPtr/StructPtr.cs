@@ -18,15 +18,16 @@ namespace IoControl.DataPtr
             var _Size = Marshal.SizeOf<T>();
             var _IntPtr = Marshal.AllocCoTaskMem(_Size);
             var Disposable = global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(_IntPtr));
-            try
-            {
-                Marshal.StructureToPtr(this, _IntPtr, false);
-            }
-            catch
-            {
-                Disposable?.Dispose();
-                throw;
-            }
+            if (!Struct.Equals(default))
+                try
+                {
+                    Marshal.StructureToPtr(Struct, _IntPtr, false);
+                }
+                catch
+                {
+                    Disposable?.Dispose();
+                    throw;
+                }
             IntPtr = _IntPtr;
             Size = (ushort)_Size;
             return Disposable; ;
