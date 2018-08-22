@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace IoControl.DataPtr
+namespace IoControl.DataUtils
 {
     /// <summary>
     /// struct ベースの データ

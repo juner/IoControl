@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IoControl.DataPtr { 
+namespace IoControl.DataUtils { 
     public interface DataPtr
     {
         IDisposable GetPtrAndSize(out IntPtr IntPtr, out uint Size);

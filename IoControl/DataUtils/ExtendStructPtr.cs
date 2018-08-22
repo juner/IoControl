@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IoControl.DataPtr
+namespace IoControl.DataUtils
 {
     public class ExtendStructPtr<T> : DataPtr
         where T : struct

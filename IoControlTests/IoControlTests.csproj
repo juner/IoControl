@@ -52,6 +52,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controller\ControllerExtentionsTest.cs" />
+    <Compile Include="DataUtils\BytePtrTest.cs" />
+    <Compile Include="DataUtils\UnitTest1.cs" />
     <Compile Include="Disk\DiskDetectionInfoTest.cs" />
     <Compile Include="Disk\DiskExInt13InfoTest.cs" />
     <Compile Include="Disk\DiskExtensionsTest.cs" />
