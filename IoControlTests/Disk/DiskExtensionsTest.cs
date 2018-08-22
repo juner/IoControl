@@ -84,10 +84,11 @@ namespace IoControl.Disk.Tests
         [DynamicData(nameof(DiskGetDriveGeometryAsyncTestData))]
         public async Task DiskGetDriveGeometryAsyncTest(IoControl IoControl)
         {
-            if (await IoControl.DiskGetDriveGeometryAsync() is DiskGeometry DiskGeometry)
-                Trace.WriteLine(DiskGeometry);
-            else
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            using (var Source = new CancellationTokenSource(TimeSpan.FromSeconds(1)))
+                if (await IoControl.DiskGetDriveGeometryAsync(Source.Token) is DiskGeometry DiskGeometry)
+                    Trace.WriteLine(DiskGeometry);
+                else
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
         [TestMethod]
         [DynamicData(nameof(DiskGetDriveGeometryTestData))]
