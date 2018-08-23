@@ -8,14 +8,22 @@ namespace IoControl.DataUtils
     /// struct ベースの データ
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class StructPtr<T> : DataPtr
+    public class StructPtr<T> : IDataPtr
         where T : struct
     {
         protected T Struct;
         public StructPtr(T Struct) => this.Struct = Struct;
         public StructPtr() => Struct = default;
-        public virtual IDisposable GetPtrAndSize(out IntPtr IntPtr, out uint Size)
+        public virtual IDisposable CreatePtr(out IntPtr IntPtr, out uint Size)
         {
+            if (typeof(T).GetMethod(nameof(CreatePtr),new Type[]{ typeof(IntPtr).MakeByRefType(), typeof(uint).MakeByRefType() }) is MethodInfo MethodInfo)
+            {
+                var parameter = new object[2] { null, null };
+                var Dispose = (IDisposable)MethodInfo.Invoke(Struct, parameter);
+                IntPtr = (IntPtr)parameter[0];
+                Size = (uint)parameter[1];
+                return Dispose;
+            }
             var _Size = Marshal.SizeOf<T>();
             var _IntPtr = Marshal.AllocCoTaskMem(_Size);
             var Disposable = global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(_IntPtr));
@@ -33,7 +41,7 @@ namespace IoControl.DataUtils
             Size = (ushort)_Size;
             return Disposable; ;
         }
-        void DataPtr.SetPtr(IntPtr IntPtr, uint Size) => SetPtr(IntPtr, Size);
+        void IDataPtr.SetPtr(IntPtr IntPtr, uint Size) => SetPtr(IntPtr, Size);
         /// <summary>
         /// <paramref name="IntPtr"/>と<paramref name="Size"/>をもとにインスタンスを生成する。同じ引数のコンストラクタが定義されていたとき、
         /// </summary>
@@ -48,6 +56,6 @@ namespace IoControl.DataUtils
             return ref Struct;
         }
         public ref T Get() => ref Struct;
-        object DataPtr.Get() => Get();
+        object IDataPtr.Get() => Get();
     }
 }

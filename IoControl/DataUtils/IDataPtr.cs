@@ -1,9 +1,9 @@
 ﻿using System;
 
 namespace IoControl.DataUtils { 
-    public interface DataPtr
+    public interface IDataPtr
     {
-        IDisposable GetPtrAndSize(out IntPtr IntPtr, out uint Size);
+        IDisposable CreatePtr(out IntPtr IntPtr, out uint Size);
         void SetPtr(IntPtr IntPtr, uint Size);
         object Get();
     }

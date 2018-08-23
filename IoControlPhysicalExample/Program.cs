@@ -31,7 +31,7 @@ namespace IoControlPhysicalExample
                         FileAccess: FileAccess.ReadWrite,
                         FileShare: FileShare.ReadWrite,
                         CreationDisposition: FileMode.Open,
-                        FlagsAndAttributes: FileFlagAndAttributesExtensions.Create(FileAttributes.Normal)))
+                        FlagAndAttributes: FileFlagAndAttributesExtensions.Create(FileAttributes.Normal)))
                     .Using())
             {
                 try

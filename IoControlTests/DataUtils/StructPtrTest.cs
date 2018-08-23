@@ -18,10 +18,10 @@ namespace IoControl.DataUtils.Tests
         }
         [TestMethod]
         [DynamicData(nameof(GetPtrAndSizeTestData))]
-        public void GetPtrAndSizeTest(StructPtr<TestData> StructPtr, TestData data)
+        public void GetPtrTest(StructPtr<TestData> StructPtr, TestData data)
         {
             var Size = (uint)Marshal.SizeOf<TestData>();
-            using (StructPtr.GetPtrAndSize(out var Ptr, out var _Size))
+            using (StructPtr.CreatePtr(out var Ptr, out var _Size))
             {
                 Assert.AreEqual(Size, _Size);
                 Assert.AreEqual(data, (TestData)Marshal.PtrToStructure(Ptr, typeof(TestData)));
@@ -31,7 +31,7 @@ namespace IoControl.DataUtils.Tests
         [DynamicData(nameof(GetPtrAndSizeTestData))]
         public void SetPtrTest(StructPtr<TestData> StructPtr, TestData data)
         {
-            using (StructPtr.GetPtrAndSize(out var Ptr, out var Size))
+            using (StructPtr.CreatePtr(out var Ptr, out var Size))
             {
                 StructPtr.SetPtr(Ptr, Size);
                 Assert.AreEqual(data, StructPtr.Get());

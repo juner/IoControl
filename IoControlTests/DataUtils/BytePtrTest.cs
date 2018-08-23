@@ -18,7 +18,7 @@ namespace IoControl.DataUtils.Tests
         [DynamicData(nameof(GetPtrAndSizeTestData))]
         public void GetPtrAndSizeTest(BytesPtr BytePtr, byte[] data)
         {
-            using (BytePtr.GetPtrAndSize(out var IntPtr, out var Size))
+            using (BytePtr.CreatePtr(out var IntPtr, out var Size))
             {
                 Assert.AreEqual((uint)data.Length, Size);
                 byte[] _data = new byte[Size];
@@ -30,7 +30,7 @@ namespace IoControl.DataUtils.Tests
         [DynamicData(nameof(GetPtrAndSizeTestData))]
         public void SetPtrTest(BytesPtr BytesPtr, byte[] data)
         {
-            using (BytesPtr.GetPtrAndSize(out var Ptr, out var Size))
+            using (BytesPtr.CreatePtr(out var Ptr, out var Size))
             {
                 BytesPtr.SetPtr(Ptr, Size);
                 CollectionAssert.AreEqual(data, BytesPtr.Get());

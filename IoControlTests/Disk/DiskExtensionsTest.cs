@@ -24,16 +24,8 @@ namespace IoControl.Disk.Tests
         [TestMethod]
         [DynamicData(nameof(DiskAreVolumesReadyAsyncTestData))]
         public async Task DiskAreVolumesReadyAsyncTest(IoControl IoControl) {
-            using (var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(1000)))
-            using (Disposable.Create(source.Cancel))
-                try
-                {
-                    Trace.WriteLine(await IoControl.DiskAreVolumesReadyAsync(source.Token));
-                }
-                catch (TaskCanceledException)
-                {
-                    Trace.WriteLine("canceled");
-                }
+            using (var source = new CancellationTokenSource(TimeSpan.FromSeconds(1)))
+                Trace.WriteLine(await IoControl.DiskAreVolumesReadyAsync(source.Token));
         }
         private static IEnumerable<object[]> DiskGetCacheInformationTestData => Generator.GetIoControls(FileAccess: System.IO.FileAccess.Read, CreationDisposition: System.IO.FileMode.Open).Using()
             .Where(v => v.StorageCheckVerify2())
@@ -89,6 +81,23 @@ namespace IoControl.Disk.Tests
                     Trace.WriteLine(DiskGeometry);
                 else
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+        }
+        private static IEnumerable<object[]> DiskGetDriveGeometryAsyncTest2Data => Generator.Select(v => new object[] { v });
+        [TestMethod]
+        [DynamicData(nameof(DiskGetDriveGeometryAsyncTest2Data))]
+        public async Task DiskGetDriveGeometryAsyncTest2(string FilePath)
+        {
+            using (var ic = new IoControl(FilePath, CreationDisposition: System.IO.FileMode.Open))
+            using (var icAsync = new IoControl(FilePath, CreationDisposition: System.IO.FileMode.Open, FlagAndAttributes: FileFlagAndAttributesExtensions.Create(FileFlags.Overlapped)))
+            {
+                if (ic.IsInvalid || icAsync.IsInvalid)
+                    throw new AssertInconclusiveException();
+                if (ic.DiskGetDriveGeometry() is DiskGeometry DiskGeometry
+                    && await icAsync.DiskGetDriveGeometryAsync() is DiskGeometry DiskGeometryAsync)
+                    Assert.AreEqual(DiskGeometry, DiskGeometryAsync);
+                else
+                    throw new AssertInconclusiveException();
+            }
         }
         [TestMethod]
         [DynamicData(nameof(DiskGetDriveGeometryTestData))]

@@ -51,6 +51,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CheckTool.cs" />
     <Compile Include="Controller\ControllerExtentionsTest.cs" />
     <Compile Include="DataUtils\BytePtrTest.cs" />
     <Compile Include="DataUtils\StructPtrTest.cs" />

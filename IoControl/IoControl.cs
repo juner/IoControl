@@ -36,8 +36,8 @@ namespace IoControl
         /// <param name="Filename"></param>
         public IoControl(SafeFileHandle Handle, bool Diposable = false, string Filename = null)
             => (this.Handle, this.Disposable, this.Filename) = (Handle, Diposable, Filename);
-        public IoControl(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagsAndAttributes = default)
-            : this(CreateFile(Filename, FileAccess, FileShare, CreationDisposition, FlagsAndAttributes), true, Filename) { }
+        public IoControl(string Filename, FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagAndAttributes = default)
+            : this(CreateFile(Filename, FileAccess, FileShare, CreationDisposition, FlagAndAttributes), true, Filename) { }
         public void Dispose()
         {
             if (Disposable && !(Handle?.IsClosed ?? true))
@@ -128,10 +128,10 @@ namespace IoControl
         /// <param name="OutputData"></param>
         /// <param name="ReturnBytes"></param>
         /// <returns></returns>
-        public bool DeviceIoControl(IOControlCode IoControlCode, DataPtr InputData, DataPtr OutputData, out uint ReturnBytes)
+        public bool DeviceIoControl(IOControlCode IoControlCode, IDataPtr InputData, IDataPtr OutputData, out uint ReturnBytes)
         {
-            using (InputData.GetPtrAndSize(out var InputPtr, out var InputSize))
-            using (OutputData.GetPtrAndSize(out var OutputPtr, out var OutputSize))
+            using (InputData.CreatePtr(out var InputPtr, out var InputSize))
+            using (OutputData.CreatePtr(out var OutputPtr, out var OutputSize))
                 return DeviceIoControl(IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out ReturnBytes);
         }
         /// <summary>
@@ -146,12 +146,14 @@ namespace IoControl
         /// <returns></returns>
         public async Task<(bool Result,uint ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, IntPtr InputPtr, uint InputSize, IntPtr OutputPtr, uint OutputSize, CancellationToken Token = default)
         {
+            System.Diagnostics.Trace.WriteLine($" start {nameof(DeviceIoControlAsync)}");
             Token.ThrowIfCancellationRequested();
             using (var deviceIoOverlapped = new DeviceIoOverlapped())
             using (var hEvent = new ManualResetEvent(false))
             {
                 deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
                 var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
+                System.Diagnostics.Trace.WriteLine($" {nameof(result)}:{result}");
                 if (!result)
                 {
                     var error = Marshal.GetHRForLastWin32Error();
@@ -160,7 +162,10 @@ namespace IoControl
                 }
                 using (Token.Register(() => NativeMethod.CancelIoEx(Handle, deviceIoOverlapped.GlobalOverlapped)))    
                     await hEvent.WaitOneAsync(Token);
-                return (NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false), ret2);
+
+                var result2=  (NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false), ret2);
+                System.Diagnostics.Trace.WriteLine($" {nameof(result2)}:{result2}");
+                return result2;
             }
         }
         /// <summary>
@@ -189,9 +194,9 @@ namespace IoControl
         /// <param name="InOutDataPtr"></param>
         /// <param name="Token"></param>
         /// <returns></returns>
-        public async Task<(bool Result,uint ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, DataPtr InOutDataPtr, CancellationToken Token = default)
+        public async Task<(bool Result,uint ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, IDataPtr InOutDataPtr, CancellationToken Token = default)
         {
-            using (InOutDataPtr.GetPtrAndSize(out var InOutPtr, out var InOutSize))
+            using (InOutDataPtr.CreatePtr(out var InOutPtr, out var InOutSize))
             {
                 var result = await DeviceIoControlAsync(IoControlCode, InOutPtr, InOutSize, Token);
                 InOutDataPtr.SetPtr(InOutPtr, result.ReturnBytes);
@@ -223,9 +228,9 @@ namespace IoControl
         /// <param name="InOutData"></param>
         /// <param name="ReturnBytes"></param>
         /// <returns></returns>
-        public bool DeviceIoControl(IOControlCode IoControlCode, DataPtr InOutData, out uint ReturnBytes)
+        public bool DeviceIoControl(IOControlCode IoControlCode, IDataPtr InOutData, out uint ReturnBytes)
         {
-            using (InOutData.GetPtrAndSize(out var InOutPtr, out var Size))
+            using (InOutData.CreatePtr(out var InOutPtr, out var Size))
             {
                 var result = DeviceIoControl(IoControlCode, InOutPtr, Size, out ReturnBytes);
                 InOutData.SetPtr(InOutPtr, Size);
@@ -273,9 +278,9 @@ namespace IoControl
         /// <param name="OutDataPtr"></param>
         /// <param name="Token"></param>
         /// <returns></returns>
-        public async Task<(bool Result, uint ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, DataPtr InDataPtr, DataPtr OutDataPtr, CancellationToken Token = default) {
-            using (InDataPtr.GetPtrAndSize(out var InPtr, out var InSize))
-            using (OutDataPtr.GetPtrAndSize(out var OutPtr, out var OutSize))
+        public async Task<(bool Result, uint ReturnBytes)> DeviceIoControlAsync(IOControlCode IoControlCode, IDataPtr InDataPtr, IDataPtr OutDataPtr, CancellationToken Token = default) {
+            using (InDataPtr.CreatePtr(out var InPtr, out var InSize))
+            using (OutDataPtr.CreatePtr(out var OutPtr, out var OutSize))
             {
                 var result = await DeviceIoControlAsync(IoControlCode, InPtr, InSize, OutPtr, OutSize);
                 OutDataPtr.SetPtr(OutPtr, result.ReturnBytes);
@@ -362,9 +367,9 @@ namespace IoControl
         /// <param name="DataPtr"></param>
         /// <param name="ReturnBytes"></param>
         /// <returns></returns>
-        public bool DeviceIoControlInOnly(IOControlCode IoControlCode, DataPtr DataPtr,out uint ReturnBytes)
+        public bool DeviceIoControlInOnly(IOControlCode IoControlCode, IDataPtr DataPtr,out uint ReturnBytes)
         {
-            using (DataPtr.GetPtrAndSize(out var InPtr, out var InSize))
+            using (DataPtr.CreatePtr(out var InPtr, out var InSize))
                 return DeviceIoControlInOnly(IoControlCode, InPtr, InSize, out ReturnBytes);
         }
         /// <summary>
@@ -404,18 +409,46 @@ namespace IoControl
         /// <param name="DataPtr"></param>
         /// <param name="ReturnBytes"></param>
         /// <returns></returns>
-        public bool DeviceIoControlOutOnly(IOControlCode IoControlCode, DataPtr DataPtr, out uint ReturnBytes)
+        public bool DeviceIoControlOutOnly(IOControlCode IoControlCode, IDataPtr DataPtr, out uint ReturnBytes)
         {
-            using (DataPtr.GetPtrAndSize(out var OutPtr, out var OutSize))
+
+            if (DataPtr is IAnySizeDataPtr AnySizeDataPtr)
+            {
+                var Size = AnySizeDataPtr.GetSize();
+                ReturnBytes = 0u;
+                while (ReturnBytes == 0u)
+                {
+                    var Ptr = Marshal.AllocCoTaskMem((int)Size);
+                    using (global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
+                    {
+                        var result = DeviceIoControlOutOnly(IoControlCode, Ptr, Size, out ReturnBytes);
+                        if (result)
+                        {
+                            AnySizeDataPtr.SetPtr(Ptr, Size);
+                            return result;
+                        }
+
+                        var ErrorCode = Marshal.GetHRForLastWin32Error();
+                        if (ErrorCode == ERROR_INSUFFICIENT_BUFFER)
+                        {
+                            Size *= 2;
+                            continue;
+                        }
+                        break;
+                    }
+                }
+                return false;
+            }
+            using (DataPtr.CreatePtr(out var OutPtr, out var OutSize))
             {
                 var result = DeviceIoControlOutOnly(IoControlCode, OutPtr, OutSize, out ReturnBytes);
                 DataPtr.SetPtr(OutPtr, ReturnBytes);
                 return result;
             }
         }
-        public async Task<(bool Result, uint ReturnBytes)> DeviceIoControlIOutOnlyAsync(IOControlCode IoControlCode, DataPtr DataPtr, CancellationToken Token = default)
+        public async Task<(bool Result, uint ReturnBytes)> DeviceIoControlIOutOnlyAsync(IOControlCode IoControlCode, IDataPtr DataPtr, CancellationToken Token = default)
         {
-            using (DataPtr.GetPtrAndSize(out var OutPtr, out var OutSize))
+            using (DataPtr.CreatePtr(out var OutPtr, out var OutSize))
                 return await DeviceIoControlIOutOnlyAsync(IoControlCode, OutPtr, OutSize, Token);
         }
         public bool DeviceIoControlOutOnly<TOUT>(IOControlCode IoControlCode, out TOUT OutBuffer, out uint ReturnBytes)

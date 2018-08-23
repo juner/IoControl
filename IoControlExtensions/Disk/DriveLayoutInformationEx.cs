@@ -66,6 +66,28 @@ namespace IoControl.Disk
                 .Select(index => (PartitionInformationEx)Marshal.PtrToStructure(IntPtr.Add(ArrayPtr, PartitionSize * index), typeof(PartitionInformationEx)))
                 .ToArray();
         }
+        public IDisposable CreatePtr(out IntPtr IntPtr, out uint Size)
+        {
+            var PartitionSize = Marshal.SizeOf<PartitionInformationEx>();
+            Size = (uint)(Marshal.SizeOf<DriveLayoutInformationEx>()
+                + PartitionSize * Math.Max(((int)PartitionCount - 1), 0));
+            var Ptr = Marshal.AllocCoTaskMem((int)Size);
+            var Dispose = Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr));
+            try
+            {
+                Marshal.StructureToPtr(this, Ptr, false);
+                var _Ptr = IntPtr.Add(Ptr, (int)Marshal.OffsetOf<DriveLayoutInformationEx>(nameof(_PartitionEntry)));
+                foreach (var (partition, index) in PartitionEntry.Select((p, i) => (p, i)).Skip(1))
+                    Marshal.StructureToPtr(partition, IntPtr.Add(_Ptr, PartitionSize * index), false);
+                IntPtr = Ptr;
+                return Dispose;
+            }
+            catch (Exception)
+            {
+                Dispose.Dispose();
+                throw;
+            }
+        }
         /// <summary>
         /// 
         /// </summary>
