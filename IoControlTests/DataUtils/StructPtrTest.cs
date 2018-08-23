@@ -11,19 +11,30 @@ namespace IoControl.DataUtils.Tests
         public static IEnumerable<object[]> GetPtrAndSizeTestData {
             get {
                 var Size = (uint)Marshal.SizeOf<TestData>();
-                yield return new object[] { new StructPtr<TestData>(), (TestData)default, Size };
+                yield return new object[] { new StructPtr<TestData>(), default(TestData)};
                 var Data1 = new TestData(100, 255);
-                yield return new object[] { new StructPtr<TestData>(Data1), Data1, Size };
+                yield return new object[] { new StructPtr<TestData>(Data1), Data1};
             }
         }
         [TestMethod]
         [DynamicData(nameof(GetPtrAndSizeTestData))]
-        public void GetPtrAndSizeTest(StructPtr<TestData> StructPtr, TestData data, uint Size)
+        public void GetPtrAndSizeTest(StructPtr<TestData> StructPtr, TestData data)
         {
+            var Size = (uint)Marshal.SizeOf<TestData>();
             using (StructPtr.GetPtrAndSize(out var Ptr, out var _Size))
             {
                 Assert.AreEqual(Size, _Size);
                 Assert.AreEqual(data, (TestData)Marshal.PtrToStructure(Ptr, typeof(TestData)));
+            }
+        }
+        [TestMethod]
+        [DynamicData(nameof(GetPtrAndSizeTestData))]
+        public void SetPtrTest(StructPtr<TestData> StructPtr, TestData data)
+        {
+            using (StructPtr.GetPtrAndSize(out var Ptr, out var Size))
+            {
+                StructPtr.SetPtr(Ptr, Size);
+                Assert.AreEqual(data, StructPtr.Get());
             }
         }
         public readonly struct TestData : IEquatable<TestData>

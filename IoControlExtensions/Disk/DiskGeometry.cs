@@ -8,8 +8,9 @@ namespace IoControl.Disk
     /// Describes the geometry of disk devices and media.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct DiskGeometry
+    public readonly struct DiskGeometry : IEquatable<DiskGeometry>
     {
+        public readonly static DiskGeometry Empty = default;
         /// <summary>
         /// The number of cylinders. See LARGE_INTEGER.
         /// </summary>
@@ -31,7 +32,7 @@ namespace IoControl.Disk
         /// </summary>
         public readonly uint BytesPerSector;
         /// <summary>
-        /// 
+        /// constructor
         /// </summary>
         /// <param name="Cylinders"></param>
         /// <param name="MediaType"></param>
@@ -48,7 +49,7 @@ namespace IoControl.Disk
         /// <param name="Size"></param>
         public DiskGeometry(IntPtr IntPtr, uint Size) => this = (DiskGeometry)Marshal.PtrToStructure(IntPtr, typeof(DiskGeometry));
         /// <summary>
-        /// 
+        /// deconstructor
         /// </summary>
         /// <param name="Cylinders"></param>
         /// <param name="MediaType"></param>
@@ -63,6 +64,28 @@ namespace IoControl.Disk
         /// </summary>
         /// <returns></returns>
         public override string ToString()
-            => $"{nameof(DiskGeometry)}{{{nameof(Cylinders)}:{Cylinders}, {nameof(MediaType)}:{MediaType}, {nameof(TrackPerCylinder)}:{TrackPerCylinder}, {nameof(SectorsPerTrack)}:{SectorsPerTrack}, {nameof(BytesPerSector)}:{BytesPerSector}}}";
+            => $"{nameof(DiskGeometry)}{{{(this == Empty ? nameof(Empty) : $"{nameof(Cylinders)}:{Cylinders}, {nameof(MediaType)}:{MediaType}, {nameof(TrackPerCylinder)}:{TrackPerCylinder}, {nameof(SectorsPerTrack)}:{SectorsPerTrack}, {nameof(BytesPerSector)}:{BytesPerSector}")}}}";
+
+        public override bool Equals(object obj) => obj is DiskGeometry && Equals((DiskGeometry)obj);
+
+        public bool Equals(DiskGeometry other) => Cylinders == other.Cylinders &&
+                   MediaType == other.MediaType &&
+                   TrackPerCylinder == other.TrackPerCylinder &&
+                   SectorsPerTrack == other.SectorsPerTrack &&
+                   BytesPerSector == other.BytesPerSector;
+
+        public override int GetHashCode()
+        {
+            var hashCode = -876082001;
+            hashCode = hashCode * -1521134295 + Cylinders.GetHashCode();
+            hashCode = hashCode * -1521134295 + MediaType.GetHashCode();
+            hashCode = hashCode * -1521134295 + TrackPerCylinder.GetHashCode();
+            hashCode = hashCode * -1521134295 + SectorsPerTrack.GetHashCode();
+            hashCode = hashCode * -1521134295 + BytesPerSector.GetHashCode();
+            return hashCode;
+        }
+
+        public static bool operator ==(DiskGeometry geometry1, DiskGeometry geometry2) => geometry1.Equals(geometry2);
+        public static bool operator !=(DiskGeometry geometry1, DiskGeometry geometry2) => !(geometry1 == geometry2);
     }
 }

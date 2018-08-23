@@ -152,8 +152,12 @@ namespace IoControl
             {
                 deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
                 var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
-                if (result)
-                    return (result, (ushort)ret);
+                if (!result)
+                {
+                    var error = Marshal.GetHRForLastWin32Error();
+                    System.Diagnostics.Trace.WriteLine(Marshal.GetExceptionForHR(error));
+                    return (result, ret);
+                }
                 using (Token.Register(() => NativeMethod.CancelIoEx(Handle, deviceIoOverlapped.GlobalOverlapped)))    
                     await hEvent.WaitOneAsync(Token);
                 return (NativeMethod.GetOverlappedResult(Handle, deviceIoOverlapped, out var ret2, false), ret2);

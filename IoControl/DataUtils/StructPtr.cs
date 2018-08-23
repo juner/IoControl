@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace IoControl.DataUtils
@@ -33,10 +34,17 @@ namespace IoControl.DataUtils
             return Disposable; ;
         }
         void DataPtr.SetPtr(IntPtr IntPtr, uint Size) => SetPtr(IntPtr, Size);
-
+        /// <summary>
+        /// <paramref name="IntPtr"/>と<paramref name="Size"/>をもとにインスタンスを生成する。同じ引数のコンストラクタが定義されていたとき、
+        /// </summary>
+        /// <param name="IntPtr"></param>
+        /// <param name="Size"></param>
+        /// <returns></returns>
         public virtual ref T SetPtr(IntPtr IntPtr, uint Size)
         {
-            Struct = (T)Marshal.PtrToStructure(IntPtr, typeof(T));
+            Struct = (typeof(T).GetConstructor(new Type[] { typeof(IntPtr), typeof(uint) }) is ConstructorInfo c)
+                ? (T)c.Invoke(new object[] { IntPtr, Size })
+                : (T)Marshal.PtrToStructure(IntPtr, typeof(T));
             return ref Struct;
         }
         public ref T Get() => ref Struct;

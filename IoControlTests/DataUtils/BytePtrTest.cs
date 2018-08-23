@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -9,7 +10,7 @@ namespace IoControl.DataUtils.Tests
     {
         public static IEnumerable<object[]> GetPtrAndSizeTestData {
             get {
-                var data1 = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+                var data1 = Enumerable.Range(byte.MinValue, byte.MaxValue).Select(v => (byte)v).ToArray();
                 yield return new object[] { new BytesPtr(data1), data1 };
             }
         }
@@ -23,6 +24,16 @@ namespace IoControl.DataUtils.Tests
                 byte[] _data = new byte[Size];
                 Marshal.Copy(IntPtr, _data, 0, (int)Size);
                 CollectionAssert.AreEqual(_data, data);
+            }
+        }
+        [TestMethod]
+        [DynamicData(nameof(GetPtrAndSizeTestData))]
+        public void SetPtrTest(BytesPtr BytesPtr, byte[] data)
+        {
+            using (BytesPtr.GetPtrAndSize(out var Ptr, out var Size))
+            {
+                BytesPtr.SetPtr(Ptr, Size);
+                CollectionAssert.AreEqual(data, BytesPtr.Get());
             }
         }
     }
