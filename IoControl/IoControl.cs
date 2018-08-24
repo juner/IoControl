@@ -134,6 +134,19 @@ namespace IoControl
             using (OutputData.CreatePtr(out var OutputPtr, out var OutputSize))
                 return DeviceIoControl(IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out ReturnBytes);
         }
+        internal static IDisposable CreateOverlappedAndEvent(out DeviceIoOverlapped Overlapped, out ManualResetEvent Event)
+        {
+            var _Overlapped = new DeviceIoOverlapped();
+            var _Event = new ManualResetEvent(false);
+            _Overlapped.ClearAndSetEvent(_Event.GetSafeWaitHandle().DangerousGetHandle());
+            var Dispose = global::IoControl.Disposable.Create(() => {
+                _Event.Dispose();
+                _Overlapped.Dispose();
+            });
+            Overlapped = _Overlapped;
+            Event = _Event;
+            return Dispose;
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -148,17 +161,15 @@ namespace IoControl
         {
             System.Diagnostics.Trace.WriteLine($" start {nameof(DeviceIoControlAsync)}");
             Token.ThrowIfCancellationRequested();
-            using (var deviceIoOverlapped = new DeviceIoOverlapped())
-            using (var hEvent = new ManualResetEvent(false))
+            using (CreateOverlappedAndEvent(out var deviceIoOverlapped, out var hEvent))
             {
-                deviceIoOverlapped.ClearAndSetEvent(hEvent.SafeWaitHandle.DangerousGetHandle());
                 var result = NativeMethod.DeviceIoControl(Handle, IoControlCode, InputPtr, InputSize, OutputPtr, OutputSize, out var ret, deviceIoOverlapped.GlobalOverlapped);
                 System.Diagnostics.Trace.WriteLine($" {nameof(result)}:{result}");
                 if (!result)
                 {
                     var error = Marshal.GetHRForLastWin32Error();
                     System.Diagnostics.Trace.WriteLine(Marshal.GetExceptionForHR(error));
-                    return (result, ret);
+                    //return (result, ret);
                 }
                 using (Token.Register(() => NativeMethod.CancelIoEx(Handle, deviceIoOverlapped.GlobalOverlapped)))    
                     await hEvent.WaitOneAsync(Token);
@@ -449,7 +460,11 @@ namespace IoControl
         public async Task<(bool Result, uint ReturnBytes)> DeviceIoControlIOutOnlyAsync(IOControlCode IoControlCode, IDataPtr DataPtr, CancellationToken Token = default)
         {
             using (DataPtr.CreatePtr(out var OutPtr, out var OutSize))
-                return await DeviceIoControlIOutOnlyAsync(IoControlCode, OutPtr, OutSize, Token);
+            {
+                var Result = await DeviceIoControlIOutOnlyAsync(IoControlCode, OutPtr, OutSize, Token);
+                DataPtr.SetPtr(OutPtr, Result.ReturnBytes);
+                return Result;
+            }
         }
         public bool DeviceIoControlOutOnly<TOUT>(IOControlCode IoControlCode, out TOUT OutBuffer, out uint ReturnBytes)
             where TOUT : struct
