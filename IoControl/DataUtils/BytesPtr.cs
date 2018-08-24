@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace IoControl.DataPtr
+namespace IoControl.DataUtils
 {
     /// <summary>
     /// byte ベースのデータ
     /// </summary>
-    public class BytesPtr : DataPtr
+    public class BytesPtr : IDataPtr
     {
         private readonly byte[] bytes;
         public BytesPtr(byte[] bytes) => this.bytes = bytes;
         public byte[] Get() => bytes;
-        object DataPtr.Get() => Get();
+        object IDataPtr.Get() => Get();
 
-        public IDisposable GetPtrAndSize(out IntPtr IntPtr, out uint Size)
+        public IDisposable CreatePtr(out IntPtr IntPtr, out uint Size)
         {
             var _Size = bytes.Length;
             var _IntPtr = Marshal.AllocCoTaskMem(_Size);
