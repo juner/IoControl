@@ -82,26 +82,6 @@ namespace IoControl.Disk.Tests
                 else
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
-        private static IEnumerable<object[]> DiskGetDriveGeometryAsyncTest2Data => Generator.Select(v => new object[] { v });
-        [TestMethod]
-        [DynamicData(nameof(DiskGetDriveGeometryAsyncTest2Data))]
-        public async Task DiskGetDriveGeometryAsyncTest2(string FilePath)
-        {
-            using (var Source = new CancellationTokenSource(TimeSpan.FromSeconds(1)))
-            using (var ic = new IoControl(FilePath, CreationDisposition: System.IO.FileMode.Open))
-            using (var icAsync = new IoControl(FilePath, CreationDisposition: System.IO.FileMode.Open, FlagAndAttributes: FileFlagAndAttributesExtensions.Create(FileFlags.Overlapped)))
-            {
-                if (ic.IsInvalid || icAsync.IsInvalid)
-                    throw new AssertInconclusiveException($"has invalid handle {(ic.IsInvalid ? $"{ic}" : "")} {(icAsync.IsInvalid ? $"{icAsync}" : "")}");
-                if (!ic.StorageCheckVerify2())
-                    throw new AssertInconclusiveException($"{nameof(MassStorageExtensions.StorageCheckVerify2)} is false : {ic}");
-                if (ic.DiskGetDriveGeometry() is DiskGeometry DiskGeometry
-                    && await icAsync.DiskGetDriveGeometryAsync(Source.Token) is DiskGeometry DiskGeometryAsync)
-                    Assert.AreEqual(DiskGeometry, DiskGeometryAsync);
-                else
-                    throw new AssertInconclusiveException();
-            }
-        }
         [TestMethod]
         [DynamicData(nameof(DiskGetDriveGeometryTestData))]
         public void DiskGetDriveGeometryExTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskGetDriveGeometryEx());
