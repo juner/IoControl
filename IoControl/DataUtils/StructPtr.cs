@@ -16,14 +16,8 @@ namespace IoControl.DataUtils
         public StructPtr() => Struct = default;
         public virtual IDisposable CreatePtr(out IntPtr IntPtr, out uint Size)
         {
-            if (typeof(T).GetMethod(nameof(CreatePtr),new Type[]{ typeof(IntPtr).MakeByRefType(), typeof(uint).MakeByRefType() }) is MethodInfo MethodInfo)
-            {
-                var parameter = new object[2] { null, null };
-                var Dispose = (IDisposable)MethodInfo.Invoke(Struct, parameter);
-                IntPtr = (IntPtr)parameter[0];
-                Size = (uint)parameter[1];
-                return Dispose;
-            }
+            if (Struct is IPtrCreatable Creatable)
+                return Creatable.CreatePtr(out IntPtr, out Size);
             var _Size = Marshal.SizeOf<T>();
             var _IntPtr = Marshal.AllocCoTaskMem(_Size);
             var Disposable = global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(_IntPtr));

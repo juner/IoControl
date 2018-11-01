@@ -54,13 +54,6 @@ namespace IoControl.MassStorage
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="IntPtr"></param>
-        /// <param name="Size"></param>
-        /// <returns></returns>
-        public IDisposable CreatePtr(out IntPtr IntPtr, out uint Size) => PtrUtils.CreatePtr(this, out IntPtr, out Size);
-        /// <summary>
-        /// 
-        /// </summary>
         /// <returns></returns>
         public override string ToString()
             => $"{nameof(DeviceSeekPenaltyDescriptor)}{{{nameof(Version)}:{Version}, {nameof(Size)}:{Size}, {nameof(IncursSeekPenalty)}:{IncursSeekPenalty}}}";

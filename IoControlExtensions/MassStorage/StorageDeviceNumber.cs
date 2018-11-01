@@ -26,6 +26,5 @@ namespace IoControl.MassStorage
         public override string ToString()
             => $"{nameof(StorageDeviceNumber)}{{{nameof(DeviceType)}:{DeviceType}, {nameof(DeviceNumber)}:{DeviceNumber}, {nameof(PartitionNumber)}:{PartitionNumber}}}";
         public static StorageDeviceNumber FromPtr(IntPtr IntPtr, uint Size) => PtrUtils.PtrToStructure<StorageDeviceNumber>(IntPtr, Size);
-        public IDisposable CreatePtr(out IntPtr IntPtr, out uint Size) => PtrUtils.CreatePtr(this, out IntPtr, out Size);
     }
 }

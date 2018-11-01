@@ -116,6 +116,5 @@ namespace IoControl.MassStorage
         /// <param name="IntPtr"></param>
         /// <param name="Size"></param>
         public DeviceLbProvisioningDescriptor(IntPtr IntPtr, uint Size) => this = (DeviceLbProvisioningDescriptor)Marshal.PtrToStructure(IntPtr, typeof(DeviceLbProvisioningDescriptor));
-        public IDisposable CreatePtr(out IntPtr IntPtr, out uint Size) => PtrUtils.CreatePtr(this,out IntPtr, out Size);
     }
 }

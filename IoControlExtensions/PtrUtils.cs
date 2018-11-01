@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using IoControl.DataUtils;
 
 namespace IoControl
 {
@@ -23,6 +24,8 @@ namespace IoControl
         public static IDisposable CreatePtr<T>(in T t,out IntPtr IntPtr, out uint Size)
             where T : struct
         {
+            if (t is IPtrCreatable Creatable)
+                return Creatable.CreatePtr(out IntPtr, out Size);
             var Dispose = CreatePtr<T>(out IntPtr, out Size);
             try
             {

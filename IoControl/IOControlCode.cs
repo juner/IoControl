@@ -246,6 +246,18 @@ namespace IoControl
         DiskCreateDisk = (FileDevice.Disk << 16) | (0x0016 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         DiskGetLengthInfo = (FileDevice.Disk << 16) | (0x0017 << 2) | Method.Buffered | (FileAccess.Read << 14),
         DiskPerformanceOff = (FileDevice.Disk << 16) | (0x0018 << 2) | Method.Buffered | (0 << 14),
+        /// <summary>
+        /// DFP_GET_VERSION
+        /// </summary>
+        DfpGetVersion = (FileDevice.Disk << 16) | (0x0020 << 2) | Method.Buffered | (FileAccess.Read << 14),
+        /// <summary>
+        /// DFP_SEND_DRIVE_COMMAND
+        /// </summary>
+        DfpSendDriveCommand = (FileDevice.Disk << 16) | (0x0021 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
+        /// <summary>
+        /// DFP_RECEIVE_DRIVE_DATA
+        /// </summary>
+        DfpReceiveDriveData = (FileDevice.Disk << 16) | (0x0022 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         DiskGetDriveGeometryEx = (FileDevice.Disk << 16) | (0x0028 << 2) | Method.Buffered | (0 << 14),
         DiskSmartGetVersion = (FileDevice.Disk << 16) | (0x0020 << 2) | Method.Buffered | (FileAccess.Read << 14),
         DiskSmartSendDriveCommand = (FileDevice.Disk << 16) | (0x0021 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),

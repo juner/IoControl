@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace IoControl.MassStorage
 {
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct StorageDescriptor
+    public readonly struct StorageDescriptor : DataUtils.IPtrCreatable
     {
         /// <summary>
         /// Contains the version of the data reported.

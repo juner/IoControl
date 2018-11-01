@@ -139,6 +139,22 @@ namespace IoControlPhysicalExample
                 {
                     Trace.WriteLine(e);
                 }
+                try
+                {
+                    Trace.WriteLine(nameof(IOControlCode.ScsiGetAddress));
+                    IoControl.ScsiGetAddress(out var address);
+                    Trace.WriteLine(address);
+                    if (address.Length > 0)
+                    {
+                        Trace.WriteLine(nameof(IOControlCode.DfpReceiveDriveData));
+                        IoControl.ReceiveDriveDataIdentifyDevice(address.TargetId, out var AtaIdentifyDevice);
+                        Trace.WriteLine(AtaIdentifyDevice);
+                        
+                    }
+                }catch(Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
             }
             Console.ReadLine();
         }

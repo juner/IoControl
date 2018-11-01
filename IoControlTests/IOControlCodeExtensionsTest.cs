@@ -43,7 +43,7 @@ namespace IoControl.Tests
         [DynamicData(nameof(CtrlCodeTestData))]
         public void DeconstructTest(IOControlCode CtrlCode, FileDevice DeviceType, uint Function, Method Method, FileAccess Access)
         {
-            var (_DeviceType, _Function, _Method, _Access) = IOControlCode.AtaPassThrough;
+            var (_DeviceType, _Function, _Method, _Access) = CtrlCode;
             Assert.AreEqual(DeviceType, _DeviceType);
             Assert.AreEqual(Function, _Function);
             Assert.AreEqual(Method, _Method);

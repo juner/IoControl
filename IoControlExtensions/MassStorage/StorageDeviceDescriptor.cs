@@ -14,7 +14,7 @@ namespace IoControl.MassStorage
     /// An application or driver can determine the required buffer size by casting the retrieved <see cref="StorageDeviceDescriptor"/> structure to a <see cref="StorageDescriptorHeader"/>, which contains only <see cref="Version"/> and <see cref="Size"/>.
     /// </remarks>
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct StorageDeviceDescriptor : IStorageDescriptor
+    public readonly struct StorageDeviceDescriptor : IStorageDescriptor, DataUtils.IPtrCreatable
     {
         uint IStorageDescriptor.Version => Version;
         uint IStorageDescriptor.Size => Size;

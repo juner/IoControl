@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace IoControl.Controller
@@ -119,6 +120,8 @@ namespace IoControl.Controller
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 19)]
         public readonly ushort[] Reserved10;                            //236-254
         public readonly ushort IntegrityWord;                         //255
+        public AtaIdentifyDevice(IntPtr IntPtr, uint Size)
+            => this = (AtaIdentifyDevice)Marshal.PtrToStructure(IntPtr, typeof(AtaIdentifyDevice));
         public override string ToString()
             =>  $"{nameof(AtaIdentifyDevice)}{{"
                 + $"{nameof(GeneralConfiguration)}: {GeneralConfiguration}"

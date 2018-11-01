@@ -8,7 +8,7 @@ namespace IoControl.MassStorage
     /// STORAGE_PROPERTY_QUERY structure ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddstor/ns-ntddstor-_storage_property_query )
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    public readonly struct StoragePropertyQuery
+    public readonly struct StoragePropertyQuery : DataUtils.IPtrCreatable
     {
         /// <summary>
         /// 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -14,12 +13,15 @@ namespace IoControl.Disk
     public static class DiskExtensions
     {
         const int ERROR_INSUFFICIENT_BUFFER = unchecked((int)0x8007007A);
+        internal const int READ_ATTRIBUTE_BUFFER_SIZE = 512;
+        internal const int IDENTIFY_BUFFER_SIZE = 512;
+        internal const int READ_THRESHOLD_BUFFER_SIZE = 512;
         /// <summary>
         /// IOCTL_DISK_ARE_VOLUMES_READY IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/fileio/ioctl-disk-are-volumes-ready )
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
-        public static Task<bool> DiskAreVolumesReadyAsync(this IoControl IoControl, CancellationToken Token = default) => IoControl.DeviceIoControlAsync(IOControlCode.DiskAreVolumesReady,Token:Token);
+        public static Task<bool> DiskAreVolumesReadyAsync(this IoControl IoControl, CancellationToken Token = default) => IoControl.DeviceIoControlAsync(IOControlCode.DiskAreVolumesReady, Token: Token);
         /// <summary>
         /// IOCTL_DISK_ARE_VOLUMES_READY IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/fileio/ioctl-disk-are-volumes-ready )
         /// </summary>
@@ -48,7 +50,7 @@ namespace IoControl.Disk
         /// <returns></returns>
         public static DiskCacheInformation DiskGetCacheInformation(this IoControl IoControl)
         {
-            if(!DiskGetCacheInformation(IoControl, out var information))
+            if (!DiskGetCacheInformation(IoControl, out var information))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return information;
         }
@@ -61,7 +63,7 @@ namespace IoControl.Disk
         public static bool DiskGetPartitionInfo(this IoControl IoControl, out PartitionInformation partition, out uint ReturnBytes) => IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetPartitionInfo, out partition, out ReturnBytes);
         public static PartitionInformation DiskGetPartitionInfo(this IoControl IoControl)
         {
-            if(!DiskGetPartitionInfo(IoControl, out var partition, out var ReturnBytes) && ReturnBytes > 0)
+            if (!DiskGetPartitionInfo(IoControl, out var partition, out var ReturnBytes) && ReturnBytes > 0)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return partition;
         }
@@ -69,7 +71,7 @@ namespace IoControl.Disk
         public static bool DiskGetPartitionInfoEx(this IoControl IoControl, out PartitionInformationEx partition, out uint ReturnBytes) => IoControl.DeviceIoControlOutOnly(IOControlCode.DiskGetPartitionInfoEx, out partition, out ReturnBytes);
         public static PartitionInformationEx DiskGetPartitionInfoEx(this IoControl IoControl)
         {
-            if(!DiskGetPartitionInfoEx(IoControl, out var partition, out var ReturnBytes) && ReturnBytes > 0)
+            if (!DiskGetPartitionInfoEx(IoControl, out var partition, out var ReturnBytes) && ReturnBytes > 0)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return partition;
         }
@@ -128,8 +130,8 @@ namespace IoControl.Disk
         public static bool DiskSetDriveLayoutEx(this IoControl IoControl, in DriveLayoutInformationEx layout)
         {
             using (layout.CreatePtr(out var Ptr, out var Size))
-                 return IoControl.DeviceIoControlInOnly(IOControlCode.DiskSetDriveLayoutEx, Ptr, Size, out var _);
-            
+                return IoControl.DeviceIoControlInOnly(IOControlCode.DiskSetDriveLayoutEx, Ptr, Size, out var _);
+
         }
         /// <summary>
         /// IOCTL_DISK_GET_LENGTH_INFO IOCTL ( https://docs.microsoft.com/en-us/windows/desktop/api/WinIoCtl/ni-winioctl-ioctl_disk_get_length_info )
@@ -185,7 +187,7 @@ namespace IoControl.Disk
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
-        public static (DiskGeometry Geometry, long DiskSize)  DiskGetDriveGeometryEx(this IoControl IoControl)
+        public static (DiskGeometry Geometry, long DiskSize) DiskGetDriveGeometryEx(this IoControl IoControl)
         {
             if (!DiskGetDriveGeometryEx(IoControl, out var geometry, out var DiskSize, out var ByteSize) && ByteSize == 0)
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
@@ -257,5 +259,28 @@ namespace IoControl.Disk
         /// </summary>
         /// <param name="IoControl"></param>
         public static bool DiskPerformanceOff(this IoControl IoControl) => IoControl.DeviceIoControl(IOControlCode.DiskPerformanceOff, out var _);
+        public static void ReceiveDriveDataIdentifyDevice(this IoControl IoControl, byte Target, out Controller.AtaIdentifyDevice IdentifyDevice)
+        {
+            const byte ID_CMD = 0xEC;
+            var indata = new Sendcmdinparams(
+                BufferSize: IDENTIFY_BUFFER_SIZE,
+                DriveRegs: new Ideregs(
+                    CommandReg: ID_CMD,
+                    SectorCountReg: 1,
+                    SectorNumberReg: 1,
+                    DriveHeadReg: Target
+                ));
+            var result = IoControl.DeviceIoControl<Sendcmdinparams, Sendcmdoutparams>(IOControlCode.DfpReceiveDriveData, indata, out var outdata, out var ReturnBytes);
+            var Buffer = outdata.Buffer;
+            if (Buffer.Length < Marshal.SizeOf<Controller.AtaIdentifyDevice>())
+            {
+                IdentifyDevice = default;
+                return;
+            }
+            IntPtr outPtr = Marshal.AllocCoTaskMem(Buffer.Length);
+            Marshal.Copy(Buffer, 0, outPtr, Buffer.Length);
+            IdentifyDevice = (Controller.AtaIdentifyDevice)Marshal.PtrToStructure(outPtr, typeof(Controller.AtaIdentifyDevice));
+                
+        }
     }
 }
