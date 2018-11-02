@@ -114,5 +114,20 @@ namespace IoControl
                 throw new ArgumentNullException(nameof(Disposables));
             return Generator();
         }
+        public static IEnumerable<T1> Using<T1,T2>(this IEnumerable<T1> Disposables, Func<T1,T2> GetDisposable)
+            where T2 : IDisposable
+        {
+            IEnumerable<T1> Generator()
+            {
+                foreach (var Disposable in Disposables)
+                    using (GetDisposable(Disposable))
+                        yield return Disposable;
+            }
+            if (Disposables == null)
+                throw new ArgumentNullException(nameof(Disposables));
+            if (GetDisposable == null)
+                throw new ArgumentNullException(nameof(GetDisposable));
+            return Generator();
+        }
     }
 }

@@ -259,7 +259,15 @@ namespace IoControl.Disk
         /// </summary>
         /// <param name="IoControl"></param>
         public static bool DiskPerformanceOff(this IoControl IoControl) => IoControl.DeviceIoControl(IOControlCode.DiskPerformanceOff, out var _);
-        public static void ReceiveDriveDataIdentifyDevice(this IoControl IoControl, byte Target, out Controller.AtaIdentifyDevice IdentifyDevice)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="Versioninparams"></param>
+        /// <returns></returns>
+        public static bool SmartGetVersion(this IoControl IoControl, out Getversioninparams Versioninparams)
+            => IoControl.DeviceIoControlOutOnly(IOControlCode.SmartGetVersion, out Versioninparams, out var ReturnBytes) && ReturnBytes > 0;
+        public static bool SmartRcvDriveDataIdentifyDevice(this IoControl IoControl, byte Target, out Controller.AtaIdentifyDevice IdentifyDevice)
         {
             const byte ID_CMD = 0xEC;
             var indata = new Sendcmdinparams(
@@ -270,17 +278,29 @@ namespace IoControl.Disk
                     SectorNumberReg: 1,
                     DriveHeadReg: Target
                 ));
-            var result = IoControl.DeviceIoControl<Sendcmdinparams, Sendcmdoutparams>(IOControlCode.DfpReceiveDriveData, indata, out var outdata, out var ReturnBytes);
+            var result = IoControl.SmartRcvDriveData(indata, out var outdata);
             var Buffer = outdata.Buffer;
             if (Buffer.Length < Marshal.SizeOf<Controller.AtaIdentifyDevice>())
             {
                 IdentifyDevice = default;
-                return;
             }
-            IntPtr outPtr = Marshal.AllocCoTaskMem(Buffer.Length);
-            Marshal.Copy(Buffer, 0, outPtr, Buffer.Length);
-            IdentifyDevice = (Controller.AtaIdentifyDevice)Marshal.PtrToStructure(outPtr, typeof(Controller.AtaIdentifyDevice));
-                
+            else
+            {
+                IntPtr outPtr = Marshal.AllocCoTaskMem(Buffer.Length);
+                Marshal.Copy(Buffer, 0, outPtr, Buffer.Length);
+                IdentifyDevice = (Controller.AtaIdentifyDevice)Marshal.PtrToStructure(outPtr, typeof(Controller.AtaIdentifyDevice));
+            }
+            return result;  
         }
+        /// <summary>
+        /// SMART_RCV_DRIVE_DATA control code
+        /// https://msdn.microsoft.com/en-us/library/windows/hardware/ff566204.aspx
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="inparams"></param>
+        /// <param name="outparams"></param>
+        /// <returns></returns>
+        public static bool SmartRcvDriveData(this IoControl IoControl, in Sendcmdinparams inparams, out Sendcmdoutparams outparams)
+            => IoControl.DeviceIoControl<Sendcmdinparams, Sendcmdoutparams>(IOControlCode.SmartRcvDriveData, inparams, out outparams, out var ReturnBytes) && ReturnBytes > 0;
     }
 }

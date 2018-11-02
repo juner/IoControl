@@ -94,6 +94,23 @@ namespace IoControl.Disk.Tests
         [TestMethod]
         [DynamicData(nameof(DiskPerformanceTestData))]
         public void DiskPerformanceTest(IoControl IoControl) => Trace.WriteLine(IoControl.DiskPerformance());
+        private static IEnumerable<object> SmartGetVersionTestData => PhysicalDrivePath.GetIoControls(FileAccess: System.IO.FileAccess.ReadWrite, FileShare: System.IO.FileShare.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using()
+            .Select(v => new object[] { v });
+        [TestMethod]
+        [DynamicData(nameof(SmartGetVersionTestData))]
+        public void SmartGetVersionTest(IoControl IoControl)
+        {
+            var result = IoControl.SmartGetVersion(out var Version);
+            Trace.WriteLine($"{nameof(result)}:{result}");
+            Trace.WriteLine(Version);
+        }
+        [TestMethod]
+        [DynamicData(nameof(SmartGetVersionTestData))]
+        public void SmartRcvDriveDataIdentifyDeviceTest(IoControl IoControl)
+        {
+            IoControl.SmartRcvDriveDataIdentifyDevice(0xA0, out var IdentifyDevice);
+            Trace.WriteLine(IdentifyDevice);
+        }
     }
 
 }

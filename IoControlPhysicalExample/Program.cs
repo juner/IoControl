@@ -141,17 +141,17 @@ namespace IoControlPhysicalExample
                 }
                 try
                 {
-                    Trace.WriteLine(nameof(IOControlCode.ScsiGetAddress));
-                    IoControl.ScsiGetAddress(out var address);
-                    Trace.WriteLine(address);
-                    if (address.Length > 0)
-                    {
-                        Trace.WriteLine(nameof(IOControlCode.DfpReceiveDriveData));
-                        IoControl.ReceiveDriveDataIdentifyDevice(address.TargetId, out var AtaIdentifyDevice);
-                        Trace.WriteLine(AtaIdentifyDevice);
-                        
-                    }
-                }catch(Exception e)
+                    Trace.WriteLine(nameof(DiskExtensions.SmartRcvDriveDataIdentifyDevice) +" 0xA0");
+                    var result = IoControl.SmartRcvDriveDataIdentifyDevice(0xA0, out var AtaIdentifyDevice);
+                    Trace.WriteLine($"{nameof(result)}:{result}");
+                    Trace.WriteLine(AtaIdentifyDevice);
+
+                    Trace.WriteLine(nameof(DiskExtensions.SmartRcvDriveDataIdentifyDevice) + " 0xB0");
+                    result = IoControl.SmartRcvDriveDataIdentifyDevice(0xB0, out AtaIdentifyDevice);
+                    Trace.WriteLine($"{nameof(result)}:{result}");
+                    Trace.WriteLine(AtaIdentifyDevice);
+                }
+                catch(Exception e)
                 {
                     Trace.WriteLine(e);
                 }
