@@ -35,5 +35,10 @@ namespace IoControl.Controller.Tests
             foreach (var attribute in result.Data)
                 Trace.WriteLine(attribute);
         }
+        private static IEnumerable<object[]> ScsiMiniportIdentifyTestData => PhysicalDrivePath.GetIoControls(FileAccess: System.IO.FileAccess.ReadWrite, FileShare: System.IO.FileShare.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
+        [TestMethod]
+        [DynamicData(nameof(ScsiMiniportIdentifyTestData))]
+        public void ScsiMiniportIdentifyTest(IoControl IoControl)
+            => Trace.WriteLine(IoControl.ScsiMiniportIdentify());
     }
 }

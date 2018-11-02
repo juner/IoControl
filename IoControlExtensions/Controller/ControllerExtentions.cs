@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace IoControl.Controller
 {
@@ -374,6 +372,75 @@ namespace IoControl.Controller
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return Header;
         }
+        internal const int IDENTIFY_BUFFER_SIZE = 512;
+        [StructLayout(LayoutKind.Sequential, Pack =1)]
+        internal readonly struct IdentifyDeviceOutData
+        {
+            public readonly Disk.Sendcmdoutparams Outparams;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = IDENTIFY_BUFFER_SIZE - 1)]
+            public readonly byte[] Datas;
+        }
+        public static bool ScsiMiniportIdentify(this IoControl IoControl, byte TargetId, out IdentifyDevice IdentifyDevice)
+        {
+            const byte ID_CMD = 0xEC;
+            var SrbIoControl = new SrbIoControl(
+                Signagure: "SCSIDISK",
+                ControlCode: IOControlCode.ScsiMiniportIdentify,
+                Timeout: 2
+            );
+            var inparams = new Disk.Sendcmdinparams(
+                DriveRegs: new Disk.Ideregs(
+                    CommandReg: ID_CMD
+                ),
+                DriveNumber: TargetId
+            );
+            bool Result = IoControl.ScsiMiniport<Disk.Sendcmdinparams, IdentifyDeviceOutData>(ref SrbIoControl, inparams, out var outparams, out var ReturnBytes);
+            var buffer = new byte[IDENTIFY_BUFFER_SIZE];
+            using (PtrUtils.CreatePtr(outparams, out var IntPtr, out var Size))
+            {
+                IdentifyDevice = (IdentifyDevice)Marshal.PtrToStructure(IntPtr.Add(IntPtr,(int)Marshal.OffsetOf<Disk.Sendcmdoutparams>(nameof(Disk.Sendcmdoutparams._Buffer))),typeof(IdentifyDevice));
+                return Result;
+            }
+        }
+        public static bool ScsiMiniportIdentify(this IoControl IoControl, out IdentifyDevice IdentifyDevice)
+            => IoControl.ScsiMiniportIdentify(IoControl.ScsiGetAddress().TargetId, out IdentifyDevice);
+        public static IdentifyDevice ScsiMiniportIdentify(this IoControl IoControl, byte TargetId)
+        {
+            if (!IoControl.ScsiMiniportIdentify(TargetId, out var IdentifyDevice))
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return IdentifyDevice;
+        }
+        public static IdentifyDevice ScsiMiniportIdentify(this IoControl IoControl)
+            => IoControl.ScsiMiniportIdentify(IoControl.ScsiGetAddress().TargetId);
+            
+        public static bool ScsiMiniport<IN,OUT>(this IoControl IoControl, ref SrbIoControl SrbIoControl, in IN InOutStruct, out OUT OutStruct, out uint ReturnBytes)
+            where IN : struct 
+            where OUT : struct
+        {
+            int SrbIoControlSize = Marshal.SizeOf<SrbIoControl>();
+            int InStructSize = Marshal.SizeOf<IN>();
+            int OutStructSize = Marshal.SizeOf<OUT>();
+            int MaxStructSize = Math.Max(InStructSize, OutStructSize);
+            int Size = SrbIoControlSize + MaxStructSize;
+            IntPtr IntPtr = Marshal.AllocCoTaskMem(Size);
+            using (Disposable.Create(() => Marshal.FreeCoTaskMem(IntPtr)))
+            {
+                SrbIoControl = SrbIoControl.Set(
+                    HeaderLength: (uint)SrbIoControlSize,
+                    Timeout: 2,
+                    Length: (uint)MaxStructSize
+                );
+                Marshal.StructureToPtr(SrbIoControl, IntPtr, false);
+                Marshal.StructureToPtr(InOutStruct, IntPtr.Add(IntPtr, SrbIoControlSize), false);
+                var result = IoControl.DeviceIoControl(IOControlCode.ScsiMiniport
+                    , IntPtr, (uint)(SrbIoControlSize + InStructSize)
+                    , IntPtr, (uint)(SrbIoControlSize + OutStructSize)
+                    , out ReturnBytes);
+                OutStruct = result
+                    ? (OUT)Marshal.PtrToStructure(IntPtr.Add(IntPtr, SrbIoControlSize), typeof(OUT))
+                    : default;
+                return result;
+            }
+        }
     }
-
 }

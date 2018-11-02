@@ -623,6 +623,10 @@ namespace IoControl
         /// </summary>
         ScsiMiniport = (FileDevice.Controller << 16) | (0x0402 << 2) | Method.Buffered | (FileAccess.ReadWrite << 14),
         /// <summary>
+        /// IOCTL_SCSI_MINIPORT_IDENTIFY
+        /// </summary>
+        ScsiMiniportIdentify = (FileDevice.SerialPort << 16) + 0x0501,
+        /// <summary>
         /// IOCTL_SCSI_GET_INQUIRY_DATA
         /// </summary>
         ScsiGetInquiryData = (FileDevice.Controller << 16) | (0x0403 << 2) | Method.Buffered | (0 << 14),

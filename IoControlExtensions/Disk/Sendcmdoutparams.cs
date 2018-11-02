@@ -14,7 +14,7 @@ namespace IoControl.Disk
         public readonly uint BufferSize;
         public readonly Driverstatus DriverStatus;
         [MarshalAs(UnmanagedType.ByValArray,SizeConst = 1)]
-        readonly byte[] _Buffer;
+        internal readonly byte[] _Buffer;
         public byte[] Buffer => (_Buffer ?? Enumerable.Empty<byte>()).Concat(Enumerable.Empty<byte>()).ToArray();
         public Sendcmdoutparams(uint BufferSize = DiskExtensions.IDENTIFY_BUFFER_SIZE, Driverstatus DriverStatus = default, byte[] Buffer = null)
             => (this.BufferSize, this.DriverStatus, _Buffer)

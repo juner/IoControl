@@ -290,7 +290,7 @@ namespace IoControl.Disk
                 Marshal.Copy(Buffer, 0, outPtr, Buffer.Length);
                 IdentifyDevice = (Controller.AtaIdentifyDevice)Marshal.PtrToStructure(outPtr, typeof(Controller.AtaIdentifyDevice));
             }
-            return result;  
+            return result;
         }
         /// <summary>
         /// SMART_RCV_DRIVE_DATA control code

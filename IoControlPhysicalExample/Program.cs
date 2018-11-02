@@ -141,7 +141,7 @@ namespace IoControlPhysicalExample
                 }
                 try
                 {
-                    Trace.WriteLine(nameof(DiskExtensions.SmartRcvDriveDataIdentifyDevice) +" 0xA0");
+                    Trace.WriteLine(nameof(DiskExtensions.SmartRcvDriveDataIdentifyDevice) + " 0xA0");
                     var result = IoControl.SmartRcvDriveDataIdentifyDevice(0xA0, out var AtaIdentifyDevice);
                     Trace.WriteLine($"{nameof(result)}:{result}");
                     Trace.WriteLine(AtaIdentifyDevice);
@@ -151,7 +151,25 @@ namespace IoControlPhysicalExample
                     Trace.WriteLine($"{nameof(result)}:{result}");
                     Trace.WriteLine(AtaIdentifyDevice);
                 }
-                catch(Exception e)
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+            }
+            foreach (var IoControl in GetScsiDrives(
+                FileAccess: FileAccess.ReadWrite,
+                    FileShare: FileShare.ReadWrite,
+                    CreationDisposition: FileMode.Open,
+                    FlagsAndAttributes: FileFlagAndAttributesExtensions.Create(FileAttributes.Normal)))
+            {
+                try
+                {
+                    Trace.WriteLine(nameof(ControllerExtentions.ScsiMiniportIdentify));
+                    var Address = IoControl.ScsiGetAddress();
+                    Trace.WriteLine(Address);
+                    Trace.WriteLine(IoControl.ScsiMiniportIdentify(Address.TargetId));
+                }
+                catch (Exception e)
                 {
                     Trace.WriteLine(e);
                 }
@@ -162,6 +180,25 @@ namespace IoControlPhysicalExample
         {
             bool hasDrive = false;
             foreach (var DeviceName in QueryDocDevice().Where(v => v.IndexOf("PhysicalDrive") == 0))
+            {
+                var Path = $@"\\.\{DeviceName}";
+                using (var file = new IoControl.IoControl(Path, FileAccess, FileShare, CreationDisposition, FlagsAndAttributes))
+                {
+                    Trace.WriteLine($"Open {file} ... {(file.IsInvalid ? "NG" : "OK")}.");
+                    if (file.IsInvalid)
+                        continue;
+                    hasDrive = true;
+                    yield return file;
+                }
+            }
+            if (!hasDrive)
+                throw new Exception("対象となるドライブがありません。");
+        }
+
+        public static IEnumerable<IoControl.IoControl> GetScsiDrives(FileAccess FileAccess = default, FileShare FileShare = default, FileMode CreationDisposition = default, FileFlagAndAttributes FlagsAndAttributes = default)
+        {
+            bool hasDrive = false;
+            foreach (var DeviceName in QueryDocDevice().Where(v => v.IndexOf("Scsi") == 0))
             {
                 var Path = $@"\\.\{DeviceName}";
                 using (var file = new IoControl.IoControl(Path, FileAccess, FileShare, CreationDisposition, FlagsAndAttributes))
