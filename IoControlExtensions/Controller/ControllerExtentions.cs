@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace IoControl.Controller
 {
-    public static class ControllerExtentions
+    public static partial class ControllerExtentions
     {
         private class NativeMethods
         {
@@ -26,6 +26,30 @@ namespace IoControl.Controller
             if(!ScsiGetAddress(IoControl, out var address))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return address;
+        }
+        /// <summary>
+        /// IOCTL_SCSI_GET_INQUIRY_DATA IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_scsi_get_inquiry_data )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        public static bool ScsiGetInquiryData(this IoControl IoControl, out ScsiAdapterBusInfo info)
+        {
+            var data = new DataUtils.AnySizeStruct<ScsiAdapterBusInfo>();
+            var result = IoControl.DeviceIoControlOutOnly(IOControlCode.ScsiGetInquiryData, data, out var ReturnBytes);
+            info = data.Get();
+            return result;
+        }
+        /// <summary>
+        /// IOCTL_SCSI_GET_INQUIRY_DATA IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_scsi_get_inquiry_data )
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+        public static ScsiAdapterBusInfo ScsiGetInquiryData(this IoControl IoControl)
+        {
+            if (!IoControl.ScsiGetInquiryData(out var info))
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return info;
         }
         /// <summary>
         /// IOCTL_ATA_PASS_THROUGH IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_ata_pass_through )

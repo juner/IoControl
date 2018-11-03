@@ -19,6 +19,10 @@ namespace IoControl.Controller.Tests
         [DynamicData(nameof(ScsiGetAddressTestData))]
         public void ScsiGetAddressTest(IoControl IoControl)
             => Trace.WriteLine($"{nameof(ControllerExtentions.ScsiGetAddress)}: {IoControl.ScsiGetAddress()}");
+        [TestMethod]
+        [DynamicData(nameof(ScsiGetAddressTestData))]
+        public void ScsiGetInquiryDataTest(IoControl IoControl)
+            => Trace.WriteLine(IoControl.ScsiGetInquiryData());
         private static IEnumerable<object[]> AtaPassThroughIdentifyDeviceTestData => PhysicalDrivePath.GetIoControls(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(AtaPassThroughIdentifyDeviceTestData))]
