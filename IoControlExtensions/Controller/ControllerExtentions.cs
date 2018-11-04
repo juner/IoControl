@@ -48,7 +48,7 @@ namespace IoControl.Controller
         public static ScsiAdapterBusInfo ScsiGetInquiryData(this IoControl IoControl)
         {
             if (!IoControl.ScsiGetInquiryData(out var info))
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             return info;
         }
         /// <summary>
@@ -436,7 +436,17 @@ namespace IoControl.Controller
         }
         public static IdentifyDevice ScsiMiniportIdentify(this IoControl IoControl)
             => IoControl.ScsiMiniportIdentify(IoControl.ScsiGetAddress().TargetId);
-            
+        /// <summary>
+        /// IOCTL_SCSI_MINIPORT IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_scsi_miniport )
+        /// </summary>
+        /// <typeparam name="IN"></typeparam>
+        /// <typeparam name="OUT"></typeparam>
+        /// <param name="IoControl"></param>
+        /// <param name="SrbIoControl"></param>
+        /// <param name="InOutStruct"></param>
+        /// <param name="OutStruct"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
         public static bool ScsiMiniport<IN,OUT>(this IoControl IoControl, ref SrbIoControl SrbIoControl, in IN InOutStruct, out OUT OutStruct, out uint ReturnBytes)
             where IN : struct 
             where OUT : struct
