@@ -108,8 +108,7 @@ namespace IoControl.Disk.Tests
         [DynamicData(nameof(SmartGetVersionTestData))]
         public void SmartRcvDriveDataIdentifyDeviceTest(IoControl IoControl)
         {
-            IoControl.SmartRcvDriveDataIdentifyDevice(0xA0, out var IdentifyDevice);
-            Trace.WriteLine(IdentifyDevice);
+            Trace.WriteLine(IoControl.SmartRcvDriveDataIdentifyDevice(0xA0));
         }
     }
 

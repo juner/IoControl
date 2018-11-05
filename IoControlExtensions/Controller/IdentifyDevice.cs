@@ -6,6 +6,10 @@ namespace IoControl.Controller
 {
     public readonly struct IdentifyDevice
     {
+        /// <summary>
+        /// 空かどうか
+        /// </summary>
+        public bool IsEmpty => (Bin?.Length ?? 0) < 512;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst =512)]
         readonly byte[] Bin;
         IdentifyDevice(byte[] Bin) => this.Bin = Bin;
@@ -60,5 +64,12 @@ namespace IoControl.Controller
         public static implicit operator IdentifyDevice(in AtaIdentifyDevice IdentifyDevice) => From(IdentifyDevice);
         public static implicit operator NvmeIdentifyDevice(in IdentifyDevice IdentifyDevice) => IdentifyDevice.N;
         public static implicit operator AtaIdentifyDevice(in IdentifyDevice IdentifyDevice) => IdentifyDevice.A;
+        public override string ToString()
+            => $"{nameof(IdentifyDevice)}{{"
+            + ( IsEmpty ? $"Empty" :
+                Bin.Take(4).Any(v => v > 0) ? $"{A}" : 
+                Bin.Skip(4).Take(20).Any(v => v > 0) ? $"{N}" :
+                $"[{string.Join(" ",Bin.Select(v => $"{v:X2}"))}]" )
+            + $"}}";
     }
 }

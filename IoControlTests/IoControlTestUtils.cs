@@ -33,6 +33,7 @@ namespace IoControl
         /// <returns></returns>
         //public static IEnumerable<string> PhysicalDrivePathGenerator() => PhysicalDrivePathGenerator(0, 10);
         public static IEnumerable<string> PhysicalDrivePath => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("PhysicalDrive") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
+        public static IEnumerable<string> ScsiDrivePath => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("Scsi") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
         public static IEnumerable<string> HarddiskVolumePath => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("HarddiskVolume") == 0 && DeviceName.IndexOf("HarddiskVolumeShadowCopy") < 0).Select(DeviceName => $@"\\.\{DeviceName}");
         public static IEnumerable<string> HarddiskVolumeShadowCopyPath => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("HarddiskVolumeShadowCopy") == 0).Select(DeviceName => $@"\\.\{DeviceName}");
         public static IEnumerable<string> HardidiskPartitionPath => QueryDocDevice().Where(DeviceName => DeviceName.IndexOf("Harddisk") == 0 && DeviceName.IndexOf("Partition") >0).Select(DeviceName => $@"\\.\{DeviceName}");

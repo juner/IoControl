@@ -21,5 +21,12 @@ namespace IoControl.Disk
         public Driverstatus Set(byte? DriverError = null, byte? IDEError = null, byte[] Reserved1 = null, uint[] Reserved2 = null)
             => DriverError == null && IDEError == null && Reserved1 == null && Reserved2 == null ? this
             : new Driverstatus(DriverError ?? this.DriverError, IDEError ?? this.IDEError, Reserved1 ?? _Reserved1, Reserved2 ?? _Reserved2);
+        public override string ToString()
+            => $"{nameof(Driverstatus)}{{"
+            + $"{nameof(DriverError)}:{DriverError:X2}({DriverError})"
+            + $", {nameof(IDEError)}:{IDEError:X2}({IDEError})"
+            + $", {nameof(Reserved1)}:[{string.Join(" ", Reserved1.Select(v => $"{v:X2}"))}]"
+            + $", {nameof(Reserved2)}:[{string.Join(" ", Reserved2.Select(v => $"{v:X8}"))}]"
+            + $"}}";
     }
 }

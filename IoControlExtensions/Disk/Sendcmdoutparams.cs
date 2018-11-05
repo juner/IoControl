@@ -9,14 +9,16 @@ namespace IoControl.Disk
     /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ns-ntdddisk-_sendcmdoutparams
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct Sendcmdoutparams
+    public readonly struct Sendcmdoutparams : ISendcmdoutparams
     {
         public readonly uint BufferSize;
+        uint ISendcmdoutparams.BufferSize => BufferSize;
         public readonly Driverstatus DriverStatus;
+        Driverstatus ISendcmdoutparams.DriverStatus => DriverStatus;
         [MarshalAs(UnmanagedType.ByValArray,SizeConst = 1)]
         internal readonly byte[] _Buffer;
         public byte[] Buffer => (_Buffer ?? Enumerable.Empty<byte>()).Concat(Enumerable.Empty<byte>()).ToArray();
-        public Sendcmdoutparams(uint BufferSize = DiskExtensions.IDENTIFY_BUFFER_SIZE, Driverstatus DriverStatus = default, byte[] Buffer = null)
+        public Sendcmdoutparams(uint BufferSize = default, Driverstatus DriverStatus = default, byte[] Buffer = null)
             => (this.BufferSize, this.DriverStatus, _Buffer)
             = (BufferSize, DriverStatus
                 , (Buffer ?? Enumerable.Repeat<byte>(0, 1)).Concat(Enumerable.Empty<byte>()).ToArray());

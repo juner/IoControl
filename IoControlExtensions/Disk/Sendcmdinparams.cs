@@ -4,16 +4,28 @@ using System.Runtime.InteropServices;
 
 namespace IoControl.Disk
 {
+    public interface ISendcmdinparams {
+        uint BufferSize { get; }
+        Ideregs DriveRegs { get; }
+        byte DriveNumber { get; }
+        byte[] Reserved1 { get; }
+        uint[] Reserved2 { get; }
+        byte[] Buffer { get; }
+
+    }
     /// <summary>
     /// SENDCMDINPARAMS structure 
     /// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntdddisk/ns-ntdddisk-_sendcmdinparams
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct Sendcmdinparams
+    public readonly struct Sendcmdinparams : DataUtils.IPtrCreatable , ISendcmdinparams
     {
         public readonly uint BufferSize;
+        uint ISendcmdinparams.BufferSize => BufferSize;
         public readonly Ideregs DriveRegs;
+        Ideregs ISendcmdinparams.DriveRegs => DriveRegs;
         public readonly byte DriveNumber;
+        byte ISendcmdinparams.DriveNumber => DriveNumber;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst =3)]
         readonly byte[] _Reserved1;
         public byte[] Reserved1 => (_Reserved1 ?? Enumerable.Empty<byte>()).Concat(Enumerable.Repeat<byte>(0, 3)).Take(3).ToArray();
@@ -23,6 +35,15 @@ namespace IoControl.Disk
         [MarshalAs(UnmanagedType.ByValArray, SizeConst =1)]
         readonly byte[] _Buffer;
         public byte[] Buffer => (_Buffer ?? Enumerable.Empty<byte>()).Concat(Enumerable.Empty<byte>()).ToArray();
+        public override string ToString()
+            => $"{nameof(Sendcmdinparams)}{{"
+            + $"{nameof(BufferSize)}: {BufferSize}"
+            + $", {nameof(DriveRegs)}: {DriveRegs}"
+            + $", {nameof(DriveNumber)}: {DriveNumber}"
+            + $", {nameof(Reserved1)}: [{string.Join(" ", Reserved1.Select(v => $"{v:X2}"))}]"
+            + $", {nameof(Reserved2)}: [{string.Join(" ", Reserved2.Select(v => $"{v:X8}"))}]"
+            + $", {nameof(Buffer)}: [{string.Join(" ", Buffer.Select(v => $"{v:X2}"))}]"
+            + $"}}";
         public Sendcmdinparams(uint BufferSize = default, Ideregs DriveRegs = default, byte DriveNumber = default, byte[] Reserved1 = null, uint[] Reserved2 = null, byte[] Buffer = null)
             => (this.BufferSize, this.DriveRegs, this.DriveNumber, _Reserved1, _Reserved2, _Buffer)
             = (BufferSize, DriveRegs, DriveNumber
@@ -43,7 +64,7 @@ namespace IoControl.Disk
                 Marshal.Copy(_Buffer = new byte[BufferSize], 0, IntPtr.Add(IntPtr, (int)BufferOffset), BufferSize);
             }
         }
-        public IDisposable ToPtr(out IntPtr Ptr, out uint Size)
+        public IDisposable CreatePtr(out IntPtr Ptr, out uint Size)
         {
             var _Size = Marshal.SizeOf<Sendcmdinparams>();
             var BufferLength = Buffer.Length;

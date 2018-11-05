@@ -267,7 +267,13 @@ namespace IoControl.Disk
         /// <returns></returns>
         public static bool SmartGetVersion(this IoControl IoControl, out Getversioninparams Versioninparams)
             => IoControl.DeviceIoControlOutOnly(IOControlCode.SmartGetVersion, out Versioninparams, out var ReturnBytes) && ReturnBytes > 0;
-        public static bool SmartRcvDriveDataIdentifyDevice(this IoControl IoControl, byte Target, out Controller.AtaIdentifyDevice IdentifyDevice)
+        public static IdentifyDeviceOutData SmartRcvDriveDataIdentifyDevice(this IoControl IoControl, byte Target)
+        {
+            if (!IoControl.SmartRcvDriveDataIdentifyDevice(Target, out var IdentifyDevice))
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return IdentifyDevice;
+        }
+        public static bool SmartRcvDriveDataIdentifyDevice(this IoControl IoControl, byte Target, out IdentifyDeviceOutData IdentifyDeviceOutData)
         {
             const byte ID_CMD = 0xEC;
             var indata = new Sendcmdinparams(
@@ -278,18 +284,10 @@ namespace IoControl.Disk
                     SectorNumberReg: 1,
                     DriveHeadReg: Target
                 ));
-            var result = IoControl.SmartRcvDriveData(indata, out var outdata);
-            var Buffer = outdata.Buffer;
-            if (Buffer.Length < Marshal.SizeOf<Controller.AtaIdentifyDevice>())
-            {
-                IdentifyDevice = default;
-            }
-            else
-            {
-                IntPtr outPtr = Marshal.AllocCoTaskMem(Buffer.Length);
-                Marshal.Copy(Buffer, 0, outPtr, Buffer.Length);
-                IdentifyDevice = (Controller.AtaIdentifyDevice)Marshal.PtrToStructure(outPtr, typeof(Controller.AtaIdentifyDevice));
-            }
+            var inData = new DataUtils.StructPtr<Sendcmdinparams>(indata);
+            var outData = new DataUtils.StructPtr<IdentifyDeviceOutData>();
+            var result = IoControl.SmartRcvDriveData(inData, outData);
+            IdentifyDeviceOutData = outData.Get();
             return result;
         }
         /// <summary>
@@ -300,7 +298,9 @@ namespace IoControl.Disk
         /// <param name="inparams"></param>
         /// <param name="outparams"></param>
         /// <returns></returns>
-        public static bool SmartRcvDriveData(this IoControl IoControl, in Sendcmdinparams inparams, out Sendcmdoutparams outparams)
-            => IoControl.DeviceIoControl<Sendcmdinparams, Sendcmdoutparams>(IOControlCode.SmartRcvDriveData, inparams, out outparams, out var ReturnBytes) && ReturnBytes > 0;
+        public static bool SmartRcvDriveData<IN,OUT>(this IoControl IoControl, DataUtils.StructPtr<IN> inparams, DataUtils.StructPtr<OUT> outparams)
+            where IN : struct, ISendcmdinparams
+            where OUT : struct, ISendcmdoutparams
+            => IoControl.DeviceIoControl(IOControlCode.SmartRcvDriveData, inparams, outparams, out var ReturnBytes) && ReturnBytes > 0;
     }
 }
