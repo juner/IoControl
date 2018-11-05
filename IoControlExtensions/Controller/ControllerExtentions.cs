@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using IoControl.DataUtils;
 
 namespace IoControl.Controller
 {
@@ -475,6 +476,101 @@ namespace IoControl.Controller
                     : default;
                 return result;
             }
+        }
+        public static bool ScsiPassThrough<T>(this IoControl IoControl, StructPtr<T> inOutPtr, out uint ReturnBytes)
+            where T : struct, IScsiPathThrough
+            => IoControl.DeviceIoControl(IOControlCode.ScsiPassThrough, inOutPtr, out ReturnBytes);
+        public static IdentifyDevice ScsiPassThroughIdentifyDevice(this IoControl IoControl, byte Target, CommandType type)
+        {
+            if (!IoControl.ScsiPassThroughIdentifyDevice(Target, out var IdentifyDevice, type))
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return IdentifyDevice;
+        }
+        public static bool ScsiPassThroughIdentifyDevice(this IoControl IoControl, byte Target, out IdentifyDevice IdentifyDevice, CommandType type)
+        {
+            const byte ID_CMD = 0xEC;
+            var Spt = new ScsiPassThrough(
+                Length: (ushort)Marshal.SizeOf<ScsiPassThrough>(),
+                PathId: 0,
+                TargetId: 0,
+                Lun: 0,
+                SenseInfoLength: 24,
+                DataIn: ScsiData.In,
+                DataTransferLength: (uint)Marshal.SizeOf<IdentifyDevice>(),
+                DataBufferOffset: Marshal.OffsetOf<ScsiPassThroughIdentifyDevice>(nameof(Controller.ScsiPassThroughIdentifyDevice.DataBuf)),
+                SenseInfoOffset: (uint)Marshal.OffsetOf<ScsiPassThroughIdentifyDevice>(nameof(Controller.ScsiPassThroughIdentifyDevice.SenseBuf))
+            );
+            if (type == CommandType.CmdTypeSat)
+            {
+                var Cdb = new byte[] {
+                    0xA1,//ATA PASS THROUGH(12) OPERATION CODE(A1h)
+                    (4 << 1) | 0, //MULTIPLE_COUNT=0,PROTOCOL=4(PIO Data-In),Reserved
+                    (1 << 3) | (1 << 2) | 2,//OFF_LINE=0,CK_COND=0,Reserved=0,T_DIR=1(ToDevice),BYTE_BLOCK=1,T_LENGTH=2
+                    0,//FEATURES (7:0)
+                    1,//SECTOR_COUNT (7:0)
+                    0,//LBA_LOW (7:0)
+                    0,//LBA_MID (7:0)
+                    0,//LBA_HIGH (7:0)
+                    Target,
+                    ID_CMD//COMMAND
+                };
+                Spt = Spt.Set(
+                    CdbLength: (byte)Cdb.Length,
+                    Cdb: Cdb
+                );
+            }
+            else
+            if (type == CommandType.CmdTypeSunplus)
+            {
+                var Cdb = new byte[] {
+                    0xF8,
+                    0x00,
+                    0x22,
+                    0x10,
+                    0x01,
+                    0x00,
+                    0x01,
+                    0x00,
+                    0x00,
+                    0x00,
+                    Target,
+                    0xEC, // ID_CMD
+                };
+                Spt = Spt.Set(
+                    CdbLength: (byte)Cdb.Length,
+                    Cdb: Cdb
+                );
+            }
+            else
+            if (type == CommandType.CmdTypeIoData)
+            {
+                var Cdb = new byte[] {
+                    0xE3,
+                    0x00,
+                    0x00,
+                    0x01,
+                    0x01,
+                    0x00,
+                    0x00,
+                    Target,
+                    0xEC,  // ID_CMD
+                    0x00,
+                    0x00,
+                    0x00,
+                };
+                Spt = Spt.Set(
+                    CdbLength: (byte)Cdb.Length,
+                    Cdb: Cdb
+                );
+            }
+            else throw new ArgumentException(nameof(type));
+            var SpTwb = new ScsiPassThroughIdentifyDevice(
+                Spt: Spt
+            );
+            var InOutPtr = new StructPtr<ScsiPassThroughIdentifyDevice>(SpTwb);
+            var result = IoControl.ScsiPassThrough(InOutPtr, out var ReturnBytes);
+            IdentifyDevice = result ? InOutPtr.Get().DataBuf : default;
+            return result;
         }
     }
 }

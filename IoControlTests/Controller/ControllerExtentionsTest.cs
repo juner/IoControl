@@ -45,5 +45,13 @@ namespace IoControl.Controller.Tests
         [DynamicData(nameof(ScsiMiniportIdentifyTestData))]
         public void ScsiMiniportIdentifyTest(IoControl IoControl)
             => Trace.WriteLine(IoControl.ScsiMiniportIdentify());
+
+        private static IEnumerable<object[]> ScsiPassThroughIdentifyDeviceTestData => PhysicalDrivePath.GetIoControls(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
+        [TestMethod]
+        [DynamicData(nameof(ScsiPassThroughIdentifyDeviceTestData))]
+        public void ScsiPassThroughIdentifyDeviceTest(IoControl IoControl)
+        {
+            Trace.WriteLine(IoControl.ScsiPassThroughIdentifyDevice(0xA0, CommandType.CmdTypeSat));
+        }
     }
 }
