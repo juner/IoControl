@@ -296,9 +296,9 @@ namespace IoControl.Controller
         /// <param name="Header"></param>
         /// <param name="Data"></param>
         /// <returns></returns>
-        public static bool AtaPassThroughSmartAttributes(this IoControl IoControl, out AtaPassThroughEx Header, out SmartAttribute[] Data, out uint ReturnBytes)
+        public static bool AtaPassThroughSmartAttributes(this IoControl IoControl, out AtaPassThroughEx Header, out SmartData Data, out uint ReturnBytes)
         {
-            var result = AtaPassThrough<SmartAttributes>(
+            var result = AtaPassThrough<SmartData>(
                 IoControl: IoControl,
                 Header: out Header,
                 Data: out var Data_,
@@ -317,8 +317,8 @@ namespace IoControl.Controller
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
-        public static (AtaPassThroughEx Header, SmartAttribute[] Data) AtaPassThroughSmartAttributes(this IoControl IoControl)
-            => AtaPassThrough<SmartAttributes>(
+        public static (AtaPassThroughEx Header, SmartData Data) AtaPassThroughSmartAttributes(this IoControl IoControl)
+            => AtaPassThrough<SmartData>(
                 IoControl: IoControl,
                 AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
                 TimeOutValue: 3,

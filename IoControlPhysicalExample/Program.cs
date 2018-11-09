@@ -102,8 +102,7 @@ namespace IoControlPhysicalExample
                     Trace.WriteLine(nameof(IOControlCode.AtaPassThrough));
                     IoControl.AtaPassThroughSmartAttributes(out var Header, out var Attributes, out _);
                     Trace.WriteLine(Header);
-                    foreach (var Attribute in Attributes ?? Enumerable.Empty<SmartAttribute>())
-                        Trace.WriteLine(Attribute);
+                    Trace.WriteLine(Attributes);
                 }catch (Exception e)
                 {
                     Trace.WriteLine(e);

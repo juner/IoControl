@@ -23,12 +23,4 @@ namespace IoControl.Controller
             + $", {nameof(Reserved)}:{Reserved}"
             + $"}}";
     };
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal readonly struct SmartAttributes
-    {
-        public readonly ushort Padding;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 30)]
-        public readonly SmartAttribute[] Attributes;
-        public static implicit operator SmartAttribute[](in SmartAttributes attrs) => attrs.Attributes;
-    }
 }

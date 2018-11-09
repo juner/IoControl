@@ -14,12 +14,12 @@ namespace IoControl.DataUtils
         protected T Struct;
         public StructPtr(T Struct) => this.Struct = Struct;
         public StructPtr() => Struct = default;
+        public uint StructSize => (uint)Marshal.SizeOf<T>();
         public virtual IDisposable CreatePtr(out IntPtr IntPtr, out uint Size)
         {
             if (Struct is IPtrCreatable Creatable)
                 return Creatable.CreatePtr(out IntPtr, out Size);
-            var _Size = Marshal.SizeOf<T>();
-            var _IntPtr = Marshal.AllocCoTaskMem(_Size);
+            var _IntPtr = Marshal.AllocCoTaskMem((int)StructSize);
             var Disposable = global::IoControl.Disposable.Create(() => Marshal.FreeCoTaskMem(_IntPtr));
             if (!Struct.Equals(default))
                 try
@@ -32,8 +32,8 @@ namespace IoControl.DataUtils
                     throw;
                 }
             IntPtr = _IntPtr;
-            Size = (ushort)_Size;
-            return Disposable; ;
+            Size = (ushort)StructSize;
+            return Disposable;
         }
         void IDataPtr.SetPtr(IntPtr IntPtr, uint Size) => SetPtr(IntPtr, Size);
         /// <summary>
@@ -51,5 +51,10 @@ namespace IoControl.DataUtils
         }
         public ref T Get() => ref Struct;
         object IDataPtr.Get() => Get();
+        public override string ToString()
+            => $"{nameof(StructPtr<T>)}{{"
+            + $"{nameof(Struct)}:{(Struct.Equals(default) ? "default" : $"{Struct}")}"
+            + $"{nameof(StructSize)}:{StructSize}"
+            + $"}}";
     }
 }

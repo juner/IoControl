@@ -36,8 +36,7 @@ namespace IoControl.Controller.Tests
             var result = IoControl.AtaPassThroughSmartAttributes();
             Trace.WriteLine($"{nameof(ControllerExtentions.AtaPassThroughSmartAttributes)}:");
             Trace.WriteLine(result.Header);
-            foreach (var attribute in result.Data)
-                Trace.WriteLine(attribute);
+            Trace.WriteLine(result.Data);
             
         }
         private static IEnumerable<object[]> ScsiMiniportIdentifyTestData => ScsiDrivePath.GetIoControls(FileAccess: System.IO.FileAccess.ReadWrite, FileShare: System.IO.FileShare.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
@@ -50,8 +49,6 @@ namespace IoControl.Controller.Tests
         [TestMethod]
         [DynamicData(nameof(ScsiPassThroughIdentifyDeviceTestData))]
         public void ScsiPassThroughIdentifyDeviceTest(IoControl IoControl)
-        {
-            Trace.WriteLine(IoControl.ScsiPassThroughIdentifyDevice(0xA0, CommandType.CmdTypeSat));
-        }
+            => Trace.WriteLine(IoControl.ScsiPassThroughIdentifyDevice(0xA0, CommandType.CmdTypeSat));
     }
 }

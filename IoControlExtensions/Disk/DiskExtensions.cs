@@ -290,6 +290,34 @@ namespace IoControl.Disk
             IdentifyDeviceOutData = outData.Get();
             return result;
         }
+        public static SmartReadDataOutData SmartRcvDriveDataSmartReadData(this IoControl IoControl, byte Target)
+        {
+            if (!IoControl.SmartRcvDriveDataSmartReadData(Target, out var OutData))
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return OutData;
+        }
+        public static bool SmartRcvDriveDataSmartReadData(this IoControl IoControl, byte Target, out SmartReadDataOutData Attributes)
+        {
+            const uint READ_THRESHOLD_BUFFER_SIZE = 512;
+            const byte SMART_CMD = 0xB0;
+            const byte SMART_CYL_LOW = 0x4F;
+            const byte SMART_CYL_HI = 0xC2;
+            var indata = new Sendcmdinparams(
+                BufferSize: READ_THRESHOLD_BUFFER_SIZE,
+                DriveRegs: new Ideregs(
+                    CommandReg: SMART_CMD,
+                    SectorCountReg: 1,
+                    SectorNumberReg: 1,
+                    CylLowReg: SMART_CYL_LOW,
+                    CylHighReg: SMART_CYL_HI,
+                    DriveHeadReg: Target
+                ));
+            var inData = new DataUtils.StructPtr<Sendcmdinparams>(indata);
+            var outData = new DataUtils.StructPtr<SmartReadDataOutData>();
+            var result = IoControl.SmartRcvDriveData(inData, outData);
+            Attributes = outData.Get();
+            return result;
+        }
         /// <summary>
         /// SMART_RCV_DRIVE_DATA control code
         /// https://msdn.microsoft.com/en-us/library/windows/hardware/ff566204.aspx

@@ -126,8 +126,7 @@ namespace IoControl.Tests
                 Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughSmartAttributes));
                 var result = IoControl.AtaPassThroughSmartAttributes();
                 Trace.WriteLine(result.Header);
-                foreach(var attribute in result.Data)
-                    Trace.WriteLine(attribute);
+                Trace.WriteLine(result.Data);
 
             }
             catch (Exception e2)
