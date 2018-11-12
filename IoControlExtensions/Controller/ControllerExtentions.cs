@@ -291,36 +291,36 @@ namespace IoControl.Controller
         }
         public static bool AtaPassThroughCheckPowerMode(this IoControl IoControl, out IAtaPassThroughEx value, out uint ReturnBytes)
         {
+            var AtaFlags = Controller.AtaFlags.DataIn | Controller.AtaFlags.NoMultiple;
             if (IntPtr.Size == 4)
             {
-                var _value = new AtaPassThroughEx32(
-                    AtaFlags: AtaFlags.DataOut,
-                    TimeOutValue: 100,
-                    DataTransferLength: 0,
-                    DataBufferOffset: Marshal.SizeOf<AtaPassThroughEx>(),
-                    Feature: 0,
-                    Cylinder: 0,
-                    DeviceHead: 0x10,
-                    Command: 0xE5
+                var _value = new AtaPassThroughEx32WithMiniBuffer(
+                    AtaFlags: AtaFlags,
+                    TimeOutValue: 20,
+                    new TaskFile(
+                        AtaFlags: AtaFlags,
+                        Feature:0,
+                        Cylinder: 0,
+                        DeviceHead: 0,
+                        Command:0xE5
+                    )
                 );
-                var ptr = new StructPtr<AtaPassThroughEx32>(_value);
+                var ptr = new StructPtr<AtaPassThroughEx32WithMiniBuffer>(_value);
                 var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
                 value = ptr.Get();
                 return result;
             } else if (IntPtr.Size == 8)
             {
 
-                var _value = new AtaPassThroughEx(
-                    AtaFlags: AtaFlags.DataOut,
-                    TimeOutValue: 100,
-                    DataTransferLength: 0,
-                    DataBufferOffset: Marshal.SizeOf<AtaPassThroughEx>(),
+                var _value = new AtaPassThroughExWithMiniBuffer(
+                    AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                    TimeOutValue: 20,
                     Feature: 0,
                     Cylinder: 0,
-                    DeviceHead: 0x10,
+                    DeviceHead: 0x0,
                     Command: 0xE5
                 );
-                var ptr = new StructPtr<AtaPassThroughEx>(_value);
+                var ptr = new StructPtr<AtaPassThroughExWithMiniBuffer>(_value);
                 var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
                 value = ptr.Get();
                 return result;
