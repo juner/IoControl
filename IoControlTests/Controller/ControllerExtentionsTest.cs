@@ -18,7 +18,7 @@ namespace IoControl.Controller.Tests
         [TestMethod]
         [DynamicData(nameof(ScsiGetAddressTestData))]
         public void ScsiGetAddressTest(IoControl IoControl)
-            => Trace.WriteLine($"{nameof(ControllerExtentions.ScsiGetAddress)}: {IoControl.ScsiGetAddress()}");
+            => Trace.WriteLine(IoControl.ScsiGetAddress());
         [TestMethod]
         [DynamicData(nameof(ScsiGetAddressTestData))]
         public void ScsiGetInquiryDataTest(IoControl IoControl)
@@ -27,17 +27,13 @@ namespace IoControl.Controller.Tests
         [TestMethod]
         [DynamicData(nameof(AtaPassThroughIdentifyDeviceTestData))]
         public void AtaPassThroughIdentifyDeviceTest(IoControl IoControl)
-            => Trace.WriteLine($"{nameof(ControllerExtentions.AtaPassThroughIdentifyDevice)}: {IoControl.AtaPassThroughIdentifyDevice()}");
+            => Trace.WriteLine(IoControl.AtaPassThroughIdentifyDevice());
         private static IEnumerable<object[]> AtaPassThroughSmartAttributesTestData => PhysicalDrivePath.GetIoControls(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(AtaPassThroughSmartAttributesTestData))]
         public void AtaPassThroughSmartAttributesTest(IoControl IoControl)
         {
-            var result = IoControl.AtaPassThroughSmartAttributes();
-            Trace.WriteLine($"{nameof(ControllerExtentions.AtaPassThroughSmartAttributes)}:");
-            Trace.WriteLine(result.Header);
-            Trace.WriteLine(result.Data);
-            
+            Trace.WriteLine(IoControl.AtaPassThroughSmartAttributes());
         }
         private static IEnumerable<object[]> ScsiMiniportIdentifyTestData => ScsiDrivePath.GetIoControls(FileAccess: System.IO.FileAccess.ReadWrite, FileShare: System.IO.FileShare.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
         [TestMethod]
