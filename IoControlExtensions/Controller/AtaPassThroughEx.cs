@@ -8,7 +8,7 @@ namespace IoControl.Controller
     /// <summary>
     /// ATA_PASS_THROUGH_EX structure ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ns-ntddscsi-_ata_pass_through_ex )
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential,Pack =8)]
     public readonly struct AtaPassThroughEx : IAtaPassThroughEx
     {
         public readonly ushort Length;
@@ -55,7 +55,7 @@ namespace IoControl.Controller
     /// <summary>
     /// ATA_PASS_THROUGH_EX structure ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ns-ntddscsi-_ata_pass_through_ex )
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential,Pack =4)]
     public readonly struct AtaPassThroughEx32 : IAtaPassThroughEx
     {
         public readonly ushort Length;
