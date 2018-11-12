@@ -100,19 +100,23 @@ namespace IoControlPhysicalExample
                 try
                 {
                     Trace.WriteLine(nameof(IOControlCode.AtaPassThrough));
-                    IoControl.AtaPassThroughSmartAttributes(out var Header, out var Attributes, out _);
-                    Trace.WriteLine(Header);
-                    Trace.WriteLine(Attributes);
-                }catch (Exception e)
+                    Trace.WriteLine(IoControl.AtaPassThroughCheckPowerMode());
+                }catch(Exception e)
                 {
                     Trace.WriteLine(e);
                 }
                 try
                 {
                     Trace.WriteLine(nameof(IOControlCode.AtaPassThrough));
-                    IoControl.AtaPassThroughIdentifyDevice(out var Header, out var Identify, out _);
-                    Trace.WriteLine(Header);
-                    Trace.WriteLine(Identify);
+                    Trace.WriteLine(IoControl.AtaPassThroughSmartData());
+                }catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
+                try
+                {
+                    Trace.WriteLine(nameof(IOControlCode.AtaPassThrough));;
+                    Trace.WriteLine(IoControl.AtaPassThroughIdentifyDevice());
 
                 }catch(Exception e)
                 {

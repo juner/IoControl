@@ -74,12 +74,13 @@ namespace IoControl.Controller
         /// <param name="Reserved"></param>
         /// <param name="DataSize"></param>
         /// <returns></returns>
-        public static bool AtaPassThrough(this IoControl IoControl,out AtaPassThroughEx Header, out byte[] Data, AtaFlags AtaFlags, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default, uint DataSize = default)
+        public static bool AtaPassThrough(this IoControl IoControl, out IAtaPassThroughEx Header, out byte[] Data, AtaFlags AtaFlags, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default, uint DataSize = default)
         {
             var _Size = Marshal.SizeOf<AtaPassThroughEx>();
             var DataTransferLength = DataSize;
-            var DataBufferOffset =DataSize == 0 ? 0 : _Size;
-            Header = new AtaPassThroughEx(
+            var DataBufferOffset = DataSize == 0 ? 0 : _Size;
+            Header = 
+                IntPtr.Size == 8 ? (IAtaPassThroughEx)new AtaPassThroughEx(
                     AtaFlags: AtaFlags,
                     PathId: PathId,
                     TargetId: TargetId,
@@ -96,7 +97,24 @@ namespace IoControl.Controller
                     Reserved: Reserved,
                     DataTransferLength: DataTransferLength,
                     DataBufferOffset: DataBufferOffset
-                );
+                ): IntPtr.Size == 4 ? new AtaPassThroughEx32(
+                    AtaFlags: AtaFlags,
+                    PathId: PathId,
+                    TargetId: TargetId,
+                    Lun: Lun,
+                    ReservedAsUchar: ReservedAsUchar,
+                    TimeOutValue: TimeOutValue,
+                    ReservedAsUlong: ReservedAsUlong,
+                    Feature: Feature,
+                    SectorCouont: SectorCouont,
+                    SectorNumber: SectorNumber,
+                    Cylinder: Cylinder,
+                    DeviceHead: DeviceHead,
+                    Command: Command,
+                    Reserved: Reserved,
+                    DataTransferLength: DataTransferLength,
+                    DataBufferOffset: DataBufferOffset
+                ): throw new NotSupportedException();
             var Size = (uint)(_Size + DataSize);
             var Ptr = Marshal.AllocCoTaskMem((int)Size);
             using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
@@ -136,7 +154,7 @@ namespace IoControl.Controller
         /// <param name="Reserved"></param>
         /// <param name="DataSize"></param>
         /// <returns></returns>
-        public static (AtaPassThroughEx Header, byte[] Data) AtaPassThrough(this IoControl IoControl, AtaFlags AtaFlags, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default, uint DataSize = default)
+        public static (IAtaPassThroughEx Header, byte[] Data) AtaPassThrough(this IoControl IoControl, AtaFlags AtaFlags, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default, uint DataSize = default)
         {
             if (!AtaPassThrough(IoControl,
                 Header: out var Header,
@@ -160,7 +178,7 @@ namespace IoControl.Controller
             return (Header, Data);
         }
         /// <summary>
-        /// 
+        /// IOCTL_ATA_PASS_THROUGH IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_ata_pass_through )
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="IoControl"></param>
@@ -173,126 +191,42 @@ namespace IoControl.Controller
         /// <summary>
         /// IOCTL_ATA_PASS_THROUGH IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_ata_pass_through )
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="IoControl"></param>
-        /// <param name="Header"></param>
-        /// <param name="Data"></param>
-        /// <param name="AtaFlags"></param>
-        /// <param name="PathId"></param>
-        /// <param name="TargetId"></param>
-        /// <param name="Lun"></param>
-        /// <param name="ReservedAsUchar"></param>
-        /// <param name="TimeOutValue"></param>
-        /// <param name="ReservedAsUlong"></param>
-        /// <param name="Feature"></param>
-        /// <param name="SectorCouont"></param>
-        /// <param name="SectorNumber"></param>
-        /// <param name="Cylinder"></param>
-        /// <param name="DeviceHead"></param>
-        /// <param name="Command"></param>
-        /// <param name="Reserved"></param>
-        /// <returns></returns>
-        public static bool AtaPassThrough<T>(this IoControl IoControl, out AtaPassThroughEx Header, out T Data, out uint ReturnBytes, AtaFlags AtaFlags, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default)
-            where T : struct
-        {
-            var DataTransferLength = (uint)Marshal.SizeOf<T>();
-            var DataBufferOffset = Marshal.SizeOf<AtaPassThroughEx>();
-
-            Header = new AtaPassThroughEx(
-                    AtaFlags: AtaFlags,
-                    PathId: PathId,
-                    TargetId: TargetId,
-                    Lun: Lun,
-                    ReservedAsUchar: ReservedAsUchar,
-                    TimeOutValue: TimeOutValue,
-                    ReservedAsUlong: ReservedAsUlong,
-                    Feature: Feature,
-                    SectorCouont: SectorCouont,
-                    SectorNumber: SectorNumber,
-                    Cylinder: Cylinder,
-                    DeviceHead: DeviceHead,
-                    Command: Command,
-                    Reserved: Reserved,
-                    DataTransferLength: DataTransferLength,
-                    DataBufferOffset: DataBufferOffset
-                );
-            var Size = (uint)(Marshal.SizeOf<AtaPassThroughEx>() + Marshal.SizeOf<T>());
-            var Ptr = Marshal.AllocCoTaskMem((int)Size);
-            using (Disposable.Create(() => Marshal.FreeCoTaskMem(Ptr)))
-            {
-                Marshal.StructureToPtr(Header, Ptr, false);
-                var result = IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, Ptr, Size, out ReturnBytes);
-                Header = result ? (AtaPassThroughEx)Marshal.PtrToStructure(Ptr, typeof(AtaPassThroughEx)) : default;
-                Data = result ? (T)Marshal.PtrToStructure(IntPtr.Add(Ptr, Marshal.SizeOf<AtaPassThroughEx>()), typeof(T)) : default;
-                return result;
-            }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="IoControl"></param>
-        /// <param name="AtaFlags"></param>
-        /// <param name="PathId"></param>
-        /// <param name="TargetId"></param>
-        /// <param name="Lun"></param>
-        /// <param name="ReservedAsUchar"></param>
-        /// <param name="TimeOutValue"></param>
-        /// <param name="ReservedAsUlong"></param>
-        /// <param name="Feature"></param>
-        /// <param name="SectorCouont"></param>
-        /// <param name="SectorNumber"></param>
-        /// <param name="Cylinder"></param>
-        /// <param name="DeviceHead"></param>
-        /// <param name="Command"></param>
-        /// <param name="Reserved"></param>
-        /// <returns></returns>
-        public static (AtaPassThroughEx Header, T Data) AtaPassThrough<T>(this IoControl IoControl, AtaFlags AtaFlags, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default)
-            where T: struct
-        {
-            if (!AtaPassThrough<T>(IoControl,
-                Header: out var Header,
-                Data: out var Data,
-                ReturnBytes: out var ReturnBytes,
-                AtaFlags: AtaFlags,
-                PathId: PathId,
-                TargetId: TargetId,
-                Lun: Lun,
-                ReservedAsUchar: ReservedAsUchar,
-                TimeOutValue: TimeOutValue,
-                ReservedAsUlong: ReservedAsUlong,
-                Feature: Feature,
-                SectorCouont: SectorCouont,
-                SectorNumber: SectorNumber,
-                Cylinder: Cylinder,
-                DeviceHead: DeviceHead,
-                Command: Command,
-                Reserved: Reserved) && ReturnBytes == 0)
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            return (Header, Data);
-        }
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="IoControl"></param>
         /// <param name="Header"></param>
         /// <param name="Data"></param>
         /// <returns></returns>
         public static bool AtaPassThroughIdentifyDevice(this IoControl IoControl, out IAtaPassThroughEx<IdentifyDevice> value, out uint ReturnBytes)
         {
-            var ptr = new StructPtr<AtaPassThroughExWithIdentifyDevice>(new AtaPassThroughExWithIdentifyDevice(
-                AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
-                TimeOutValue: 3,
-                Feature: 0,
-                Cylinder: 0,
-                Command: 0xEC
-            ));
-            var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
-            value = ptr.Get();
-            return result;
+            if (IntPtr.Size == 4)
+            {
+                var ptr = new StructPtr<AtaPassThroughEx32WithIdentifyDevice>(new AtaPassThroughEx32WithIdentifyDevice(
+                    AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                    TimeOutValue: 3,
+                    Feature: 0,
+                    Cylinder: 0,
+                    Command: 0xEC
+                ));
+                var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
+                value = ptr.Get();
+                return result;
+            }
+            else if (IntPtr.Size == 8)
+            {
+                var ptr = new StructPtr<AtaPassThroughExWithIdentifyDevice>(new AtaPassThroughExWithIdentifyDevice(
+                    AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                    TimeOutValue: 3,
+                    Feature: 0,
+                    Cylinder: 0,
+                    Command: 0xEC
+                ));
+                var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
+                value = ptr.Get();
+                return result;
+            }
+            throw new NotSupportedException();
         }
         /// <summary>
-        /// 
+        /// IOCTL_ATA_PASS_THROUGH IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_ata_pass_through )
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
@@ -303,7 +237,7 @@ namespace IoControl.Controller
             return result;
         }
         /// <summary>
-        /// 
+        /// IOCTL_ATA_PASS_THROUGH IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_ata_pass_through )
         /// </summary>
         /// <param name="IoControl"></param>
         /// <param name="Header"></param>
@@ -311,21 +245,40 @@ namespace IoControl.Controller
         /// <returns></returns>
         public static bool AtaPassThroughSmartData(this IoControl IoControl, out IAtaPassThroughEx<SmartData> value, out uint ReturnBytes)
         {
-            var request = new AtaPassThroughExWithSmartData(
-                AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
-                TimeOutValue: 3,
-                Feature: 0xd0,
-                Cylinder: 0xc24f,
-                Command: 0xb0
-            );
-            System.Diagnostics.Debug.Assert(request.DataTransferLength == 512, "データが不正");
-            var ptr = new StructPtr<AtaPassThroughExWithSmartData>(request);
-            var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
-            value = ptr.Get();
-            return result;
+            if (IntPtr.Size == 4)
+            {
+                var request = new AtaPassThroughEx32WithSmartData(
+                    AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                    TimeOutValue: 3,
+                    Feature: 0xd0,
+                    Cylinder: 0xc24f,
+                    Command: 0xb0
+                );
+                System.Diagnostics.Debug.Assert(request.DataTransferLength == 512, "データが不正");
+                var ptr = new StructPtr<AtaPassThroughEx32WithSmartData>(request);
+                var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
+                value = ptr.Get();
+                return result;
+            }
+            else if (IntPtr.Size == 8)
+            {
+                var request = new AtaPassThroughExWithSmartData(
+                    AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                    TimeOutValue: 3,
+                    Feature: 0xd0,
+                    Cylinder: 0xc24f,
+                    Command: 0xb0
+                );
+                System.Diagnostics.Debug.Assert(request.DataTransferLength == 512, "データが不正");
+                var ptr = new StructPtr<AtaPassThroughExWithSmartData>(request);
+                var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
+                value = ptr.Get();
+                return result;
+            }
+            throw new NotSupportedException();
         }
         /// <summary>
-        /// 
+        /// IOCTL_ATA_PASS_THROUGH IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_ata_pass_through )
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
@@ -338,20 +291,41 @@ namespace IoControl.Controller
         }
         public static bool AtaPassThroughCheckPowerMode(this IoControl IoControl, out IAtaPassThroughEx value, out uint ReturnBytes)
         {
-            var _value = new AtaPassThroughEx(
-                AtaFlags: AtaFlags.DataOut,
-                TimeOutValue: 100,
-                DataTransferLength: 0,
-                DataBufferOffset: Marshal.SizeOf<AtaPassThroughEx>(),
-                Feature: 0,
-                Cylinder: 0,
-                DeviceHead: 0x10,
-                Command: 0xE5
-            );
-            var ptr = new StructPtr<AtaPassThroughEx>(_value);
-            var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
-            value = ptr.Get();
-            return result;
+            if (IntPtr.Size == 4)
+            {
+                var _value = new AtaPassThroughEx32(
+                    AtaFlags: AtaFlags.DataOut,
+                    TimeOutValue: 100,
+                    DataTransferLength: 0,
+                    DataBufferOffset: Marshal.SizeOf<AtaPassThroughEx>(),
+                    Feature: 0,
+                    Cylinder: 0,
+                    DeviceHead: 0x10,
+                    Command: 0xE5
+                );
+                var ptr = new StructPtr<AtaPassThroughEx32>(_value);
+                var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
+                value = ptr.Get();
+                return result;
+            } else if (IntPtr.Size == 8)
+            {
+
+                var _value = new AtaPassThroughEx(
+                    AtaFlags: AtaFlags.DataOut,
+                    TimeOutValue: 100,
+                    DataTransferLength: 0,
+                    DataBufferOffset: Marshal.SizeOf<AtaPassThroughEx>(),
+                    Feature: 0,
+                    Cylinder: 0,
+                    DeviceHead: 0x10,
+                    Command: 0xE5
+                );
+                var ptr = new StructPtr<AtaPassThroughEx>(_value);
+                var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
+                value = ptr.Get();
+                return result;
+            }
+            throw new NotSupportedException();
         }
         public static IAtaPassThroughEx AtaPassThroughCheckPowerMode(this IoControl IoControl)
         {

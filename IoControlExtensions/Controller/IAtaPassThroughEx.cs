@@ -2,7 +2,7 @@
 {
     public interface IAtaPassThroughEx
     {
-        AtaPassThroughEx Header { get; }
+        IAtaPassThroughEx Header { get; }
         ushort Length { get; }
         AtaFlags AtaFlags { get; }
         byte PathId { get; }
@@ -12,7 +12,7 @@
         uint DataTransferLength { get; }
         uint TimeOutValue { get; }
         uint ReservedAsUlong { get; }
-        int DataBufferOffset { get; }
+        long DataBufferOffset { get; }
         byte[] PreviousTaskFile { get; }
         byte[] CurrentTaskFile { get; }
     }
