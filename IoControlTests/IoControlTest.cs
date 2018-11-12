@@ -123,8 +123,8 @@ namespace IoControl.Tests
             }
             try
             {
-                Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughSmartAttributes));
-                var result = IoControl.AtaPassThroughSmartAttributes();
+                Trace.WriteLine(nameof(ControllerExtentions.AtaPassThroughSmartData));
+                var result = IoControl.AtaPassThroughSmartData();
                 Trace.WriteLine(result.Header);
                 Trace.WriteLine(result.Data);
 

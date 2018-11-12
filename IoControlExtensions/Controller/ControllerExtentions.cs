@@ -160,6 +160,17 @@ namespace IoControl.Controller
             return (Header, Data);
         }
         /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="IoControl"></param>
+        /// <param name="InOutBuffer"></param>
+        /// <param name="ReturnBytes"></param>
+        /// <returns></returns>
+        public static bool AtaPassThrough<T>(this IoControl IoControl, StructPtr<T> InOutBuffer, out uint ReturnBytes)
+            where T : struct, IAtaPassThroughEx
+            => IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, InOutBuffer, out ReturnBytes);
+        /// <summary>
         /// IOCTL_ATA_PASS_THROUGH IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_ata_pass_through )
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -267,49 +278,17 @@ namespace IoControl.Controller
         /// <param name="Header"></param>
         /// <param name="Data"></param>
         /// <returns></returns>
-        public static bool AtaPassThroughIdentifyDevice(this IoControl IoControl, out AtaPassThroughEx Header,out AtaIdentifyDevice Data, out uint ReturnBytes)
-            => AtaPassThrough(
-                IoControl: IoControl,
-                Header: out Header,
-                Data: out Data,
-                ReturnBytes: out ReturnBytes,
-                AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
-                TimeOutValue: 3,
-                Command: 0xEC
-            );
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="IoControl"></param>
-        /// <returns></returns>
-        public static (AtaPassThroughEx Header, AtaIdentifyDevice Data) AtaPassThroughIdentifyDevice(this IoControl IoControl)
-            => AtaPassThrough<AtaIdentifyDevice>(
-                IoControl: IoControl,
-                AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
-                TimeOutValue: 3,
-                Command: 0xEC
-            );
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="IoControl"></param>
-        /// <param name="Header"></param>
-        /// <param name="Data"></param>
-        /// <returns></returns>
-        public static bool AtaPassThroughSmartAttributes(this IoControl IoControl, out AtaPassThroughEx Header, out SmartData Data, out uint ReturnBytes)
+        public static bool AtaPassThroughIdentifyDevice(this IoControl IoControl, out IAtaPassThroughEx<IdentifyDevice> value, out uint ReturnBytes)
         {
-            var result = AtaPassThrough<SmartData>(
-                IoControl: IoControl,
-                Header: out Header,
-                Data: out var Data_,
-                ReturnBytes: out ReturnBytes,
+            var ptr = new StructPtr<AtaPassThroughExWithIdentifyDevice>(new AtaPassThroughExWithIdentifyDevice(
                 AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
                 TimeOutValue: 3,
-                Feature: 0xd0,
-                Cylinder: 0xc24f,
-                Command: 0xb0
-            );
-            Data = Data_;
+                Feature: 0,
+                Cylinder: 0,
+                Command: 0xEC
+            ));
+            var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
+            value = ptr.Get();
             return result;
         }
         /// <summary>
@@ -317,15 +296,70 @@ namespace IoControl.Controller
         /// </summary>
         /// <param name="IoControl"></param>
         /// <returns></returns>
-        public static (AtaPassThroughEx Header, SmartData Data) AtaPassThroughSmartAttributes(this IoControl IoControl)
-            => AtaPassThrough<SmartData>(
-                IoControl: IoControl,
+        public static IAtaPassThroughEx<IdentifyDevice> AtaPassThroughIdentifyDevice(this IoControl IoControl)
+        {
+            if (!IoControl.AtaPassThroughIdentifyDevice(out var result, out var ReturnBytes))
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return result;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <param name="Header"></param>
+        /// <param name="Data"></param>
+        /// <returns></returns>
+        public static bool AtaPassThroughSmartData(this IoControl IoControl, out IAtaPassThroughEx<SmartData> value, out uint ReturnBytes)
+        {
+            var request = new AtaPassThroughExWithSmartData(
                 AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
                 TimeOutValue: 3,
                 Feature: 0xd0,
                 Cylinder: 0xc24f,
                 Command: 0xb0
             );
+            System.Diagnostics.Debug.Assert(request.DataTransferLength == 512, "データが不正");
+            var ptr = new StructPtr<AtaPassThroughExWithSmartData>(request);
+            var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
+            value = ptr.Get();
+            return result;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IoControl"></param>
+        /// <returns></returns>
+
+        public static IAtaPassThroughEx<SmartData> AtaPassThroughSmartData(this IoControl IoControl)
+        {
+            if (!IoControl.AtaPassThroughSmartData(out var result, out var ReturnBytes))
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return result;
+        }
+        public static bool AtaPassThroughCheckPowerMode(this IoControl IoControl, out IAtaPassThroughEx value, out uint ReturnBytes)
+        {
+            var _value = new AtaPassThroughEx(
+                AtaFlags: AtaFlags.DataOut,
+                TimeOutValue: 100,
+                DataTransferLength: 0,
+                DataBufferOffset: Marshal.SizeOf<AtaPassThroughEx>(),
+                Feature: 0,
+                Cylinder: 0,
+                DeviceHead: 0x10,
+                Command: 0xE5
+            );
+            var ptr = new StructPtr<AtaPassThroughEx>(_value);
+            var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
+            value = ptr.Get();
+            return result;
+        }
+        public static IAtaPassThroughEx AtaPassThroughCheckPowerMode(this IoControl IoControl)
+        {
+            if (!IoControl.AtaPassThroughCheckPowerMode(out var result, out var ReturnBytes))
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            return result;
+
+        }
         /// <summary>
         /// IOCTL_ATA_PASS_THROUGH_DIRECT IOCTL ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ni-ntddscsi-ioctl_ata_pass_through_direct )
         /// </summary>

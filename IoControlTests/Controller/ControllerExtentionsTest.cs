@@ -28,13 +28,15 @@ namespace IoControl.Controller.Tests
         [DynamicData(nameof(AtaPassThroughIdentifyDeviceTestData))]
         public void AtaPassThroughIdentifyDeviceTest(IoControl IoControl)
             => Trace.WriteLine(IoControl.AtaPassThroughIdentifyDevice());
-        private static IEnumerable<object[]> AtaPassThroughSmartAttributesTestData => PhysicalDrivePath.GetIoControls(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
+        private static IEnumerable<object[]> AtaPassThroughSmartDataTestData => PhysicalDrivePath.GetIoControls(FileAccess: System.IO.FileAccess.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
         [TestMethod]
-        [DynamicData(nameof(AtaPassThroughSmartAttributesTestData))]
-        public void AtaPassThroughSmartAttributesTest(IoControl IoControl)
-        {
-            Trace.WriteLine(IoControl.AtaPassThroughSmartAttributes());
-        }
+        [DynamicData(nameof(AtaPassThroughSmartDataTestData))]
+        public void AtaPassThroughSmartDataTest(IoControl IoControl)
+            => Trace.WriteLine(IoControl.AtaPassThroughSmartData());
+        [TestMethod]
+        [DynamicData(nameof(AtaPassThroughSmartDataTestData))]
+        public void AtaPassThroughCheckPowerMode(IoControl IoControl)
+            => Trace.WriteLine(IoControl.AtaPassThroughCheckPowerMode());
         private static IEnumerable<object[]> ScsiMiniportIdentifyTestData => ScsiDrivePath.GetIoControls(FileAccess: System.IO.FileAccess.ReadWrite, FileShare: System.IO.FileShare.ReadWrite, CreationDisposition: System.IO.FileMode.Open).Using().Select(v => new object[] { v });
         [TestMethod]
         [DynamicData(nameof(ScsiMiniportIdentifyTestData))]
