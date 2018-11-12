@@ -39,7 +39,7 @@ namespace IoControl.Controller
             => (Length, this.AtaFlags, this.PathId, this.TargetId, this.Lun, this.ReservedAsUchar, this.TimeOutValue, this.ReservedAsUlong, this.DataTransferLength, this.DataBufferOffset, this.TaskFile , this.Buffer)
                 = ((ushort)Marshal.SizeOf<AtaPassThroughEx>(), AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, (uint)Marshal.SizeOf<Buffer5>(), Marshal.SizeOf<AtaPassThroughEx>(), TaskFile, Buffer);
        public override string ToString()
-            => $"{nameof(AtaPassThroughExWithMiniBuffer)}{{{nameof(Length)}:{Length}, {nameof(AtaFlags)}:{AtaFlags}, {nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(ReservedAsUchar)}:{ReservedAsUchar}, {nameof(DataTransferLength)}:{DataTransferLength}, {nameof(TimeOutValue)}:{TimeOutValue}, {nameof(ReservedAsUlong)}:{ReservedAsUlong}, {nameof(DataBufferOffset)}:{DataBufferOffset}, {nameof(PreviousTaskFile)}:[{string.Join(" ", PreviousTaskFile.Select(v => $"{v:X2}"))}], {nameof(_CurrentTaskFile)}:[{string.Join(" ", CurrentTaskFile.Select(v => $"{v:X2}"))}]}}";
+            => $"{nameof(AtaPassThroughExWithMiniBuffer)}{{{nameof(Length)}:{Length}, {nameof(AtaFlags)}:{AtaFlags}, {nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(ReservedAsUchar)}:{ReservedAsUchar}, {nameof(DataTransferLength)}:{DataTransferLength}, {nameof(TimeOutValue)}:{TimeOutValue}, {nameof(ReservedAsUlong)}:{ReservedAsUlong}, {nameof(DataBufferOffset)}:{DataBufferOffset}, {nameof(PreviousTaskFile)}:[{string.Join(" ", PreviousTaskFile.Select(v => $"{v:X2}"))}], {nameof(CurrentTaskFile)}:[{string.Join(" ", CurrentTaskFile.Select(v => $"{v:X2}"))}]}}";
     }
     /// <summary>
     /// ATA_PASS_THROUGH_EX structure ( https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntddscsi/ns-ntddscsi-_ata_pass_through_ex )
@@ -79,7 +79,7 @@ namespace IoControl.Controller
             => (Length, this.AtaFlags, this.PathId, this.TargetId, this.Lun, this.ReservedAsUchar, this.TimeOutValue, this.ReservedAsUlong, DataTransferLength, DataBufferOffset, this.TaskFile, this.Buffer)
             = ((ushort)Marshal.SizeOf<AtaPassThroughEx32>(), AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, (uint)Marshal.SizeOf<Buffer5>(), Marshal.SizeOf<AtaPassThroughEx32>(), TaskFile, Buffer);
         public override string ToString()
-            => $"{nameof(AtaPassThroughEx32WithMiniBuffer)}{{{nameof(Length)}:{Length}, {nameof(AtaFlags)}:{AtaFlags}, {nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(ReservedAsUchar)}:{ReservedAsUchar}, {nameof(DataTransferLength)}:{DataTransferLength}, {nameof(TimeOutValue)}:{TimeOutValue}, {nameof(ReservedAsUlong)}:{ReservedAsUlong}, {nameof(DataBufferOffset)}:{DataBufferOffset}, {nameof(PreviousTaskFile)}:[{string.Join(" ", PreviousTaskFile.Select(v => $"{v:X2}"))}], {nameof(_CurrentTaskFile)}:[{string.Join(" ", CurrentTaskFile.Select(v => $"{v:X2}"))}]}}";
+            => $"{nameof(AtaPassThroughEx32WithMiniBuffer)}{{{nameof(Length)}:{Length}, {nameof(AtaFlags)}:{AtaFlags}, {nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(ReservedAsUchar)}:{ReservedAsUchar}, {nameof(DataTransferLength)}:{DataTransferLength}, {nameof(TimeOutValue)}:{TimeOutValue}, {nameof(ReservedAsUlong)}:{ReservedAsUlong}, {nameof(DataBufferOffset)}:{DataBufferOffset}, {nameof(PreviousTaskFile)}:[{string.Join(" ", PreviousTaskFile.Select(v => $"{v:X2}"))}], {nameof(CurrentTaskFile)}:[{string.Join(" ", CurrentTaskFile.Select(v => $"{v:X2}"))}]}}";
     }
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct Buffer5{
@@ -89,108 +89,4 @@ namespace IoControl.Controller
         public static implicit operator byte[](Buffer5 buffer) => (buffer._Buffer ?? Empty<byte>()).Concat(Repeat<byte>(0, 5)).Take(5).ToArray();
         public static implicit operator Buffer5(byte[] buffer) => new Buffer5((buffer ?? Empty<byte>()).Concat(Repeat<byte>(0, 5)).Take(5).ToArray());
     }
-    [StructLayout(LayoutKind.Sequential)]
-    public readonly struct TaskFile
-    {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        readonly byte[] _Previous;
-        public byte[] Previous => (_Previous ?? Empty<byte>()).Concat(Repeat<byte>(0, 8)).Take(8).ToArray();
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        readonly byte[] _Current;
-        public byte[] Current => (_Current ?? Empty<byte>()).Concat(Repeat<byte>(0, 8)).Take(8).ToArray();
-        public TaskFile(AtaFlags AtaFlags, ushort Feature, ushort SectorCouont, ushort SectorNumber, uint Cylinder, byte DeviceHead, byte Command, ushort Reserved)
-        {
-            if ((AtaFlags & AtaFlags.AF_48BIT_COMMAND) == AtaFlags.AF_48BIT_COMMAND)
-            {
-                unchecked
-                {
-                    (_Current, _Previous)
-                        = (new byte[8] {
-                            (byte)(Feature & 0x00FF),
-                            (byte)(SectorCouont & 0x00FF),
-                            (byte)(SectorNumber & 0x00FF),
-                            (byte)(Cylinder & 0x0000_00FF),
-                            (byte)((Cylinder & 0x0000_FF00) >> 8),
-                            DeviceHead,
-                            Command,
-                            (byte)(Reserved & 0x00FF),
-                        }, new byte[8] {
-                            (byte)((Feature & 0xFF00) >> 8),
-                            (byte)((SectorCouont & 0xFF00) >> 8),
-                            (byte)((SectorNumber & 0xFF00) >> 8),
-                            (byte)((Cylinder & 0x00FF_0000) >> 16),
-                            (byte)((Cylinder & 0xFF00_0000) >> 24),
-                            DeviceHead,
-                            Command,
-                            (byte)(Reserved & 0x00FF),
-                        });
-                    return;
-                }
-            }
-            else
-            {
-                unchecked
-                {
-                    (_Current, _Previous)
-                        = (new byte[8] {
-                            (byte)(Feature & 0x00FF),
-                            (byte)(SectorCouont & 0x00FF),
-                            (byte)(SectorNumber & 0x00FF),
-                            (byte)(Cylinder & 0x0000_00FF),
-                            (byte)((Cylinder & 0x0000_FF00) >> 8),
-                            DeviceHead,
-                            Command,
-                            (byte)(Reserved & 0x00FF),
-                        }, new byte[8]);
-                }
-            }
-        }
-        public TaskFile(AtaFlags AtaFlags, ushort Feature, ushort SectorCouont, ulong Lba, byte DeviceHead, byte Command, ushort Reserved)
-        {
-            if ((AtaFlags & AtaFlags.AF_48BIT_COMMAND) == AtaFlags.AF_48BIT_COMMAND)
-            {
-                unchecked
-                {
-                    (_Current, _Previous)
-                        = (new byte[8] {
-                            (byte)(Feature & 0x00FF),
-                            (byte)(SectorCouont & 0x00FF),
-                            (byte)(Lba & 0x0000_0000_0000_00FF),
-                            (byte)((Lba & 0x0000_0000_0000_FF00) >> 8),
-                            (byte)((Lba & 0x0000_0000_00FF_0000) >> 16),
-                            DeviceHead,
-                            Command,
-                            (byte)(Reserved & 0x00FF),
-                        }, new byte[8] {
-                            (byte)((Feature & 0xFF00) >> 8),
-                            (byte)((SectorCouont & 0xFF00) >> 8),
-                            (byte)((Lba & 0x0000_0000_FF00_0000) >> 24),
-                            (byte)((Lba & 0x0000_00FF_0000_0000) >> 32),
-                            (byte)((Lba & 0x0000_FF00_0000_0000) >> 40),
-                            DeviceHead,
-                            Command,
-                            (byte)((Reserved & 0xFF00) >> 8),
-                        });
-                }
-            }
-            else
-            {
-                unchecked
-                {
-                    (_Current, _Previous)
-                        = (new byte[8] {
-                        (byte)(Feature & 0x00FF),
-                        (byte)(SectorCouont & 0x00FF),
-                        (byte)(Lba & 0x00FF),
-                        (byte)((Lba & 0x0000_FF00) >> 8),
-                        (byte)((Lba & 0x00FF_0000) >> 16),
-                        DeviceHead,
-                        Command,
-                        (byte)(Reserved & 0x00FF),
-                    }, new byte[8]);
-                }
-            }
-        }
-    }
-}
 }

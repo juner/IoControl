@@ -297,7 +297,7 @@ namespace IoControl.Controller
                 var _value = new AtaPassThroughEx32WithMiniBuffer(
                     AtaFlags: AtaFlags,
                     TimeOutValue: 20,
-                    new TaskFile(
+                    TaskFile: new TaskFile(
                         AtaFlags: AtaFlags,
                         Feature:0,
                         Cylinder: 0,
@@ -313,12 +313,15 @@ namespace IoControl.Controller
             {
 
                 var _value = new AtaPassThroughExWithMiniBuffer(
-                    AtaFlags: AtaFlags.DataIn | AtaFlags.NoMultiple,
+                    AtaFlags: AtaFlags,
                     TimeOutValue: 20,
-                    Feature: 0,
-                    Cylinder: 0,
-                    DeviceHead: 0x0,
-                    Command: 0xE5
+                    TaskFile: new TaskFile(
+                        AtaFlags: AtaFlags,
+                        Feature: 0,
+                        Cylinder: 0,
+                        DeviceHead: 0x0,
+                        Command: 0xE5
+                    )
                 );
                 var ptr = new StructPtr<AtaPassThroughExWithMiniBuffer>(_value);
                 var result = IoControl.AtaPassThrough(ptr, out ReturnBytes);
