@@ -185,7 +185,7 @@ namespace IoControl.Controller
         /// <param name="InOutBuffer"></param>
         /// <param name="ReturnBytes"></param>
         /// <returns></returns>
-        public static bool AtaPassThrough<T>(this IoControl IoControl, StructPtr<T> InOutBuffer, out uint ReturnBytes)
+        public static bool AtaPassThrough<T>(this IoControl IoControl, IDataPtr<T> InOutBuffer, out uint ReturnBytes)
             where T : struct, IAtaPassThroughEx
             => IoControl.DeviceIoControl(IOControlCode.AtaPassThrough, InOutBuffer, out ReturnBytes);
         /// <summary>

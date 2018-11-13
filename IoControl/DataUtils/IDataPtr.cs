@@ -6,4 +6,9 @@ namespace IoControl.DataUtils {
         void SetPtr(IntPtr IntPtr, uint Size);
         object Get();
     }
+    public interface IDataPtr<T> : IDataPtr
+        where T : struct
+    {
+        new T Get();
+    }
 }

@@ -12,6 +12,10 @@ namespace IoControl.Controller
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
         readonly byte[] _Current;
         public byte[] Current => (_Current ?? Empty<byte>()).Concat(Repeat<byte>(0, 8)).Take(8).ToArray();
+        public TaskFile(byte[] Previous = default, byte[] Current = default)
+            => (_Previous, _Current)
+            = ((Previous ?? Empty<byte>()).Concat(Repeat<byte>(0, 8)).Take(8).ToArray()
+            , (Current ?? Empty<byte>()).Concat(Repeat<byte>(0, 8)).Take(8).ToArray());
         public TaskFile(AtaFlags AtaFlags, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default)
         {
             if ((AtaFlags & AtaFlags.AF_48BIT_COMMAND) == AtaFlags.AF_48BIT_COMMAND)

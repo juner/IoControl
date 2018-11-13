@@ -8,7 +8,7 @@ namespace IoControl.DataUtils
     /// struct ベースの データ
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class StructPtr<T> : IDataPtr
+    public class StructPtr<T> : IDataPtr<T>
         where T : struct
     {
         protected T Struct;
@@ -50,6 +50,7 @@ namespace IoControl.DataUtils
             return ref Struct;
         }
         public ref T Get() => ref Struct;
+        T IDataPtr<T>.Get() => Get();
         object IDataPtr.Get() => Get();
         public override string ToString()
             => $"{nameof(StructPtr<T>)}{{"

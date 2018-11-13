@@ -4,7 +4,7 @@ using static IoControl.Controller.AtaPassThroughUtils;
 
 namespace IoControl.Controller
 {
-    [StructLayout(LayoutKind.Sequential, Pack =8)]
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public readonly struct AtaPassThroughExWithIdentifyDevice : IAtaPassThroughEx<IdentifyDevice>
     {
         public readonly ushort Length;
@@ -17,12 +17,9 @@ namespace IoControl.Controller
         public readonly uint TimeOutValue;
         public readonly uint ReservedAsUlong;
         private readonly long DataBufferOffset;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        readonly byte[] _PreviousTaskFile;
-        public byte[] PreviousTaskFile => (_PreviousTaskFile ?? Empty<byte>()).Concat(Repeat<byte>(0, 8)).Take(8).ToArray();
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        readonly byte[] _CurrentTaskFile;
-        public byte[] CurrentTaskFile => (_CurrentTaskFile ?? Empty<byte>()).Concat(Repeat<byte>(0, 8)).Take(8).ToArray();
+        readonly TaskFile TaskFile;
+        public byte[] PreviousTaskFile => TaskFile.Previous;
+        public byte[] CurrentTaskFile => TaskFile.Current;
         IAtaPassThroughEx IAtaPassThroughEx.Header => new AtaPassThroughEx(this);
         IdentifyDevice IAtaPassThroughEx<IdentifyDevice>.Data => IdentifyDevice;
         ushort IAtaPassThroughEx.Length => Length;
@@ -35,18 +32,17 @@ namespace IoControl.Controller
         uint IAtaPassThroughEx.TimeOutValue => TimeOutValue;
         uint IAtaPassThroughEx.ReservedAsUlong => ReservedAsUlong;
         long IAtaPassThroughEx.DataBufferOffset => DataBufferOffset;
-        byte[] IAtaPassThroughEx.PreviousTaskFile => PreviousTaskFile;
-        byte[] IAtaPassThroughEx.CurrentTaskFile => CurrentTaskFile;
         public readonly IdentifyDevice IdentifyDevice;
+        public AtaPassThroughExWithIdentifyDevice(AtaFlags AtaFlags = default, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, TaskFile TaskFile = default, IdentifyDevice IdentifyDevice = default)
+            => (Length, this.AtaFlags, this.PathId, this.TargetId, this.Lun, this.ReservedAsUchar, this.TimeOutValue, this.ReservedAsUlong, this.DataTransferLength, this.DataBufferOffset, this.TaskFile, this.IdentifyDevice)
+                = ((ushort)Marshal.SizeOf<AtaPassThroughEx>(), AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, (uint)Marshal.SizeOf<IdentifyDevice>(), Marshal.SizeOf<AtaPassThroughEx>(), TaskFile, IdentifyDevice);
         public AtaPassThroughExWithIdentifyDevice(AtaFlags AtaFlags = default, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default, IdentifyDevice IdentifyDevice = default)
-            => (Length, this.AtaFlags, this.PathId, this.TargetId, this.Lun, this.ReservedAsUchar, this.TimeOutValue, this.ReservedAsUlong, this.DataTransferLength, this.DataBufferOffset, (_CurrentTaskFile, _PreviousTaskFile), this.IdentifyDevice)
-                = ((ushort)Marshal.SizeOf<AtaPassThroughEx>(), AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, (uint)Marshal.SizeOf<IdentifyDevice>(), Marshal.SizeOf<AtaPassThroughEx>(), CreateTaskFiles(AtaFlags, Feature, SectorCouont, SectorNumber, Cylinder, DeviceHead, Command, Reserved), IdentifyDevice);
+            : this(AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, new TaskFile(AtaFlags, Feature, SectorCouont, SectorNumber, Cylinder, DeviceHead, Command, Reserved), IdentifyDevice) { }
         public AtaPassThroughExWithIdentifyDevice(AtaFlags AtaFlags = default, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, uint DataTransferLength = default, int DataBufferOffset = default, ushort Feature = default, ushort SectorCouont = default, ulong Lba = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default, IdentifyDevice IdentifyDevice = default)
-            => (Length, this.AtaFlags, this.PathId, this.TargetId, this.Lun, this.ReservedAsUchar, this.TimeOutValue, this.ReservedAsUlong, this.DataTransferLength, this.DataBufferOffset, (_CurrentTaskFile, _PreviousTaskFile), this.IdentifyDevice)
-                = ((ushort)Marshal.SizeOf<AtaPassThroughEx>(), AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, (uint)Marshal.SizeOf<IdentifyDevice>(), Marshal.SizeOf<AtaPassThroughEx>(), CreateTaskFiles(AtaFlags, Feature, SectorCouont, Lba, DeviceHead, Command, Reserved), IdentifyDevice);
+            : this(AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, new TaskFile(AtaFlags, Feature, SectorCouont, Lba, DeviceHead, Command, Reserved), IdentifyDevice) { }
 
         public override string ToString()
-            => $"{nameof(AtaPassThroughExWithIdentifyDevice)}{{{nameof(Length)}:{Length}, {nameof(AtaFlags)}:{AtaFlags}, {nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(ReservedAsUchar)}:{ReservedAsUchar}, {nameof(DataTransferLength)}:{DataTransferLength}, {nameof(TimeOutValue)}:{TimeOutValue}, {nameof(ReservedAsUlong)}:{ReservedAsUlong}, {nameof(DataBufferOffset)}:{DataBufferOffset}, {nameof(PreviousTaskFile)}:[{string.Join(" ", PreviousTaskFile.Select(v => $"{v:X2}"))}], {nameof(_CurrentTaskFile)}:[{string.Join(" ", CurrentTaskFile.Select(v => $"{v:X2}"))}], {nameof(IdentifyDevice)}:{IdentifyDevice}}}";
+            => $"{nameof(AtaPassThroughExWithIdentifyDevice)}{{{nameof(Length)}:{Length}, {nameof(AtaFlags)}:{AtaFlags}, {nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(ReservedAsUchar)}:{ReservedAsUchar}, {nameof(DataTransferLength)}:{DataTransferLength}, {nameof(TimeOutValue)}:{TimeOutValue}, {nameof(ReservedAsUlong)}:{ReservedAsUlong}, {nameof(DataBufferOffset)}:{DataBufferOffset}, {nameof(PreviousTaskFile)}:[{string.Join(" ", PreviousTaskFile.Select(v => $"{v:X2}"))}], {nameof(CurrentTaskFile)}:[{string.Join(" ", CurrentTaskFile.Select(v => $"{v:X2}"))}], {nameof(IdentifyDevice)}:{IdentifyDevice}}}";
     }
     [StructLayout(LayoutKind.Sequential, Pack =4)]
     public readonly struct AtaPassThroughEx32WithIdentifyDevice : IAtaPassThroughEx<IdentifyDevice>
@@ -61,12 +57,9 @@ namespace IoControl.Controller
         public readonly uint TimeOutValue;
         public readonly uint ReservedAsUlong;
         private readonly int DataBufferOffset;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        readonly byte[] _PreviousTaskFile;
-        public byte[] PreviousTaskFile => (_PreviousTaskFile ?? Empty<byte>()).Concat(Repeat<byte>(0, 8)).Take(8).ToArray();
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        readonly byte[] _CurrentTaskFile;
-        public byte[] CurrentTaskFile => (_CurrentTaskFile ?? Empty<byte>()).Concat(Repeat<byte>(0, 8)).Take(8).ToArray();
+        readonly TaskFile TaskFile;
+        public byte[] PreviousTaskFile => TaskFile.Previous;
+        public byte[] CurrentTaskFile => TaskFile.Current;
         public readonly IdentifyDevice IdentifyDevice;
         IAtaPassThroughEx IAtaPassThroughEx.Header => new AtaPassThroughEx32(this);
         IdentifyDevice IAtaPassThroughEx<IdentifyDevice>.Data => IdentifyDevice;
@@ -80,16 +73,15 @@ namespace IoControl.Controller
         uint IAtaPassThroughEx.TimeOutValue => TimeOutValue;
         uint IAtaPassThroughEx.ReservedAsUlong => ReservedAsUlong;
         long IAtaPassThroughEx.DataBufferOffset => DataBufferOffset;
-        byte[] IAtaPassThroughEx.PreviousTaskFile => PreviousTaskFile;
-        byte[] IAtaPassThroughEx.CurrentTaskFile => CurrentTaskFile;
+        public AtaPassThroughEx32WithIdentifyDevice(AtaFlags AtaFlags = default, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, TaskFile TaskFile = default, IdentifyDevice IdentifyDevice = default)
+            => (Length, this.AtaFlags, this.PathId, this.TargetId, this.Lun, this.ReservedAsUchar, this.TimeOutValue, this.ReservedAsUlong, this.DataTransferLength, this.DataBufferOffset, this.TaskFile, this.IdentifyDevice)
+                = ((ushort)Marshal.SizeOf<AtaPassThroughEx32>(), AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, (uint)Marshal.SizeOf<IdentifyDevice>(), Marshal.SizeOf<AtaPassThroughEx32>(), TaskFile, IdentifyDevice);
         public AtaPassThroughEx32WithIdentifyDevice(AtaFlags AtaFlags = default, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, ushort Feature = default, ushort SectorCouont = default, ushort SectorNumber = default, uint Cylinder = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default, IdentifyDevice IdentifyDevice = default)
-            => (Length, this.AtaFlags, this.PathId, this.TargetId, this.Lun, this.ReservedAsUchar, this.TimeOutValue, this.ReservedAsUlong, this.DataTransferLength, this.DataBufferOffset, (_CurrentTaskFile, _PreviousTaskFile), this.IdentifyDevice)
-                = ((ushort)Marshal.SizeOf<AtaPassThroughEx32>(), AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, (uint)Marshal.SizeOf<IdentifyDevice>(), Marshal.SizeOf<AtaPassThroughEx32>(), CreateTaskFiles(AtaFlags, Feature, SectorCouont, SectorNumber, Cylinder, DeviceHead, Command, Reserved), IdentifyDevice);
+            : this(AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, new TaskFile(AtaFlags, Feature, SectorCouont, SectorNumber, Cylinder, DeviceHead, Command, Reserved), IdentifyDevice) { }
         public AtaPassThroughEx32WithIdentifyDevice(AtaFlags AtaFlags = default, byte PathId = default, byte TargetId = default, byte Lun = default, byte ReservedAsUchar = default, uint TimeOutValue = default, uint ReservedAsUlong = default, uint DataTransferLength = default, int DataBufferOffset = default, ushort Feature = default, ushort SectorCouont = default, ulong Lba = default, byte DeviceHead = default, byte Command = default, ushort Reserved = default, IdentifyDevice IdentifyDevice = default)
-            => (Length, this.AtaFlags, this.PathId, this.TargetId, this.Lun, this.ReservedAsUchar, this.TimeOutValue, this.ReservedAsUlong, this.DataTransferLength, this.DataBufferOffset, (_CurrentTaskFile, _PreviousTaskFile), this.IdentifyDevice)
-                = ((ushort)Marshal.SizeOf<AtaPassThroughEx32>(), AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, (uint)Marshal.SizeOf<IdentifyDevice>(), Marshal.SizeOf<AtaPassThroughEx32>(), CreateTaskFiles(AtaFlags, Feature, SectorCouont, Lba, DeviceHead, Command, Reserved), IdentifyDevice);
+            : this(AtaFlags, PathId, TargetId, Lun, ReservedAsUchar, TimeOutValue, ReservedAsUlong, new TaskFile(AtaFlags, Feature, SectorCouont, Lba, DeviceHead, Command, Reserved), IdentifyDevice) { }
 
         public override string ToString()
-            => $"{nameof(AtaPassThroughExWithIdentifyDevice)}{{{nameof(Length)}:{Length}, {nameof(AtaFlags)}:{AtaFlags}, {nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(ReservedAsUchar)}:{ReservedAsUchar}, {nameof(DataTransferLength)}:{DataTransferLength}, {nameof(TimeOutValue)}:{TimeOutValue}, {nameof(ReservedAsUlong)}:{ReservedAsUlong}, {nameof(DataBufferOffset)}:{DataBufferOffset}, {nameof(PreviousTaskFile)}:[{string.Join(" ", PreviousTaskFile.Select(v => $"{v:X2}"))}], {nameof(_CurrentTaskFile)}:[{string.Join(" ", CurrentTaskFile.Select(v => $"{v:X2}"))}], {nameof(IdentifyDevice)}:{IdentifyDevice}}}";
+            => $"{nameof(AtaPassThroughExWithIdentifyDevice)}{{{nameof(Length)}:{Length}, {nameof(AtaFlags)}:{AtaFlags}, {nameof(PathId)}:{PathId}, {nameof(TargetId)}:{TargetId}, {nameof(Lun)}:{Lun}, {nameof(ReservedAsUchar)}:{ReservedAsUchar}, {nameof(DataTransferLength)}:{DataTransferLength}, {nameof(TimeOutValue)}:{TimeOutValue}, {nameof(ReservedAsUlong)}:{ReservedAsUlong}, {nameof(DataBufferOffset)}:{DataBufferOffset}, {nameof(PreviousTaskFile)}:[{string.Join(" ", PreviousTaskFile.Select(v => $"{v:X2}"))}], {nameof(CurrentTaskFile)}:[{string.Join(" ", CurrentTaskFile.Select(v => $"{v:X2}"))}], {nameof(IdentifyDevice)}:{IdentifyDevice}}}";
     }
 }
